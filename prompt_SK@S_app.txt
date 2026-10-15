@@ -1,0 +1,42 @@
+# ROLE & CONTEXT
+Act as an Expert Full-Stack Developer and AI Architect specializing in Next.js (App Router), React, Serverless architectures, and LLM integrations. 
+
+# PROJECT OVERVIEW
+I am building an "AI-First" Centralised District Monitoring Web Application for the Ministry of Education Malaysia, specifically for managing the SK@S (School Quality Management System). The app serves as a smart data center where teachers upload achievement certificates, and the AI automatically extracts data, categorizes it based on official SK@S rubrics (using RAG), and generates official descriptions. It also acts as a monitoring dashboard for the District Education Office (PPD).
+
+# TECH STACK
+- Frontend & Framework: Next.js 14+ (App Router), React, Tailwind CSS
+- UI Components: Shadcn UI, Lucide Icons, Recharts (for dashboards)
+- Database: Neon Postgres (Serverless) with `pgvector` extension for RAG
+- ORM: Drizzle ORM
+- Authentication & RBAC: Clerk (Roles: PPD Admin, School Admin, Teacher)
+- AI & LLM: Vercel AI SDK, Claude 3.5 Sonnet (for text generation & RAG reasoning), Claude Vision (for OCR on certificates)
+- Deployment: Vercel
+
+# CORE FEATURES & WORKFLOW
+1. Role-Based Access Control (RBAC):
+   - Teacher (Data Entry): Uploads certificates, inputs basic details.
+   - School Admin / Principal (Approver): Reviews AI-generated drafts, edits, and approves to finalize the data.
+   - PPD Admin (District Monitor): Read-only access to a bird's-eye view analytics dashboard of all schools in the district.
+
+2. AI OCR & Auto-Drafting (Zero Friction Entry):
+   - Teacher uploads a certificate image.
+   - Claude Vision extracts: Program Name, Date, Level (District/State/National), and Teacher Role.
+   - Vercel AI SDK auto-generates official SK@S justification texts based on the extracted data.
+
+3. RAG Validator System:
+   - Uses `pgvector` in Neon DB to store embeddings of the official SK@S Manual.
+   - Cross-references the uploaded achievement with the SK@S rubric to suggest the correct Standard/Score and auto-tag the entry (e.g., #NationalLevel, #Standard3.2).
+
+4. Dashboards:
+   - School Dashboard: Tracks pending approvals and achievement metrics.
+   - PPD Dashboard: Aggregated metrics, filtering by school/standard, and identifying schools needing intervention.
+
+# YOUR FIRST TASK (PHASE 1)
+Do not write the entire application at once. Let's build this iteratively. For your first response, please provide:
+
+1. Database Schema (Drizzle ORM): Define the `schema.ts` file including tables for Users, Schools, Achievements (with fields for AI-generated drafts, status [pending/approved], tags), and a table for Document Embeddings (`pgvector`).
+2. Folder Structure: Propose the Next.js `app/` directory structure for the different RBAC routes (e.g., `/dashboard/ppd`, `/dashboard/school`).
+3. Core Dependencies: Provide the `npm install` command for the necessary packages to kickstart this specific stack.
+
+Ask me any clarifying questions if needed before we proceed to Phase 2 (Authentication and UI setup).

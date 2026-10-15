@@ -1,0 +1,2276 @@
+<title>SK@S App</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+/* --- Token system ----------------------------------------------- */
+:root {
+  --navy:     #0f172a;
+  --navy-2:   #1e3a8a;
+  --navy-hi:  #2563eb;
+  --accent:   #2563eb;
+  --accent-h: #1d4ed8;
+  --violet:   #7c3aed;
+  --violet-l: #ede9fe;
+  --gold:     #b45309;
+  --gold-l:   #fef3c7;
+  --bg:       #eef2ff;
+  --surface:  #ffffff;
+  --border:   #e2e8f0;
+  --border-2: #c7d2fe;
+  --t1:       #0f172a;
+  --t2:       #334155;
+  --t3:       #94a3b8;
+  --ok:       #059669;
+  --ok-l:     #d1fae5;
+  --warn:     #b45309;
+  --warn-l:   #fef3c7;
+  --danger:   #dc2626;
+  --danger-l: #fee2e2;
+  --chip:     #dbeafe;
+  --chip-fg:  #1e40af;
+  --h: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --b: 'Inter', system-ui, sans-serif;
+  --shadow: 0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.08);
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.04), 0 2px 8px rgba(15,23,42,.05);
+
+  --lv-int: #c2410c; --lv-int-bg: #fed7aa;
+  --lv-nat: #1e40af; --lv-nat-bg: #bfdbfe;
+  --lv-neg: #047857; --lv-neg-bg: #a7f3d0;
+  --lv-bah: #0e7490; --lv-bah-bg: #a5f3fc;
+  --lv-dae: #6d28d9; --lv-dae-bg: #ddd6fe;
+  --lv-skl: #475569; --lv-skl-bg: #e2e8f0;
+  /* aliases used by inline JS-generated HTML */
+  --bdr: #e2e8f0;
+  --card: #ffffff;
+  /* vivid level colors for bars */
+  --lv-int-bar: #f97316;
+  --lv-nat-bar: #2563eb;
+  --lv-neg-bar: #10b981;
+  --lv-bah-bar: #06b6d4;
+  --lv-dae-bar: #7c3aed;
+  --lv-skl-bar: #6b7280;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0f1a; --surface: #141c2e; --border: #1e2d45;
+    --border-2: #263450; --t1: #e8edf8; --t2: #8090aa;
+    --t3: #3d4f6a; --chip: #1a2540; --chip-fg: #93c5fd;
+    --violet-l: #1e1040; --gold-l: #2c1c00; --ok-l: #052e16;
+    --warn-l: #1c0e00; --danger-l: #1a0505;
+    --shadow: 0 1px 3px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.25);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.15), 0 2px 6px rgba(0,0,0,.18);
+    --lv-int-bg: #2c1005; --lv-nat-bg: #0c1d40; --lv-neg-bg: #032013;
+    --lv-bah-bg: #022010; --lv-dae-bg: #160730; --lv-skl-bg: #111827;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0f1a; --surface: #141c2e; --border: #1e2d45; --border-2: #263450;
+  --t1: #e8edf8; --t2: #8090aa; --t3: #3d4f6a; --chip: #1a2540; --chip-fg: #93c5fd;
+  --violet-l: #1e1040; --gold-l: #2c1c00; --ok-l: #052e16;
+  --warn-l: #1c0e00; --danger-l: #1a0505;
+  --shadow: 0 1px 3px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.25);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.15), 0 2px 6px rgba(0,0,0,.18);
+  --lv-int-bg: #2c1005; --lv-nat-bg: #0c1d40; --lv-neg-bg: #032013;
+  --lv-bah-bg: #022010; --lv-dae-bg: #160730; --lv-skl-bg: #111827;
+  color-scheme: dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;background:var(--bg);color:var(--t1)}
+
+/* --- Shell --------------------------------------------------- */
+.shell{display:flex;height:100%;overflow:hidden}
+.sidebar{width:228px;flex-shrink:0;background:linear-gradient(175deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 0 var(--border),0 2px 12px rgba(15,23,42,.04)}
+.content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+/* --- Sidebar ------------------------------------------------- */
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .mark{font-family:var(--h);font-size:22px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(90deg,#93c5fd,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sb-logo .sub{font-size:10.5px;color:rgba(255,255,255,.42);margin-top:2px}
+.sb-section{padding:12px 12px 2px}
+.sb-section-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.32);padding:0 8px;margin-bottom:4px}
+.sb-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:rgba(255,255,255,.55);font-size:13px;font-family:var(--b);font-weight:500;padding:9px 12px;border-radius:10px;cursor:pointer;text-align:left;transition:background .15s,color .15s}
+.sb-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
+.sb-btn.active{background:rgba(255,255,255,.18);color:#fff;font-weight:700;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.sb-btn.active svg{opacity:1}
+.sb-btn svg{flex-shrink:0;opacity:.65}
+.sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;border:2px solid rgba(255,255,255,.3)}
+.sb-uname{font-size:11.5px;font-weight:700;color:#fff}
+.sb-urole{font-size:10.5px;color:rgba(255,255,255,.45)}
+.sb-ppd{font-size:11px;font-weight:600;color:#93c5fd;margin-top:1px;letter-spacing:.3px}
+
+/* demo role switcher */
+.role-sw{padding:8px 10px 6px;background:rgba(255,255,255,.07);margin:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
+.role-sw-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);margin-bottom:4px;display:block}
+.role-sw-btn{display:block;width:100%;background:none;border:none;color:rgba(255,255,255,.5);font-size:11.5px;font-family:var(--b);padding:5px 8px;border-radius:7px;cursor:pointer;text-align:left}
+.role-sw-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85)}
+.role-sw-btn.active{background:rgba(255,255,255,.18);color:#fff;font-weight:700}
+
+/* --- Topbar --------------------------------------------------- */
+.tb-info .g{font-size:10.5px;color:var(--t3)}
+.tb-info .n{font-size:13.5px;font-weight:700;font-family:var(--h)}
+.bell-btn{position:relative;background:none;border:none;cursor:pointer;padding:7px;border-radius:10px;color:var(--t2);transition:background .15s}
+.bell-btn:hover{background:var(--border)}
+.bell-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:2px solid var(--surface)}
+
+/* --- Generic -------------------------------------------------- */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--b);font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;border:none;cursor:pointer;transition:all .15s}
+.btn-pri{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.btn-pri:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.4)}
+.btn-pri:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+.btn-vio{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 2px 8px rgba(109,40,217,.3)}
+.btn-vio:hover{opacity:.9;transform:translateY(-1px)}
+.btn-vio:disabled{opacity:.5;transform:none}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--t2)}
+.btn-ghost:hover{background:var(--chip);border-color:var(--border-2)}
+.btn-ghost:disabled{opacity:.45}
+.btn-ok{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:10px 0;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;transition:all .15s;box-shadow:0 2px 8px rgba(5,150,105,.3)}
+.btn-ok:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ok:disabled{opacity:.5;transform:none;box-shadow:none}
+.btn-danger{background:none;border:1.5px solid var(--danger);color:var(--danger);padding:10px 0;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;transition:background .15s}
+.btn-danger:hover{background:var(--danger-l)}
+
+/* --- Cards ---------------------------------------------------- */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;overflow:hidden;position:relative}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,23,42,.12),0 16px 40px rgba(15,23,42,.08)}
+.stat-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-lbl{font-size:11.5px;color:var(--t2);font-weight:500}
+.stat-val{font-size:28px;font-weight:800;font-family:var(--h);line-height:1.1;margin-top:1px;font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.ph{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.pt{font-size:14px;font-weight:700;font-family:var(--h)}
+.pb{padding:20px}
+
+/* --- Level badges --------------------------------------------- */
+.lv{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;letter-spacing:.03em}
+.lv-INT{background:var(--lv-int-bg);color:var(--lv-int)}
+.lv-NAT{background:var(--lv-nat-bg);color:var(--lv-nat)}
+.lv-NEG{background:var(--lv-neg-bg);color:var(--lv-neg)}
+.lv-BAH{background:var(--lv-bah-bg);color:var(--lv-bah)}
+.lv-DAE{background:var(--lv-dae-bg);color:var(--lv-dae)}
+.lv-SKL{background:var(--lv-skl-bg);color:var(--lv-skl)}
+
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px}
+.bw{background:var(--warn-l);color:var(--warn)}
+.bo{background:var(--ok-l);color:var(--ok)}
+.bd{background:var(--danger-l);color:var(--danger)}
+.chip{display:inline-flex;font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;background:var(--chip);color:var(--chip-fg)}
+.chip-vio{background:var(--violet-l);color:var(--violet)}
+.chip-gold{background:var(--gold-l);color:var(--gold)}
+.chip-ok{background:var(--ok-l);color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+
+/* --- Achievement list rows ------------------------------------ */
+.ach-section{display:flex;flex-direction:column;gap:1px}
+.ach-group-hdr{padding:10px 20px 6px;display:flex;align-items:center;gap:8px}
+.ach-group-hdr .lv{font-size:12px}
+.ach-group-count{font-size:11px;color:var(--t3);font-weight:400}
+.ach-row{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ach-row:hover{background:linear-gradient(90deg,#eef2ff,#f0fdf4 120%)}
+.ach-row-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;opacity:.7}
+.ach-row-body{flex:1;min-width:0}
+.ach-row-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ach-row-meta{font-size:11px;color:var(--t3);margin-top:2px}
+
+/* --- Form ----------------------------------------------------- */
+.form-wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:12px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:4px}
+.fl .req{color:var(--danger);font-size:13px;line-height:1}
+.fi,.fs{font-family:var(--b);font-size:13px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--t1);width:100%;transition:border-color .15s,box-shadow .15s}
+.fi:focus,.fs:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.fi.autofilled,.fs.autofilled{border-color:var(--violet);background:var(--violet-l)}
+.fi::placeholder{color:var(--t3)}
+.fta{font-family:var(--b);font-size:13px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--t1);width:100%;resize:vertical;min-height:80px;transition:border-color .15s}
+.fta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.level-note{font-size:11px;color:var(--t3);margin-top:3px;padding-left:2px}
+
+/* --- Upload zone ---------------------------------------------- */
+.upzone{border:2px dashed var(--border-2);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface)}
+.upzone:hover{border-color:var(--accent);background:#eef2ff}
+.upzone.has-file{border-color:var(--ok);background:var(--ok-l)}
+
+/* --- AI panel ------------------------------------------------- */
+.ai-box{background:linear-gradient(135deg,var(--violet-l),#f5f3ff);border:1px solid rgba(109,40,217,.18);border-radius:12px;padding:14px 16px}
+.ai-box-lbl{font-size:10.5px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.ai-box-txt{font-size:12.5px;color:var(--t1);line-height:1.7}
+
+/* --- Approval card -------------------------------------------- */
+.apv-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-sm)}
+
+/* --- Empty state ---------------------------------------------- */
+.empty{text-align:center;padding:56px 24px;color:var(--t3)}
+
+/* --- Animations ----------------------------------------------- */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .7s linear infinite;display:inline-block}
+@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+.typing{animation:shimmer 1.2s ease-in-out infinite}
+
+/* --- Page heading --------------------------------------------- */
+.pg-title{font-family:var(--h);font-size:20px;font-weight:800;text-wrap:balance;letter-spacing:-.3px}
+.pg-sub{font-size:12px;color:var(--t3);margin-top:3px}
+.pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* --- Step indicator ------------------------------------------- */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:4px}
+.step{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--t3)}
+.step.active{color:var(--accent)}
+.step.done{color:var(--ok)}
+.step-num{width:24px;height:24px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;font-weight:700}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 8px;min-width:24px}
+
+/* --- Section divider with label ------------------------------- */
+.sdiv{display:flex;align-items:center;gap:10px;margin:4px 0}
+.sdiv span{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.sdiv::before,.sdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* --- Notice --------------------------------------------------- */
+.notice{border-radius:10px;padding:10px 14px;font-size:12px;display:flex;align-items:flex-start;gap:9px;line-height:1.55}
+.notice-ok{background:var(--ok-l);color:var(--ok)}
+.notice-vio{background:var(--violet-l);color:var(--violet)}
+.notice-gold{background:var(--gold-l);color:var(--gold)}
+
+/* --- PPD school cards ----------------------------------------- */
+.school-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);transition:all .2s}
+.school-card:hover{box-shadow:var(--shadow);border-color:var(--border-2);transform:translateY(-1px)}
+
+@media(max-width:640px){
+  .sidebar{width:56px}
+  .sb-logo .sub,.role-sw,.sb-btn span,.sb-uname,.sb-urole,.sb-ppd{display:none}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .frow,.frow3{grid-template-columns:1fr}
+}
+</style>
+
+<div class="shell" id="app" data-theme-root></div>
+
+<script>
+document.documentElement.setAttribute('data-theme','light');
+
+/* -- Icons ----------------------------------------------------- */
+const i = (d,s=16)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IC = {
+  dash:  i('<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>'),
+  plus:  i('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+  file:  i('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+  upload:i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>'),
+  check: i('<polyline points="20 6 9 17 4 12"/>'),
+  ccheck:i('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'),
+  x:     i('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+  bell:  i('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  clock: i('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+  spark: i('<path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5L12 3Z"/><path d="M19 3L19.75 5.25L22 6L19.75 6.75L19 9L18.25 6.75L16 6L18.25 5.25L19 3Z"/><path d="M5 15L5.5 16.5L7 17L5.5 17.5L5 19L4.5 17.5L3 17L4.5 16.5L5 15Z"/>'),
+  spin:  i('<path d="M21 12a9 9 0 1 1-6.219-8.56"/>'),
+  edit:  i('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
+  arrow: i('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>'),
+  globe: i('<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'),
+  medal: i('<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>'),
+  eye:   i('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'),
+};
+
+/* -- Level config -- highest to lowest -------------------------- */
+const LEVELS = [
+  { key:'INT', label:'Antarabangsa', cls:'lv-INT', tier:1, icon:'', color:'#f97316' },
+  { key:'NAT', label:'Kebangsaan',   cls:'lv-NAT', tier:2, icon:'', color:'#2563eb' },
+  { key:'NEG', label:'Negeri',       cls:'lv-NEG', tier:3, icon:'', color:'#10b981' },
+  { key:'BAH', label:'Bahagian',     cls:'lv-BAH', tier:3, icon:'', note:'(Setaraf Negeri)', color:'#06b6d4' },
+  { key:'DAE', label:'Daerah',       cls:'lv-DAE', tier:4, icon:'', color:'#7c3aed' },
+  { key:'SKL', label:'Sekolah',      cls:'lv-SKL', tier:5, icon:'', color:'#6b7280' },
+];
+const LVL = Object.fromEntries(LEVELS.map(l=>[l.key,l]));
+const lv = key => `<span class="lv ${LVL[key]?.cls||''}">${LVL[key]?.label||key}</span>`;
+
+/* -- Roles ----------------------------------------------------- */
+// Pencapaian peribadi guru -- bukan melibatkan murid/sekolah
+const PERANAN = [
+  { val:'Peserta',    label:'Peserta',    jurulatihRule:false, note:'Guru sendiri menyertai / bertanding secara individu atau dalam kumpulan guru.' },
+  { val:'Jurulatih',  label:'Jurulatih',  jurulatihRule:true,  note:'! Wajib ada pengiktirafan RASMI peringkat Kebangsaan ke atas -- bukan sekadar lantikan oleh sekolah atau PPD.' },
+  { val:'Penyelidik', label:'Penyelidik', jurulatihRule:false, note:'Guru terlibat sebagai penyelidik / penulis dalam inovasi atau kajian tindakan.' },
+];
+// Tahap pencapaian rasmi SKPM 5.4.1
+const TAHAP = [
+  { val:'T1', label:'Tempat Pertama / Anugerah / Pengiktirafan', short:'Tempat Pertama' },
+  { val:'T2', label:'Tempat Kedua',  short:'Tempat Kedua' },
+  { val:'T3', label:'Tempat Ketiga', short:'Tempat Ketiga' },
+  { val:'SH', label:'Saguhati',      short:'Saguhati' },
+  { val:'SY', label:'Penyertaan',    short:'Penyertaan' },
+];
+const TAHAP_MAP = Object.fromEntries(TAHAP.map(t=>[t.val,t]));
+
+const SRC = `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:10px;color:var(--t3);font-weight:400;font-style:normal">Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026</span>`;
+
+const KATEGORI = [
+  { val:'AKD', label:'Akademik' },
+  { val:'KAK', label:'Ko-Akademik' },
+  { val:'KOK', label:'Kokurikulum' },
+  { val:'HEM', label:'Hal Ehwal Murid' },
+  { val:'PGS', label:'Pengurusan Sekolah' },
+];
+
+// Bahagian dikira setaraf Negeri; Sekolah boleh disimpan tapi tidak layak SKPM 5.4.1
+const LEVEL_MAP_SKPM = { INT:'INT', NAT:'NAT', NEG:'NEG', BAH:'NEG', DAE:'DAE', SKL:'SKL' };
+const LEVELS_LAYAK   = ['INT','NAT','NEG','DAE']; // SKL tidak layak
+
+// SKPM 5.4.2 -- peringkat yang diiktiraf untuk Pencapaian Sekolah (tiada BAH/SKL)
+const LEVELS_SEKOLAH = ['INT','NAT','NEG','DAE'];
+
+// Demo school achievement records
+const DEMO_SCHOOL_RECORDS = [
+  { id:'sr1', program:'World\'s Best School Prize 2026', tarikh:'2026-03-15', level:'INT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'' },
+  { id:'sr2', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'' },
+  { id:'sr3', program:'Anugerah Sekolah Cemerlang Sukan PPD Gombak 2026', tarikh:'2026-02-20', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'' },
+  { id:'sr4', program:'SPM 2025 -- Peratus Calon Cemerlang Tertinggi Daerah', tarikh:'2026-04-08', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'' },
+  { id:'sr5', program:'Anugerah Pengurusan Kaunseling Peringkat Negeri 2026', tarikh:'2026-06-01', level:'NEG', tahap:'T2', pautanEviden:'', catatan:'Sijil belum diterima' },
+];
+
+// AI Classification -- SKPM 5.4.2 Pencapaian Sekolah
+function aiKlasifikasiSekolah(rec) {
+  const reasons = []; const passes = []; let layak = true;
+  const mappedLevel = LEVEL_MAP_SKPM[rec.level] || rec.level;
+
+  if (rec.level === 'SKL') {
+    layak = false;
+    reasons.push(`Peringkat Sekolah terlalu rendah untuk SKPM 5.4.2 -- boleh disimpan tetapi tidak layak.`);
+  } else if (!LEVELS_LAYAK.includes(mappedLevel)) {
+    layak = false;
+    reasons.push(`Peringkat "${LVL[rec.level]?.label}" tidak diiktiraf dalam SKPM 5.4.2.`);
+  } else if (rec.level === 'BAH') {
+    passes.push(`Peringkat Bahagian dikira setaraf Negeri dalam SKPM 5.4.2.`);
+  } else {
+    passes.push(`Peringkat ${LVL[rec.level]?.label} -- diiktiraf dalam SKPM 5.4.2.`);
+  }
+
+  if (!rec.tahap) { layak = false; reasons.push(`Tahap pencapaian tidak diisi.`); }
+  else passes.push(`Tahap: ${TAHAP_MAP[rec.tahap]?.short||rec.tahap}`);
+  const yr = rec.tarikh ? new Date(rec.tarikh).getFullYear() : null;
+  if (yr && yr < TAHUN_SEMASA) { layak = false; reasons.push(`Pencapaian tahun ${yr} tidak layak -- hanya tahun ${TAHUN_SEMASA}.`); }
+  if (!rec.pautanEviden) { layak = false; reasons.push(`Pautan evidens (Google Drive PDF) belum diisi.`); }
+  return { layak, reasons, passes };
+}
+
+// Jurulatih wajib minimum Kebangsaan
+const JURULATIH_MIN_TIER   = 2; // NAT tier
+const isJurulatih          = p => p === 'Jurulatih';
+const levelTier            = key => LVL[key]?.tier || 99;
+const peranananObj         = val => PERANAN.find(p=>p.val===val);
+const isJurulatihViolation = (peranan, level) =>
+  isJurulatih(peranan) && level && levelTier(LEVEL_MAP_SKPM[level]||level) > JURULATIH_MIN_TIER;
+
+// AI Classification -- tentukan layak/tidak layak berdasarkan SKPM 5.4.1
+const TAHUN_SEMASA = 2026;
+function aiKlasifikasi(rec) {
+  const reasons = [];
+  const passes  = [];
+  let layak = true;
+
+  // 1. Peringkat -- BAH auto-mapped ke NEG; SKL tidak layak
+  const mappedLevel = LEVEL_MAP_SKPM[rec.level] || rec.level;
+  if (rec.level === 'SKL') {
+    layak = false;
+    reasons.push(`Peringkat Sekolah terlalu rendah untuk SKPM 5.4.1 Pencapaian Guru. Rekod ini boleh disimpan sebagai rujukan dalaman sahaja.`);
+  } else if (!LEVELS_LAYAK.includes(mappedLevel)) {
+    layak = false;
+    reasons.push(`Peringkat "${LVL[rec.level]?.label||rec.level}" tidak diiktiraf dalam SKPM 5.4.1.`);
+  } else if (rec.level === 'BAH') {
+    passes.push(`Peringkat Bahagian dikira setaraf Negeri dalam SKPM 5.4.1 -- diiktiraf sebagai peringkat Negeri.`);
+  } else {
+    passes.push(`Peringkat ${LVL[rec.level]?.label} -- diiktiraf dalam SKPM 5.4.1.`);
+  }
+
+  // 2. Jurulatih mesti Kebangsaan ke atas (guna mappedLevel)
+  if (isJurulatih(rec.peranan) && levelTier(mappedLevel) > JURULATIH_MIN_TIER) {
+    layak = false;
+    reasons.push(`Peranan Jurulatih memerlukan pengiktirafan rasmi peringkat Kebangsaan ke atas. Peringkat semasa (${LVL[rec.level]?.label}) tidak memenuhi syarat.`);
+  } else if (rec.peranan === 'Jurulatih') {
+    passes.push(`Jurulatih diiktiraf peringkat Kebangsaan ke atas -- memenuhi syarat.`);
+  }
+
+  // 3. Tahap pencapaian wajib diisi
+  if (!rec.tahap) {
+    layak = false;
+    reasons.push(`Tahap pencapaian tidak diisi. Wajib pilih: Tempat 1, Tempat 2, Tempat 3, Saguhati atau Penyertaan.`);
+  } else {
+    const th = TAHAP_MAP[rec.tahap];
+    if (th) passes.push(`Tahap pencapaian: ${th.short}.`);
+  }
+
+  // 4. Tahun semasa
+  const tahunRek = rec.tarikh ? new Date(rec.tarikh).getFullYear() : null;
+  if (tahunRek && tahunRek < TAHUN_SEMASA) {
+    layak = false;
+    reasons.push(`Pencapaian tahun ${tahunRek} tidak layak sebagai Pencapaian Guru 5.4.1. Hanya pencapaian tahun ${TAHUN_SEMASA} diterima. Pencapaian tahun sebelum ini perlu dimasukkan ke Kekuatan Kami (A1).`);
+  } else if (tahunRek === TAHUN_SEMASA) {
+    passes.push(`Tahun pencapaian ${TAHUN_SEMASA} -- memenuhi syarat tahun penilaian semasa.`);
+  }
+
+  // 5. Eviden
+  if (!rec.pautanEviden) {
+    reasons.push('Pautan eviden (PDF Google Drive) belum diisi. Diperlukan semasa input ke sistem SKPM.');
+    // nota sahaja -- tidak menjejaskan kelayakan teknikal
+  } else {
+    passes.push(`Pautan eviden disertakan.`);
+  }
+
+  return { layak, reasons, passes };
+}
+
+/* -- Mock data ------------------------------------------------- */
+// Semua rekod adalah pencapaian PERIBADI guru (bukan murid/sekolah)
+// tahap: T1=Tempat1/Anugerah, T2=Tempat2, T3=Tempat3, SH=Saguhati, SY=Penyertaan
+const DEMO_RECORDS = [
+  { id:'r1', program:'Anugerah Hari Guru Peringkat Kebangsaan 2026 -- Guru Inovatif Individu Sekolah Rendah', level:'NAT', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil KPM rasmi', pautanEviden:'https://drive.google.com/...', status:'approved',
+    draft:'Guru telah menerima Anugerah Hari Guru Peringkat Kebangsaan 2026 (Guru Inovatif Individu Sekolah Rendah), pencapaian tertinggi pengiktirafan profesionalisme guru di peringkat kebangsaan yang dianjurkan oleh KPM.',
+    tags:['#Kebangsaan','#5.4.1','#AHG2026'] },
+  { id:'r2', program:'SEAMEO-Japan ESD Award 2026', level:'INT', peranan:'Peserta', tarikh:'2026-09-10', tahap:'T2', pengesahan:'Sijil SEAMEO', pautanEviden:'https://drive.google.com/...', status:'approved',
+    draft:'Guru telah bersaing dalam SEAMEO-Japan Education for Sustainable Development (ESD) Award 2026 di peringkat Antarabangsa dan berjaya meraih Tempat Kedua, membuktikan kemahiran inovasi pendidikan beliau diiktiraf di pentas antarabangsa.',
+    tags:['#Antarabangsa','#5.4.1','#SEAMEO'] },
+  { id:'r3', program:'Anugerah Kualiti Guru PPD Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-07-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved',
+    draft:'Guru telah menerima Anugerah Kualiti Guru PPD Gombak 2026, pengiktirafan rasmi atas kecemerlangan pengajaran dan pembelajaran di peringkat daerah.',
+    tags:['#Daerah','#5.4.1'] },
+  { id:'r4', program:'Kursus Jurulatih Bola Sepak Kebangsaan (Lesen C AFC) 2026', level:'NAT', peranan:'Jurulatih', tarikh:'2026-03-08', tahap:'T1', pengesahan:'Lesen C AFC -- FAM', pautanEviden:'https://drive.google.com/...', status:'pending',
+    draft:'Guru telah memperoleh pengiktirafan rasmi Lesen C AFC sebagai Jurulatih Bola Sepak bertauliah peringkat Kebangsaan, membuktikan kepakaran beliau yang diiktiraf oleh FAM dan AFC.',
+    tags:['#Kebangsaan','#5.4.1','#Jurulatih'] },
+  { id:'r5', program:'Pertandingan Penulisan Esei Guru Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-09-18', tahap:'T1', pengesahan:'Sijil penyertaan PPD', pautanEviden:'', status:'pending',
+    draft:'Guru telah menyertai Pertandingan Penulisan Esei Guru Daerah Gombak 2026 dan berjaya meraih tempat pertama, menunjukkan kemahiran bahasa dan pemikiran kritis beliau yang diiktiraf di peringkat daerah.',
+    tags:['#Daerah','#5.4.1'] },
+  { id:'r6', program:'Pertandingan Catur Guru Peringkat Sekolah 2026', level:'SKL', peranan:'Peserta', tarikh:'2026-05-20', tahap:'T1', pengesahan:'Sijil sekolah', pautanEviden:'', status:'approved',
+    draft:null, tags:['#Sekolah'] },
+];
+
+/* -- Demo teachers (school roster) ---------------------------- */
+const DEMO_TEACHERS = [
+  { id:'t1', name:'Azman Harun',      jawatan:'Guru Cemerlang Matematik', av:'AH',
+    records: DEMO_RECORDS },
+  { id:'t2', name:'Siti Norzahra Md Zain', jawatan:'Guru Bahasa Melayu',  av:'SN',
+    records: [
+      { id:'t2r1', program:'Anugerah Guru Inovatif Individu Sekolah Rendah -- Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil JPN Selangor', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Negeri','#5.4.1'] },
+      { id:'t2r2', program:'Pertandingan Syarahan Guru Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-08-10', tahap:'T2', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved', draft:null, tags:['#Daerah','#5.4.1'] },
+      { id:'t2r3', program:'Bengkel Penulisan Kreatif Sekolah', level:'SKL', peranan:'Peserta', tarikh:'2026-03-05', tahap:'T1', pengesahan:'Sijil sekolah', pautanEviden:'', status:'approved', draft:null, tags:['#Sekolah'] },
+    ]},
+  { id:'t3', name:'Mohd Fadhli Ismail', jawatan:'Guru Sains',             av:'MF',
+    records: [
+      { id:'t3r1', program:'Malaysia Teacher Prize (MTP) 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-09-20', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Kebangsaan','#5.4.1'] },
+      { id:'t3r2', program:'Global Educator Award (GEA) 2026', level:'INT', peranan:'Peserta', tarikh:'2026-07-14', tahap:'SH', pengesahan:'Sijil GEA', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Antarabangsa','#5.4.1'] },
+    ]},
+  { id:'t4', name:'Nurul Ain Hamzah',   jawatan:'Guru Pendidikan Islam',  av:'NA',
+    records: [
+      { id:'t4r1', program:'Kursus Facilitator STEM Bahagian Hulu Langat', level:'BAH', peranan:'Peserta', tarikh:'2026-04-18', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'', status:'approved', draft:null, tags:['#Bahagian','#5.4.1'] },
+    ]},
+  { id:'t5', name:'Redzuan Othman',     jawatan:'Guru Pendidikan Jasmani', av:'RO',
+    records: [] },
+];
+
+/* -- Demo schools (PPD view) ----------------------------------- */
+const DEMO_SCHOOLS = [
+  { id:'s1', name:'SK Wangsa Maju 1',   kod:'WM001', jenis:'SK',  av:'W1',
+    teachers: DEMO_TEACHERS,
+    schoolRecords: DEMO_SCHOOL_RECORDS },
+  { id:'s2', name:'SK Wangsa Maju 2',   kod:'WM002', jenis:'SK',  av:'W2',
+    teachers: [
+      { id:'s2t1', name:'Hazwani Ramli',    jawatan:'Guru Besar', av:'HR', records:[
+        { id:'s2r1', program:'Anugerah Guru Cemerlang Kebangsaan 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-04-10', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', tags:[] },
+        { id:'s2r2', program:'Inovasi Pendidikan Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-06-15', tahap:'T2', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
+      ]},
+      { id:'s2t2', name:'Fadzilah Yusof', jawatan:'Guru Matematik', av:'FY', records:[
+        { id:'s2r3', program:'STEM Ambassador Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-03-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', tags:[] },
+      ]},
+    ],
+    schoolRecords: [
+      { id:'ss2r1', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
+      { id:'ss2r2', program:'Anugerah Pengurusan Kaunseling Daerah 2026', tarikh:'2026-03-08', level:'DAE', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
+    ]},
+  { id:'s3', name:'SK Setapak Indah',   kod:'SI001', jenis:'SK',  av:'SI',
+    teachers: [
+      { id:'s3t1', name:'Roslan Abd Hamid', jawatan:'Guru Besar',  av:'RA', records:[
+        { id:'s3r1', program:'Anugerah Pengetua/GB Cemerlang Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-07-01', tahap:'T1', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
+      ]},
+      { id:'s3t2', name:'Norfadzilah Idris', jawatan:'Guru Sains', av:'NI', records:[] },
+    ],
+    schoolRecords: [
+      { id:'ss3r1', program:'Anugerah Sekolah Cemerlang Kokurikulum PPD Gombak 2026', tarikh:'2026-02-14', level:'DAE', tahap:'T1', kategori:'KOK', pautanEviden:'https://drive.google.com/...', catatan:'' },
+    ]},
+  { id:'s4', name:'SK Gombak Setia',    kod:'GS001', jenis:'SK',  av:'GS',
+    teachers: [
+      { id:'s4t1', name:'Zainudin Bakar',   jawatan:'Guru Besar',  av:'ZB', records:[] },
+      { id:'s4t2', name:'Salmiah Nordin',   jawatan:'Guru BM',     av:'SN', records:[] },
+    ],
+    schoolRecords: [] },
+  { id:'s5', name:'SJKC Confucian',     kod:'CF001', jenis:'SJKC', av:'CF',
+    teachers: [
+      { id:'s5t1', name:'Chan Wei Lin',  jawatan:'Guru Besar',     av:'CW', records:[
+        { id:'s5r1', program:'International Teacher Award 2026', level:'INT', peranan:'Peserta', tarikh:'2026-08-20', tahap:'T1', pengesahan:'Sijil Antarabangsa', pautanEviden:'https://drive.google.com/...', tags:[] },
+      ]},
+    ],
+    schoolRecords:[
+      { id:'ss5r1', program:"World's Best School Prize 2026", tarikh:'2026-03-15', level:'INT', tahap:'T1', kategori:'PGS', pautanEviden:'https://drive.google.com/...', catatan:'' },
+    ]},
+];
+
+/* -- State ----------------------------------------------------- */
+let S = {
+  role: 'teacher',
+  view: 'dashboard',   // dashboard | form | detail
+  detailId: null,
+
+  // school admin sub-views
+  saView: 'analysis',  // analysis | users | teacher_detail | school_achievements | school_form
+  selectedTeacherId: null,
+  saFilter: null,      // active detail panel: 'guru_layak' | 'guru_tidak' | 'skl_layak' | 'skl_tidak'
+
+  // ppd admin sub-views
+  ppdView: 'analysis',  // analysis | schools | school_detail | reset_password
+  selectedSchoolId: null,
+  ppdFilter: null,
+  resetDone: [],       // schoolIds that have been reset
+  expandedPpdRecs: [],
+
+  // school achievement records
+  schoolRecords: [...DEMO_SCHOOL_RECORDS],
+  // school form
+  sf: { program:'', tarikh:'', level:'', tahap:'', kategori:'', pautanEviden:'', catatan:'' },
+  expandedLevels: [],  // level keys that are expanded in viewSchoolAchievements
+  teacherFilter: null, // 'layak' | 'tidak' | null
+
+  // form fields
+  f: {
+    program:'', tarikhmula:'', tarikhakhir:'',
+    level:'', peranan:'', tahap:'', pengesahan:'',
+    pautanEviden:'', catatan:'', hasSijil: false,
+  },
+  formStep: 1,       // 1 = butiran | 2 = sijil + AI
+
+  // AI states
+  extracting: false,
+  extracted:  false,
+  generating: false,
+  draftText:  '',
+  draftDone:  false,
+
+  // records (in session)
+  records: [...DEMO_RECORDS],
+};
+
+/* -- Render ---------------------------------------------------- */
+const setState = p => { Object.assign(S,p); render(); };
+const render   = () => { document.getElementById('app').innerHTML = buildApp(); bind(); };
+
+/* -- Sidebar --------------------------------------------------- */
+function sidebar() {
+  const navTeacher = [
+    { v:'dashboard', label:'Papan Pemuka',    icon:IC.dash },
+    { v:'form',      label:'Tambah Pencapaian', icon:IC.plus },
+  ];
+  return `<aside class="sidebar">
+    <div class="sb-logo">
+      <div class="mark">SK@S</div>
+      <div class="sub">Sistem Kualiti Sekolah</div>
+    </div>
+    <div class="role-sw">
+      <span class="role-sw-lbl">Demo -- Tukar Peranan</span>
+      ${['ppd_admin','school_admin','teacher'].map(r=>`<button class="role-sw-btn${S.role===r?' active':''}" data-role="${r}">${{ppd_admin:'Admin PPD',school_admin:'Pentadbir Sekolah',teacher:'Guru'}[r]}</button>`).join('')}
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-lbl">Menu Guru</div>
+      ${navTeacher.map((n,idx)=>{
+        const active = (idx===0&&S.view==='dashboard')||(idx===1&&S.view==='form')||(idx===2&&S.view==='dashboard');
+        return `<button class="sb-btn${idx===0&&S.view==='dashboard'?' active':idx===1&&S.view==='form'?' active':''}" data-view="${n.v}">${n.icon}<span>${n.label}</span></button>`;
+      }).join('')}
+    </div>
+    <div class="sb-footer">
+      <div class="av">AH</div>
+      <div><div class="sb-uname">Cikgu Azman Harun</div><div class="sb-urole">Guru</div></div>
+    </div>
+  </aside>`;
+}
+
+/* -- Topbar ---------------------------------------------------- */
+function topbar(title) {
+  const back = S.view==='form'||S.view==='detail';
+  return `<div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      ${back?`<button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" id="btn-back">${IC.arrow} Kembali</button>`:''}
+      <div class="tb-info">
+        <div class="g">Guru &middot; SK Wangsa Maju 1</div>
+        <div class="n">${title}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+    </div>
+  </div>`;
+}
+
+/* -- Dashboard view -------------------------------------------- */
+function dashRecRow(r) {
+  const ai = aiKlasifikasi(r);
+  const th = TAHAP_MAP[r.tahap];
+  const dot = ai.layak ? 'background:var(--ok)' : 'background:var(--danger)';
+  const thHtml = th ? '<div class="ach-row-meta" style="color:var(--gold);font-weight:600;margin-top:1px">'+th.short+'</div>' : '';
+  const errHtml = !ai.layak ? '<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">'+(ai.reasons[0]||'')+'</div>' : '';
+  return '<div class="ach-row" data-detail="'+r.id+'">'
+    + '<div class="ach-row-dot" style="'+dot+'"></div>'
+    + '<div class="ach-row-body">'
+    + '<div class="ach-row-name">'+r.program+'</div>'
+    + '<div class="ach-row-meta">'+r.peranan+' &middot; '+fmtDate(r.tarikh)+'</div>'
+    + thHtml + errHtml
+    + '</div>'
+    + '</div>';
+}
+
+function dashCollapsible(groups) {
+  if (!groups.length) return '<div class="panel" style="margin-top:12px"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>';
+  var lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  return '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'
+    + groups.map(function(g) {
+      var tkKey = 'teacher_'+g.key;
+      var open = S.expandedLevels.includes(tkKey);
+      var col = (LVL[g.key] && LVL[g.key].color) || '#888';
+      var border = open ? col : col+'55';
+      var chevron = open ? '90' : '0';
+      var rows = open ? '<div class="ach-section" style="border-top:1px solid '+col+'33;padding:0">'+g.recs.map(dashRecRow).join('')+'</div>' : '';
+      return '<div style="border-radius:10px;border:1.5px solid '+border+';background:'+col+'0d;overflow:hidden">'
+        + '<button data-lvltoggle="'+tkKey+'" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:none;border:none;cursor:pointer;text-align:left">'
+        + '<div style="display:flex;align-items:center;gap:10px">'
+        + '<span style="padding:3px 10px;border-radius:6px;background:'+col+';color:#fff;font-size:11px;font-weight:700">'+(LVL[g.key] && LVL[g.key].label || g.key)+'</span>'
+        + '<span style="font-size:12px;color:var(--t2);font-weight:600">'+g.recs.length+' rekod</span>'
+        + '</div>'
+        + '<span style="font-size:16px;color:'+col+';display:inline-block;transform:rotate('+chevron+'deg);transition:transform .2s">&rsaquo;</span>'
+        + '</button>'
+        + rows
+        + '</div>';
+    }).join('')
+    + '</div>';
+}
+
+function viewDashboard() {
+  const recs = S.records;
+  const layak      = recs.filter(r=>aiKlasifikasi(r).layak).length;
+  const tidakLayak = recs.length - layak;
+  const showLayak  = S.teacherFilter === 'layak';
+  const showTidak  = S.teacherFilter === 'tidak';
+
+  const lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  const grouped = {};
+  LEVELS.forEach(l => { const items = recs.filter(r=>r.level===l.key); if (items.length) grouped[l.key]=items; });
+  const totalByLevel = LEVELS.map(l=>({label:l.label,count:recs.filter(r=>r.level===l.key).length})).filter(x=>x.count>0);
+
+  const filtered = showLayak ? recs.filter(r=>aiKlasifikasi(r).layak)
+                 : showTidak ? recs.filter(r=>!aiKlasifikasi(r).layak) : [];
+  const filteredGroups = lvlOrder
+    .map(k=>({key:k,recs:filtered.filter(r=>r.level===k)}))
+    .filter(g=>g.recs.length);
+
+  const statCards = '<div class="stat-row">'
+    + '<div class="stat-card">'
+    + '<div class="stat-ico" style="background:#dbeafe;color:#1e40af">'+i('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',22)+'</div>'
+    + '<div><div class="stat-lbl">Jumlah Rekod</div><div class="stat-val">'+recs.length+'</div></div>'
+    + '</div>'
+    + '<div class="stat-card" style="cursor:pointer;outline:'+(showLayak?'2px solid var(--ok)':'none')+'" data-tfilter="layak">'
+    + '<div class="stat-ico" style="background:var(--ok-l);color:var(--ok)">'+i('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',22)+'</div>'
+    + '<div><div class="stat-lbl">Layak SKPM 5.4.1</div><div class="stat-val" style="color:var(--ok)">'+layak+'</div></div>'
+    + '</div>'
+    + '<div class="stat-card" style="cursor:pointer;outline:'+(showTidak?'2px solid var(--danger)':'none')+'" data-tfilter="tidak">'
+    + '<div class="stat-ico" style="background:var(--danger-l);color:var(--danger)">'+i('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',22)+'</div>'
+    + '<div><div class="stat-lbl">Tidak Layak</div><div class="stat-val" style="color:var(--danger)">'+tidakLayak+'</div></div>'
+    + '</div>'
+    + '</div>';
+
+  const chips = totalByLevel.map(x=>'<span class="chip">'+x.label+': '+x.count+'</span>').join('');
+  const allRows = LEVELS.map(l=>{
+    const items = grouped[l.key];
+    if (!items) return '';
+    return '<div class="ach-group-hdr">'+lv(l.key)+'<span class="ach-group-count">'+items.length+' rekod</span></div>'
+      + items.map(dashRecRow).join('');
+  }).join('');
+  const defaultPanel = '<div class="panel"><div class="ph"><span class="pt">Rekod Mengikut Peringkat</span><div class="chips">'+chips+'</div></div><div class="ach-section">'+allRows+'</div></div>';
+
+  return '<div class="pg-head"><div>'
+    + '<div class="pg-title">Pencapaian Saya</div>'
+    + '<div class="pg-sub">Rekod disusun dari peringkat tertinggi ke terendah &middot; Bahagian dikira setaraf Negeri &middot; Sekolah: simpan sahaja, tidak layak SK@S</div>'
+    + '</div></div>'
+    + statCards
+    + ((showLayak||showTidak) ? dashCollapsible(filteredGroups) : defaultPanel);
+}
+
+/* -- Form view ------------------------------------------------- */
+function viewForm() {
+  const f = S.f;
+  const step = S.formStep;
+
+  const stepBar = `<div class="steps">
+    <div class="step ${step>=1?'active':''}"><div class="step-num">${step>1?IC.check:'1'}</div><span>Butiran Pencapaian</span></div>
+    <div class="step-line"></div>
+    <div class="step ${step>=2?'active':''}"><div class="step-num">2</div><span>Sijil &amp; Jana AI</span></div>
+  </div>`;
+
+  const jurulatihViolation = isJurulatihViolation(f.peranan, f.level);
+  const perObj = peranananObj(f.peranan);
+  const canNext = f.program && f.tarikhmula && f.level && f.peranan && f.tahap && f.pengesahan && !jurulatihViolation;
+
+  if (step===1) {
+    return `<div class="form-wrap">
+      <div>
+        <div class="pg-title">Tambah Pencapaian Baru</div>
+        <div class="pg-sub">Pencapaian peribadi guru -- bukan mewakili murid atau sekolah</div>
+      </div>
+      ${stepBar}
+
+      <div class="notice notice-gold" style="border-radius:10px">
+        <span style="font-size:14px;font-weight:700;flex-shrink:0;color:var(--warn)">i</span>
+        <div>
+          <div style="font-weight:700;margin-bottom:3px">Syarat Kelayakan Pencapaian Guru</div>
+          <div style="font-size:12px;line-height:1.6">
+            Rekod ini <b>khas untuk pencapaian PERIBADI guru</b>. Guru sendiri yang bertanding, menyertai atau menerima pengiktirafan -- <b>bukan mewakili murid atau menganjurkan program sekolah</b>.<br>
+            Bagi peranan <b>Jurulatih</b>: mesti ada <b>pengiktirafan rasmi peringkat Kebangsaan ke atas</b> (contoh: Lesen Jurulatih AFC, SUKMA, KPM). Lantikan dalaman sekolah / PPD <u>tidak layak</u>.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><span class="pt">Maklumat Asas</span></div>
+        <div class="pb" style="display:flex;flex-direction:column;gap:13px">
+
+          <div class="fg">
+            <label class="fl">Nama Program / Pertandingan <span class="req">*</span></label>
+            <input class="fi" id="f-program" placeholder="cth. Pertandingan Penulisan Esei Guru Kebangsaan 2024..." value="${esc(f.program)}">
+          </div>
+
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Tarikh Mula <span class="req">*</span></label>
+              <input class="fi" type="date" id="f-tmula" value="${f.tarikhmula}">
+            </div>
+            <div class="fg">
+              <label class="fl">Tarikh Tamat</label>
+              <input class="fi" type="date" id="f-takhir" value="${f.tarikhakhir}">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><span class="pt">Peringkat &amp; Peranan</span></div>
+        <div class="pb" style="display:flex;flex-direction:column;gap:13px">
+
+          <div class="fg">
+            <label class="fl">Peranan Guru <span class="req">*</span></label>
+            <select class="fs" id="f-peranan" style="${f.peranan?'border-color:var(--accent)':''}">
+              <option value="">-- Pilih peranan --</option>
+              ${PERANAN.map(p=>`<option value="${p.val}"${f.peranan===p.val?' selected':''}>${p.label}</option>`).join('')}
+            </select>
+            ${perObj?`<div class="level-note" style="${perObj.jurulatihRule?'color:var(--warn);font-weight:600':''}">${perObj.note}${SRC}</div>`:''}
+          </div>
+
+          <div class="fg">
+            <label class="fl">Peringkat <span class="req">*</span></label>
+            <select class="fs" id="f-level" style="${f.level?'border-color:var(--accent)':''}${jurulatihViolation?';border-color:var(--danger)':''}">
+              <option value="">-- Pilih peringkat --</option>
+              <option value="INT" ${f.level==='INT'?'selected':''}>Antarabangsa</option>
+              <option value="NAT" ${f.level==='NAT'?'selected':''}>Kebangsaan</option>
+              <option value="NEG" ${f.level==='NEG'?'selected':''}>Negeri</option>
+              <option value="BAH" ${f.level==='BAH'?'selected':''}>Bahagian</option>
+              <option value="DAE" ${f.level==='DAE'?'selected':''}>Daerah</option>
+              <option value="SKL" ${f.level==='SKL'?'selected':''}>Sekolah</option>
+            </select>
+            ${f.level==='BAH'?`<div class="level-note" style="color:var(--ok);font-weight:600">&#10003; Bahagian dikira setaraf Negeri -- layak SKPM 5.4.1${SRC}</div>`:''}
+            ${f.level==='SKL'?`<div class="level-note" style="color:var(--danger);font-weight:600">! Peringkat Sekolah tidak layak SKPM 5.4.1 -- rekod disimpan sebagai rujukan dalaman sahaja${SRC}</div>`:''}
+
+            ${f.level&&!jurulatihViolation?`<div style="margin-top:6px">${lv(f.level)}</div>`:''}
+            ${jurulatihViolation?`<div class="notice" style="background:var(--danger-l);color:var(--danger);margin-top:6px;border-radius:8px;padding:8px 12px;font-size:12px">
+              ! Peranan <b>Jurulatih</b> hanya layak pada peringkat <b>Kebangsaan ke atas</b>. Sila tukar peringkat atau peranan.
+            </div>`:''}
+          </div>
+
+          <div class="fg">
+            <label class="fl">Tahap Pencapaian <span class="req">*</span></label>
+            <select class="fs" id="f-tahap" style="${f.tahap?'border-color:var(--accent)':''}">
+              <option value="">-- Pilih tahap --</option>
+              ${TAHAP.map(t=>`<option value="${t.val}"${f.tahap===t.val?' selected':''}>${t.label}</option>`).join('')}
+            </select>
+            <div class="level-note">Anugerah / Pengiktirafan / Pentauliahan = dikira sebagai Tempat Pertama secara automatik.${SRC}</div>
+          </div>
+
+          <div class="frow">
+            <div class="fg">
+              <label class="fl">Jenis Pengesahan <span class="req">*</span></label>
+              <input class="fi" id="f-pengesahan" placeholder="cth. Sijil KPM, Surat JPN, Lesen AFC..." value="${esc(f.pengesahan)}">
+              <div class="level-note">Dokumen rasmi yang mengesahkan pencapaian ini${SRC}</div>
+            </div>
+            <div class="fg">
+              <label class="fl">Pautan Eviden (Google Drive)</label>
+              <input class="fi" id="f-pautanEviden" placeholder="https://drive.google.com/..." value="${esc(f.pautanEviden)}">
+              <div class="level-note">PDF format &middot; Tetapan: "Sesiapa yang ada pautan -- Penonton"${SRC}</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><span class="pt">Catatan Tambahan</span></div>
+        <div class="pb">
+          <div class="fg">
+            <label class="fl">Catatan (jika ada)</label>
+            <textarea class="fta" id="f-catatan" placeholder="Maklumat tambahan yang berkaitan...">${esc(f.catatan)}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" id="btn-cancel">Batal</button>
+        <button class="btn btn-pri" id="btn-next" ${!canNext?'disabled':''}>
+          Seterusnya: Muat Naik Sijil &rarr;
+        </button>
+      </div>
+    </div>`;
+  }
+
+  // Step 2
+  return `<div class="form-wrap">
+    <div>
+      <div class="pg-title">Tambah Pencapaian Baru</div>
+      <div class="pg-sub">Muat naik sijil dan jana justifikasi SK@S</div>
+    </div>
+    ${stepBar}
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Ringkasan Butiran</span></div>
+      <div class="pb" style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+        ${summaryRow('Program', f.program)}
+        ${summaryRow('Peringkat', LVL[f.level]?.label||'')}
+        ${summaryRow('Peranan', f.peranan)}
+        ${summaryRow('Tahap Pencapaian', TAHAP_MAP[f.tahap]?.short||'')}
+        ${summaryRow('Tarikh', fmtDate(f.tarikhmula))}
+        ${summaryRow('Pengesahan', f.pengesahan)}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Muat Naik Sijil</span><span class="chip" style="font-size:11px">Pilihan</span></div>
+      <div class="pb" style="display:flex;flex-direction:column;gap:12px">
+        <div class="upzone${S.f.hasSijil?' has-file':''}" id="upzone">
+          ${S.f.hasSijil
+            ? `<div style="display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ok)">${IC.ccheck} <span style="font-weight:600;font-size:13px">sijil_pencapaian.jpg berjaya dimuat naik</span></div>`
+            : `<div style="color:var(--t3)">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',32)}</div>
+               <div style="font-size:13px;color:var(--t2);margin-top:8px">Klik atau seret sijil di sini</div>
+               <div style="font-size:11px;color:var(--t3);margin-top:3px">JPG, PNG, PDF &middot; maks. 10MB</div>`
+          }
+        </div>
+        ${S.f.hasSijil ? `
+        <button class="btn btn-vio" id="btn-extract" style="width:100%;justify-content:center" ${S.extracting?'disabled':''}>
+          ${S.extracting?`<span class="spin">${IC.spin}</span> Mengekstrak...`:`${IC.spark} Ekstrak Maklumat dari Sijil`}
+        </button>
+        ${S.extracted?`<div class="notice notice-ok">${IC.check} Keyakinan AI: <b>96%</b> -- Semua maklumat berjaya disahkan daripada sijil.</div>`:''}
+        ` : ''}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">
+        <span class="pt">Justifikasi SK@S</span>
+        <button class="btn btn-ghost" id="btn-draft" style="font-size:12px;padding:5px 10px;gap:5px" ${S.generating?'disabled':''}>
+          ${S.generating?`<span class="spin">${IC.spin}</span>`:`${IC.spark}`} Jana Draf AI
+        </button>
+      </div>
+      <div class="pb" style="display:flex;flex-direction:column;gap:10px">
+        <textarea class="fta" id="ta-draft" style="min-height:90px" placeholder="Klik 'Jana Draf AI' untuk Claude hasilkan justifikasi SK@S secara automatik, atau taip sendiri...">${S.draftText}</textarea>
+        ${S.generating?`<div class="notice notice-vio typing">${IC.spark} Claude sedang menjana justifikasi...</div>`:''}
+        ${S.draftDone?`
+        <div class="sdiv"><span>Cadangan SK@S</span></div>
+        <div class="chips">
+          <span class="chip chip-vio" style="font-size:12px;padding:4px 10px">Standard 3.2 -- Pencapaian Guru</span>
+          <span class="chip chip-gold" style="font-size:12px;padding:4px 10px">Skor Cadangan: 3 / 4</span>
+          <span class="chip chip-ok" style="font-size:12px;padding:4px 10px">${lv(f.level)}</span>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" id="btn-prev">&larr; Kembali</button>
+      <button class="btn btn-pri" id="btn-submit">
+        ${IC.ccheck} Hantar untuk Kelulusan
+      </button>
+    </div>
+  </div>`;
+}
+
+/* -- Detail view ----------------------------------------------- */
+function viewDetail() {
+  const r = S.records.find(x=>x.id===S.detailId);
+  if (!r) return '<div class="empty">Rekod tidak dijumpai</div>';
+  const ai = aiKlasifikasi(r);
+  const th = TAHAP_MAP[r.tahap];
+  return `
+  <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px">
+    <div class="pg-head">
+      <div>
+        <div style="margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap">${lv(r.level)}</div>
+        <div class="pg-title">${r.program}</div>
+        <div class="pg-sub">${r.peranan} &middot; ${fmtDate(r.tarikh)}</div>
+      </div>
+    </div>
+
+    <!-- AI Classification Panel -->
+    <div style="border-radius:12px;border:2px solid ${ai.layak?'var(--ok)':'var(--danger)'};overflow:hidden">
+      <div style="padding:12px 16px;background:${ai.layak?'var(--ok-l)':'var(--danger-l)'};display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px;font-weight:800;color:${ai.layak?'var(--ok)':'var(--danger)'}">${ai.layak?'&#10003;':'&#10005;'}</span>
+        <div>
+          <div style="font-weight:800;font-size:14px;color:${ai.layak?'var(--ok)':'var(--danger)'}">
+            ${ai.layak?'LAYAK -- SKPM 5.4.1 Pencapaian Guru':'TIDAK LAYAK -- SKPM 5.4.1 Pencapaian Guru'}
+          </div>
+          <div style="font-size:11px;color:var(--t2);margin-top:1px">Klasifikasi AI berdasarkan Panduan Pelaksanaan SKPM Kualiti@Sekolah 2026</div>
+        </div>
+      </div>
+      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:var(--surface)">
+        ${ai.passes.map(p=>`<div style="display:flex;gap:7px;font-size:12px;color:var(--ok)"><span style="flex-shrink:0">&#10003;</span><span>${p}</span></div>`).join('')}
+        ${ai.reasons.map(r2=>`<div style="display:flex;gap:7px;font-size:12px;color:var(--danger)"><span style="flex-shrink:0">&#10007;</span><span>${r2}</span></div>`).join('')}
+        ${!ai.layak&&ai.reasons.some(x=>x.includes('tahun'))?`<div style="margin-top:4px;padding:7px 10px;background:var(--gold-l);border-radius:7px;font-size:11.5px;color:var(--gold)">Nota: Sijil/anugerah yang diterima sebelum tahun ${TAHUN_SEMASA} perlu dimasukkan ke komponen <b>Kekuatan Kami (A1)</b>, bukan Pencapaian Guru (5.4.1).</div>`:''}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Butiran Pencapaian</span></div>
+      <div class="pb" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">
+        ${summaryRow('Peringkat', LVL[r.level]?.label)}
+        ${summaryRow('Peranan Guru', r.peranan)}
+        ${summaryRow('Tahap Pencapaian', th?.label||'--')}
+        ${summaryRow('Tarikh', fmtDate(r.tarikh))}
+        ${r.pengesahan?summaryRow('Jenis Pengesahan',r.pengesahan):''}
+        ${r.pautanEviden?`<div style="grid-column:span 2"><div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Pautan Eviden</div><div style="font-size:12px;color:var(--accent);margin-top:2px;word-break:break-all">${r.pautanEviden}</div></div>`:''}
+      </div>
+    </div>
+    ${r.draft?`<div class="panel"><div class="ph"><span class="pt">Justifikasi SK@S</span><span class="chip chip-vio">${IC.spark} AI Draft</span></div><div class="pb"><div class="ai-box-txt" style="line-height:1.7">${r.draft}</div></div></div>`:''}
+    <div class="panel">
+      <div class="pb">
+        <div class="chips">${r.tags.map(t=>`<span class="chip chip-vio">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* -- Helpers --------------------------------------------------- */
+function summaryRow(k,v) {
+  return `<div><div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">${k}</div><div style="font-size:13px;font-weight:500;margin-top:2px">${v||'--'}</div></div>`;
+}
+function fmtDate(d) {
+  if (!d) return '--';
+  try { return new Date(d).toLocaleDateString('ms-MY',{day:'numeric',month:'long',year:'numeric'}); } catch { return d; }
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+/* -- Sidebar (Admin) ------------------------------------------- */
+function sidebarAdmin() {
+  const isSchool = S.role === 'school_admin';
+  const roleSw = `<div class="role-sw">
+    <span class="role-sw-lbl">Demo -- Tukar Peranan</span>
+    ${['ppd_admin','school_admin','teacher'].map(r=>`<button class="role-sw-btn${S.role===r?' active':''}" data-role="${r}">${{ppd_admin:'Admin PPD',school_admin:'Pentadbir Sekolah',teacher:'Guru'}[r]}</button>`).join('')}
+  </div>`;
+
+  if (!isSchool) {
+    // PPD Admin nav
+    const ppdItems = [
+      { pv:'analysis',        label:'Analisis Daerah',   icon:IC.dash },
+      { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
+      { pv:'reset_password',  label:'Urus Kata Laluan',  icon:i('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') },
+    ];
+    return `<aside class="sidebar">
+      <div class="sb-logo"><div class="mark">SK@S</div><div class="sub">Sistem Kualiti Sekolah</div></div>
+      ${roleSw}
+      <div class="sb-section">
+        <div class="sb-section-lbl">Menu Admin PPD</div>
+        ${ppdItems.map(n=>{
+          const active = S.ppdView===n.pv || (S.ppdView==='school_detail'&&n.pv==='schools');
+          return `<button class="sb-btn${active?' active':''}" data-ppdview="${n.pv}">${n.icon}<span>${n.label}</span></button>`;
+        }).join('')}
+      </div>
+      <div class="sb-footer">
+        <div class="av">PA</div>
+        <div><div class="sb-ppd">PPD Gombak &nbsp;<span style="opacity:.5">|</span>&nbsp; Y101</div></div>
+      </div>
+    </aside>`;
+  }
+
+  // School Admin nav
+  const navItems = [
+    { sv:'analysis',           label:'Analisis Pencapaian',      icon:IC.dash },
+    { sv:'school_achievements',label:'Pencapaian Sekolah',       icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
+    { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
+    { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
+  ];
+  return `<aside class="sidebar">
+    <div class="sb-logo"><div class="mark">SK@S</div><div class="sub">Sistem Kualiti Sekolah</div></div>
+    ${roleSw}
+    <div class="sb-section">
+      <div class="sb-section-lbl">Menu Pentadbir</div>
+      ${navItems.map(n=>{
+        const active = S.saView===n.sv || (S.saView==='teacher_detail'&&n.sv==='users');
+        return `<button class="sb-btn${active?' active':''}" data-saview="${n.sv}">${n.icon}<span>${n.label}</span></button>`;
+      }).join('')}
+    </div>
+    <div class="sb-footer">
+      <div class="av">PK</div>
+      <div><div class="sb-uname">Pn. Kamariah Ali</div><div class="sb-urole">Pentadbir Sekolah</div></div>
+    </div>
+  </aside>`;
+}
+
+/* -- School Admin view (Analysis Dashboard) -------------------- */
+function viewSchoolAdmin() {
+  // -- 5.4.1 Pencapaian Guru (all teachers combined)
+  const allTeacherRecs = DEMO_TEACHERS.flatMap(t => t.records);
+  const tClassified    = allTeacherRecs.map(r => ({ ...r, ai: aiKlasifikasi(r) }));
+  const tLayak         = tClassified.filter(r => r.ai.layak);
+  const tTidakLayak    = tClassified.filter(r => !r.ai.layak);
+  const tByLevel       = LEVELS.map(l => ({ ...l, count: tLayak.filter(r => (LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length })).filter(x=>x.count>0);
+
+  // -- 5.4.2 Pencapaian Sekolah
+  const sRecs      = S.schoolRecords;
+  const sClassified = sRecs.map(r => ({ ...r, ai: aiKlasifikasiSekolah(r) }));
+  const sLayak      = sClassified.filter(r => r.ai.layak);
+  const sTidakLayak = sClassified.filter(r => !r.ai.layak);
+  const sByLevel    = LEVELS.map(l => ({ ...l, count: sLayak.filter(r => (LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length })).filter(x=>x.count>0);
+
+  const tRecRow = r => {
+    const th = TAHAP_MAP[r.tahap];
+    return `<div class="ach-row">
+      <div class="ach-row-dot" style="${r.ai.layak?'background:var(--ok)':'background:var(--danger)'}"></div>
+      <div class="ach-row-body">
+        <div class="ach-row-name">${r.program}</div>
+        <div class="ach-row-meta">${r.peranan} &middot; ${LVL[r.level]?.label||r.level} &middot; ${fmtDate(r.tarikh)}</div>
+        ${th?`<div class="ach-row-meta" style="color:var(--t2);margin-top:1px">${th.short}</div>`:''}
+        ${!r.ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${r.ai.reasons[0]||''}</div>`:''}
+      </div>
+      <span class="badge" style="${r.ai.layak?'background:#d1fae5;color:#065f46':'background:#fee2e2;color:#b91c1c'};font-size:10px;flex-shrink:0">
+        ${r.ai.layak?'&#10003; Layak 5.4.1':'&#10007; Tidak Layak'}
+      </span>
+    </div>`;
+  };
+
+  const sRecRow = r => {
+    const th = TAHAP_MAP[r.tahap];
+    const katLabel = (KATEGORI.find(k=>k.val===r.kategori)||{}).label || '';
+    return `<div class="ach-row">
+      <div class="ach-row-dot" style="${r.ai.layak?'background:var(--ok)':'background:var(--danger)'}"></div>
+      <div class="ach-row-body">
+        <div class="ach-row-name">${r.program}</div>
+        <div class="ach-row-meta">${LVL[r.level]?.label||r.level}${katLabel?' &middot; '+katLabel:''} &middot; ${fmtDate(r.tarikh)}</div>
+        ${th?`<div class="ach-row-meta" style="color:var(--t2);margin-top:1px">${th.short}</div>`:''}
+        ${!r.ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${r.ai.reasons[0]||''}</div>`:''}
+      </div>
+      <span class="badge" style="${r.ai.layak?'background:#d1fae5;color:#065f46':'background:#fee2e2;color:#b91c1c'};font-size:10px;flex-shrink:0">
+        ${r.ai.layak?'&#10003; Layak 5.4.2':'&#10007; Tidak Layak'}
+      </span>
+    </div>`;
+  };
+
+  const section = (label, aspek, layakArr, tidakLayakArr, byLvl, recRowFn, pfx) => {
+    const showLayak  = S.saFilter === pfx+'_layak';
+    const showTidak  = S.saFilter === pfx+'_tidak';
+    return `
+  <div style="margin-bottom:4px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      ${label} <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">${aspek}</span>
+    </div>
+    <div class="stat-row" style="margin-bottom:12px">
+      <div class="stat-card">
+        <div class="stat-ico" style="background:#dbeafe;color:#1e40af">${i('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',20)}</div>
+        <div><div class="stat-lbl">Jumlah Rekod</div><div class="stat-val">${layakArr.length+tidakLayakArr.length}</div></div>
+      </div>
+      <div class="stat-card" style="cursor:pointer;outline:${showLayak?'2px solid var(--ok)':'none'}" data-safilter="${pfx}_layak">
+        <div class="stat-ico" style="background:var(--ok-l);color:var(--ok)">${i('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',20)}</div>
+        <div><div class="stat-lbl">Layak</div><div class="stat-val" style="color:var(--ok)">${layakArr.length}</div></div>
+      </div>
+      <div class="stat-card" style="cursor:pointer;outline:${showTidak?'2px solid var(--danger)':'none'}" data-safilter="${pfx}_tidak">
+        <div class="stat-ico" style="background:var(--danger-l);color:var(--danger)">${i('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',20)}</div>
+        <div><div class="stat-lbl">Tidak Layak</div><div class="stat-val" style="color:var(--danger)">${tidakLayakArr.length}</div></div>
+      </div>
+    </div>
+
+    ${(()=>{
+      const lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+      const groupByLevel = arr => {
+        const map = {};
+        arr.forEach(r=>{ const k=r.level; map[k]=(map[k]||[]); map[k].push(r); });
+        return lvlOrder.filter(k=>map[k]&&map[k].length).map(k=>({key:k,recs:map[k]}));
+      };
+
+      const collapsibleGroup = (groups, colHex, filterKey) => {
+        if (!groups.length) return `<div class="panel" style="margin-bottom:10px"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>`;
+        return `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">${groups.map(g=>{
+          const tkKey = pfx+'_'+filterKey+'_'+g.key;
+          const open = S.expandedLevels.includes(tkKey);
+          const col = LVL[g.key]?.color || '#888';
+          return `<div style="border-radius:10px;border:1.5px solid ${open?col:col+'55'};background:${col}0d;overflow:hidden">
+            <button data-lvltoggle="${tkKey}" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:none;border:none;cursor:pointer;text-align:left">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="padding:3px 10px;border-radius:6px;background:${col};color:#fff;font-size:11px;font-weight:700">${LVL[g.key]?.label||g.key}</span>
+                <span style="font-size:12px;color:var(--t2);font-weight:600">${g.recs.length} rekod</span>
+              </div>
+              <span style="font-size:16px;color:${col};display:inline-block;transform:rotate(${open?'90':'0'}deg);transition:transform .2s">&rsaquo;</span>
+            </button>
+            ${open ? `<div class="ach-section" style="border-top:1px solid ${col}33;padding:0">${g.recs.map(recRowFn).join('')}</div>` : ''}
+          </div>`;
+        }).join('')}</div>`;
+      };
+
+      const layakGroups  = groupByLevel(layakArr);
+      const tidakGroups  = groupByLevel(tidakLayakArr);
+
+      return `
+        ${showLayak  ? collapsibleGroup(layakGroups,  '#22c55e', 'layak')  : ''}
+        ${showTidak  ? collapsibleGroup(tidakGroups,  '#ef4444', 'tidak')  : ''}
+        ${!layakArr.length&&!tidakLayakArr.length?`<div class="panel"><div class="pb"><div class="empty">Tiada rekod pencapaian.</div></div></div>`:''}
+      `;
+    })()}
+  </div>`;
+  };
+
+  return `
+  <div class="pg-head">
+    <div>
+      <div class="pg-title">Analisis Pencapaian</div>
+      <div class="pg-sub">SK Wangsa Maju 1 &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA}</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">5.4.1 Pencapaian Guru</div>
+      <div style="display:flex;gap:12px;align-items:baseline">
+        <span style="font-size:28px;font-weight:800;color:var(--ok)">${tLayak.length}</span>
+        <span style="font-size:13px;color:var(--t3)">/ ${tClassified.length} layak</span>
+      </div>
+      <div style="background:var(--border);border-radius:99px;height:4px;width:100%;overflow:hidden">
+        <div style="height:100%;width:${tClassified.length?Math.round(tLayak.length/tClassified.length*100):0}%;background:var(--ok);border-radius:99px"></div>
+      </div>
+    </div>
+    <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:4px;padding:14px 16px">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em">5.4.2 Pencapaian Sekolah</div>
+      <div style="display:flex;gap:12px;align-items:baseline">
+        <span style="font-size:28px;font-weight:800;color:var(--ok)">${sLayak.length}</span>
+        <span style="font-size:13px;color:var(--t3)">/ ${sClassified.length} layak</span>
+      </div>
+      <div style="background:var(--border);border-radius:99px;height:4px;width:100%;overflow:hidden">
+        <div style="height:100%;width:${sClassified.length?Math.round(sLayak.length/sClassified.length*100):0}%;background:var(--ok);border-radius:99px"></div>
+      </div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin-bottom:20px">
+
+  ${section('Pencapaian Guru','SKPM 5.4.1',tLayak,tTidakLayak,tByLevel,tRecRow,'guru')}
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px">
+
+  ${section('Pencapaian Sekolah','SKPM 5.4.2',sLayak,sTidakLayak,sByLevel,sRecRow,'skl')}
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 20px">
+
+  <!-- &#9312; Kemajuan Pengisian Guru -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Kemajuan Pengisian Guru
+      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.1</span>
+    </div>
+    <div class="panel">
+      <div class="pb" style="display:flex;flex-direction:column;gap:10px">
+        ${(()=>{
+          const isiGuru    = DEMO_TEACHERS.filter(t=>t.records.length>0);
+          const tidakIsi   = DEMO_TEACHERS.filter(t=>t.records.length===0);
+          const pct        = Math.round(isiGuru.length/DEMO_TEACHERS.length*100);
+          return `
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2)">
+            <span><strong style="color:var(--ok);font-size:18px">${isiGuru.length}</strong> / ${DEMO_TEACHERS.length} guru telah mengisi</span>
+            <span style="font-weight:700;color:${pct===100?'var(--ok)':'var(--accent)'}">${pct}%</span>
+          </div>
+          <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:var(--ok);border-radius:99px;transition:width .4s"></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+            ${DEMO_TEACHERS.map(t=>{
+              const layakCnt = t.records.filter(r=>aiKlasifikasi(r).layak).length;
+              const hasRec   = t.records.length>0;
+              return `<div style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px solid ${hasRec?'var(--border)':'var(--danger)'};background:${hasRec?'var(--chip)':'var(--danger-l)'}">
+                <div class="av" style="width:28px;height:28px;font-size:10px;background:var(--navy-hi);flex-shrink:0">${t.av}</div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:var(--t1)">${t.name.split(' ')[0]}</div>
+                  ${hasRec
+                    ? `<div style="font-size:10px;color:var(--ok)">${t.records.length} rekod &middot; ${layakCnt} layak</div>`
+                    : `<div style="font-size:10px;color:var(--danger)">Belum mengisi</div>`}
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+          ${tidakIsi.length?`<div style="font-size:12px;color:var(--danger);padding:8px 12px;background:var(--danger-l);border-radius:8px">
+            ! ${tidakIsi.length} guru belum mengisi: ${tidakIsi.map(t=>t.name).join(', ')}
+          </div>`:'<div style="font-size:12px;color:var(--ok);padding:8px 12px;background:var(--ok-l);border-radius:8px">&#10003; Semua guru telah mengisi rekod pencapaian.</div>'}`;
+        })()}
+      </div>
+    </div>
+  </div>
+
+  <!-- &#9313; Analisis Mengikut Peringkat -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Analisis Mengikut Peringkat</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      ${(()=>{
+        const barChart = (recs, klasifikasiFn, aspek) => {
+          const layakRecs = recs.filter(r=>klasifikasiFn(r).layak);
+          const max = Math.max(1,...LEVELS.map(l=>layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length));
+          return `<div class="panel">
+            <div class="ph"><span class="pt">${aspek}</span></div>
+            <div class="pb" style="display:flex;flex-direction:column;gap:8px">
+              ${LEVELS.filter(l=>LEVELS_LAYAK.includes(l.key)).map(l=>{
+                const cnt = layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length;
+                const w   = Math.round(cnt/max*100);
+                return `<div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
+                    <span>${l.label}</span>
+                    <span style="font-weight:700;color:var(--ok)">${cnt}</span>
+                  </div>
+                  <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+                    <div style="height:100%;width:${w}%;background:var(--ok);border-radius:99px"></div>
+                  </div>
+                </div>`;
+              }).join('')}
+              ${layakRecs.length===0?'<div class="empty" style="padding:8px 0">Tiada rekod layak.</div>':''}
+            </div>
+          </div>`;
+        };
+        return barChart(allTeacherRecs, aiKlasifikasi, 'Pencapaian Guru 5.4.1')
+             + barChart(sRecs, aiKlasifikasiSekolah, 'Pencapaian Sekolah 5.4.2');
+      })()}
+    </div>
+  </div>
+
+  <!-- &#9314; Analisis Kategori Sekolah -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Analisis Kategori Pencapaian Sekolah
+      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.2</span>
+    </div>
+    <div class="panel">
+      <div class="pb" style="display:flex;flex-direction:column;gap:8px">
+        ${(()=>{
+          const maxKat = Math.max(1,...KATEGORI.map(k=>sRecs.filter(r=>r.kategori===k.val).length));
+          return KATEGORI.map(k=>{
+            const total  = sRecs.filter(r=>r.kategori===k.val).length;
+            const layakK = sRecs.filter(r=>r.kategori===k.val&&aiKlasifikasiSekolah(r).layak).length;
+            const w      = Math.round(total/maxKat*100);
+            return `<div>
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
+                <span style="font-weight:500">${k.label}</span>
+                <span><span style="color:var(--ok);font-weight:700">${layakK}</span><span style="color:var(--t3)"> / ${total}</span></span>
+              </div>
+              <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+                <div style="height:100%;width:${w}%;background:var(--accent);border-radius:99px"></div>
+              </div>
+            </div>`;
+          }).join('');
+        })()}
+        ${sRecs.length===0?'<div class="empty">Tiada rekod pencapaian sekolah.</div>':''}
+      </div>
+    </div>
+  </div>
+
+  <!-- &#9315; Utiliti Slot 5.4.2 -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Utiliti Slot Pencapaian Sekolah
+      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">Maks. 20 slot keseluruhan &middot; Keutamaan tertinggi dahulu</span>
+    </div>
+    <div class="panel">
+      <div class="pb" style="display:flex;flex-direction:column;gap:12px">
+        ${(()=>{
+          const MAX_SLOT = 20;
+          // sort records: highest level first (lowest tier number = highest)
+          const levelOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+          const sorted = [...sRecs].sort((a,b)=>levelOrder.indexOf(a.level)-levelOrder.indexOf(b.level));
+          const counted  = sorted.slice(0, MAX_SLOT);
+          const overflow = sorted.slice(MAX_SLOT);
+          const used     = counted.length;
+          const pct      = Math.round(used/MAX_SLOT*100);
+          const col      = pct>=90?'var(--danger)':pct>=60?'#f59e0b':'var(--ok)';
+
+          // breakdown per level among counted slots
+          const breakdown = LEVELS.filter(l=>LEVELS_SEKOLAH.includes(l.key)).map(l=>{
+            const cnt = counted.filter(r=>r.level===l.key).length;
+            return { ...l, cnt };
+          }).filter(l=>l.cnt>0);
+
+          return `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span style="font-size:32px;font-weight:800;color:${col}">${used}</span>
+              <span style="font-size:14px;color:var(--t3);margin-left:4px">/ ${MAX_SLOT} slot digunakan</span>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:${col}">${MAX_SLOT-used} baki</span>
+          </div>
+          <div style="background:var(--border);border-radius:99px;height:10px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s"></div>
+          </div>
+
+          ${breakdown.length?`<div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:600">Pecahan mengikut peringkat (keutamaan tertinggi)</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              ${breakdown.map((l,idx)=>`
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;min-width:20px;color:var(--t3);text-align:right">${idx+1}.</span>
+                <span style="font-size:12px;min-width:110px">${l.label}</span>
+                <div style="flex:1;background:var(--border);border-radius:99px;height:5px;overflow:hidden">
+                  <div style="height:100%;width:${Math.round(l.cnt/used*100)}%;background:var(--ok);border-radius:99px"></div>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--ok);min-width:24px;text-align:right">${l.cnt}</span>
+              </div>`).join('')}
+            </div>
+          </div>`:''}
+
+          ${overflow.length?`<div style="padding:8px 12px;background:var(--danger-l);border-radius:8px;font-size:12px;color:var(--danger)">
+            ! ${overflow.length} rekod melebihi had 20 slot -- tidak dikira dalam SKPM 5.4.2:<br>
+            ${overflow.map(r=>`<strong>${r.program}</strong> (${LVL[r.level]?.label||r.level})`).join(', ')}
+          </div>`:`<div style="padding:8px 12px;background:var(--ok-l);border-radius:8px;font-size:12px;color:var(--ok)">
+            &#10003; Semua rekod dalam had slot yang dibenarkan.
+          </div>`}`;
+        })()}
+      </div>
+    </div>
+  </div>
+
+  <!-- &#9316; Analisis Peranan Guru -->
+  <div style="margin-bottom:8px">
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      Analisis Peranan Guru
+      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.1</span>
+    </div>
+    <div class="panel">
+      <div class="pb" style="display:flex;flex-direction:column;gap:8px">
+        ${(()=>{
+          const maxP = Math.max(1,...PERANAN.map(p=>allTeacherRecs.filter(r=>r.peranan===p.val).length));
+          return PERANAN.map(p=>{
+            const total  = allTeacherRecs.filter(r=>r.peranan===p.val).length;
+            const layakP = tLayak.filter(r=>r.peranan===p.val).length;
+            const w      = Math.round(total/maxP*100);
+            return `<div>
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
+                <span style="font-weight:500">${p.val}</span>
+                <span><span style="color:var(--ok);font-weight:700">${layakP}</span><span style="color:var(--t3)"> layak / ${total} rekod</span></span>
+              </div>
+              <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+                <div style="height:100%;width:${w}%;background:var(--accent);border-radius:99px"></div>
+              </div>
+            </div>`;
+          }).join('');
+        })()}
+        ${allTeacherRecs.length===0?'<div class="empty">Tiada rekod.</div>':''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* -- School Achievements view (5.4.2) -------------------------- */
+function viewSchoolAchievements() {
+  const recs = S.schoolRecords;
+  const layak = recs.filter(r=>aiKlasifikasiSekolah(r).layak).length;
+  const tidakLayak = recs.length - layak;
+
+  // group by level (highest first)
+  const grouped = {};
+  LEVELS.filter(l=>LEVELS_SEKOLAH.includes(l.key)).forEach(l=>{
+    const items = recs.filter(r=>r.level===l.key);
+    if (items.length) grouped[l.key] = items;
+  });
+
+  const recRow = r => {
+    const ai = aiKlasifikasiSekolah(r);
+    const th = TAHAP_MAP[r.tahap];
+    return `<div class="ach-row">
+      <div class="ach-row-dot" style="${ai.layak?'background:var(--ok)':'background:var(--danger)'}"></div>
+      <div class="ach-row-body">
+        <div class="ach-row-name">${r.program}</div>
+        <div class="ach-row-meta">${fmtDate(r.tarikh)}${th?' &middot; '+th.short:''}</div>
+        ${!ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${ai.reasons[0]||''}</div>`
+          :`<div class="ach-row-meta" style="color:var(--ok);font-size:11px;margin-top:2px">${ai.passes[0]||''}</div>`}
+      </div>
+      <div style="flex-shrink:0">
+        ${ai.layak
+          ? '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:10px">&#10003; Layak 5.4.2</span>'
+          : '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">&#10007; Tidak Layak</span>'}
+      </div>
+    </div>`;
+  };
+
+  return `
+  <div class="pg-head">
+    <div>
+      <div class="pg-title">Pencapaian Sekolah <span style="font-size:12px;font-weight:500;color:var(--t3)">SKPM 5.4.2</span></div>
+      <div class="pg-sub">SK Wangsa Maju 1 &middot; Tahun ${TAHUN_SEMASA} &middot; Wajaran 10%</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-ico" style="background:#dbeafe;color:#1e40af">${i('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',22)}</div>
+      <div><div class="stat-lbl">Jumlah Rekod</div><div class="stat-val">${recs.length}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico" style="background:var(--ok-l);color:var(--ok)">${i('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',22)}</div>
+      <div><div class="stat-lbl">Layak SKPM 5.4.2</div><div class="stat-val" style="color:var(--ok)">${layak}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico" style="background:var(--danger-l);color:var(--danger)">${i('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',22)}</div>
+      <div><div class="stat-lbl">Tidak Layak</div><div class="stat-val" style="color:var(--danger)">${tidakLayak}</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph" style="display:flex;justify-content:space-between;align-items:center">
+      <span class="pt">Rekod Pencapaian Sekolah</span>
+      <span style="font-size:11px;color:var(--t3)">Maks. 20 slot keseluruhan</span>
+    </div>
+    ${recs.length===0
+      ? `<div class="pb"><div class="empty">Tiada rekod pencapaian sekolah.</div></div>`
+      : LEVELS.filter(l=>LEVELS_SEKOLAH.includes(l.key)).map(l=>{
+          const items = grouped[l.key]; if(!items) return '';
+          const cnt      = items.filter(r=>aiKlasifikasiSekolah(r).layak).length;
+          const expanded = S.expandedLevels.includes(l.key);
+          return `<div>
+            <button class="ach-group-hdr" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 16px" data-lvltoggle="${l.key}">
+              ${lv(l.key)}
+              <span class="ach-group-count">${items.length} rekod</span>
+              <span style="margin-left:auto;font-size:11px;color:${cnt?'var(--ok)':'var(--t3)'};font-weight:600">${cnt} layak</span>
+              <span style="color:var(--t3);font-size:11px;margin-left:6px">${expanded?'&#9650;':'&#9660;'}</span>
+            </button>
+            ${expanded?`<div class="ach-section" style="padding:0 0 8px">${items.map(recRow).join('')}</div>`:''}
+          </div>`;
+        }).join('')}
+  </div>
+
+  <div class="panel" style="background:var(--chip);border:none">
+    <div class="pb" style="font-size:12px;color:var(--t2);line-height:1.6">
+      <strong>Nota SKPM 5.4.2:</strong> Pencapaian yang diambil kira adalah yang diberikan kepada sekolah sebagai entiti, diiktiraf KPM, dan diterima dalam tahun penilaian ${TAHUN_SEMASA}. Pencapaian yang melibatkan murid secara terus dan menjana skor PAJSK <em>tidak</em> dikira di sini.
+      <div style="margin-top:6px">${SRC}</div>
+    </div>
+  </div>`;
+}
+
+/* -- School Achievement Form ----------------------------------- */
+function viewSchoolForm() {
+  const sf = S.sf;
+  const canSave = sf.program && sf.tarikh && sf.level && sf.tahap && sf.kategori;
+  const previewAi = sf.level && sf.tahap && sf.tarikh
+    ? aiKlasifikasiSekolah({...sf, id:'preview', pautanEviden: sf.pautanEviden})
+    : null;
+
+  return `
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+    <button class="btn btn-ghost" id="btn-school-back" style="padding:6px 10px;font-size:12px">${IC.arrow} Kembali</button>
+    <div>
+      <div class="pg-title">Tambah Pencapaian Sekolah</div>
+      <div class="pg-sub">SKPM 5.4.2 &middot; SK Wangsa Maju 1 &middot; Tahun ${TAHUN_SEMASA}</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="pt">Maklumat Pencapaian</span></div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:14px">
+
+      <div class="fg">
+        <label class="fl">Nama Program / Pertandingan / Anugerah <span class="req">*</span></label>
+        <input class="fi" id="sf-program" placeholder="cth. Anugerah Sekolah Cemerlang Sukan PPD Gombak 2026" value="${sf.program}">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fg">
+          <label class="fl">Peringkat <span class="req">*</span></label>
+          <select class="fi" id="sf-level">
+            <option value="">-- Pilih Peringkat --</option>
+            ${LEVELS.map(l=>`<option value="${l.key}"${sf.level===l.key?' selected':''}>${l.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Tarikh <span class="req">*</span></label>
+          <input class="fi" type="date" id="sf-tarikh" value="${sf.tarikh}" min="${TAHUN_SEMASA}-01-01" max="${TAHUN_SEMASA}-12-31">
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Tahap Pencapaian <span class="req">*</span></label>
+        <select class="fi" id="sf-tahap">
+          <option value="">-- Pilih Tahap --</option>
+          ${TAHAP.map(t=>`<option value="${t.val}"${sf.tahap===t.val?' selected':''}>${t.label}</option>`).join('')}
+        </select>
+        <div class="fn" style="margin-top:4px">Anugerah/Pengiktirafan/Pentauliahan dikira sebagai Tempat Pertama/Anugerah/Pengiktirafan (T1).${SRC}</div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Kategori <span class="req">*</span></label>
+        <select class="fi" id="sf-kategori">
+          <option value="">-- Pilih Kategori --</option>
+          ${KATEGORI.map(k=>`<option value="${k.val}"${sf.kategori===k.val?' selected':''}>${k.label}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Pautan Evidens Google Drive (PDF) <span class="req">*</span></label>
+        <input class="fi" id="sf-pautanEviden" placeholder="https://drive.google.com/..." value="${sf.pautanEviden}">
+        <div class="fn" style="margin-top:4px">Simpan dalam Google Drive menggunakan ID DELIMa sekolah. Tetapkan kepada "anyone with the link" sebagai "viewer".${SRC}</div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Catatan (Pilihan)</label>
+        <textarea class="fi" id="sf-catatan" rows="2" placeholder="Maklumat tambahan...">${sf.catatan}</textarea>
+      </div>
+
+      ${previewAi ? `
+      <div style="padding:12px;border-radius:10px;border:1.5px solid ${previewAi.layak?'var(--ok)':'var(--danger)'};background:${previewAi.layak?'var(--ok-l)':'var(--danger-l)'}">
+        <div style="font-weight:700;font-size:13px;color:${previewAi.layak?'var(--ok)':'var(--danger)'};margin-bottom:6px">
+          ${previewAi.layak?'&#10003; Layak SKPM 5.4.2':'&#10007; Tidak Layak SKPM 5.4.2'}
+        </div>
+        ${previewAi.passes.map(p=>`<div style="font-size:12px;color:var(--ok)">&#10003; ${p}</div>`).join('')}
+        ${previewAi.reasons.map(r=>`<div style="font-size:12px;color:var(--danger)">&#10007; ${r}</div>`).join('')}
+      </div>` : ''}
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px">
+        <button class="btn btn-ghost" id="btn-school-back2">Batal</button>
+        <button class="btn btn-primary" id="btn-school-save" ${canSave?'':'disabled'}>Simpan Pencapaian</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* -- Users view (school admin) --------------------------------- */
+function viewUsers() {
+  return `
+  <div class="pg-head">
+    <div>
+      <div class="pg-title">Senarai Guru</div>
+      <div class="pg-sub">SK Wangsa Maju 1 &middot; ${DEMO_TEACHERS.length} guru berdaftar &middot; Tahun ${TAHUN_SEMASA}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+    ${DEMO_TEACHERS.map(t => {
+      const recs   = t.records;
+      const layak  = recs.filter(r=>aiKlasifikasi(r).layak).length;
+      const tidakLayak = recs.length - layak;
+      const pct    = recs.length ? Math.round(layak/recs.length*100) : 0;
+      return `<div class="panel" style="cursor:pointer;transition:box-shadow .15s" data-teacher="${t.id}">
+        <div class="pb" style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="av" style="width:40px;height:40px;font-size:14px;background:var(--navy-hi);flex-shrink:0">${t.av}</div>
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
+              <div style="font-size:11.5px;color:var(--t3)">${t.jawatan}</div>
+            </div>
+          </div>
+          ${recs.length===0
+            ? `<div style="font-size:12px;color:var(--t3);text-align:center;padding:8px 0">Tiada rekod pencapaian</div>`
+            : `<div style="display:flex;gap:8px">
+                <div style="flex:1;text-align:center;padding:8px;background:var(--ok-l);border-radius:8px">
+                  <div style="font-size:20px;font-weight:800;color:var(--ok)">${layak}</div>
+                  <div style="font-size:10px;color:var(--ok);font-weight:600">Layak</div>
+                </div>
+                <div style="flex:1;text-align:center;padding:8px;background:var(--danger-l);border-radius:8px">
+                  <div style="font-size:20px;font-weight:800;color:var(--danger)">${tidakLayak}</div>
+                  <div style="font-size:10px;color:var(--danger);font-weight:600">Tidak Layak</div>
+                </div>
+                <div style="flex:1;text-align:center;padding:8px;background:var(--chip);border-radius:8px">
+                  <div style="font-size:20px;font-weight:800;color:var(--t1)">${recs.length}</div>
+                  <div style="font-size:10px;color:var(--t3);font-weight:600">Rekod</div>
+                </div>
+              </div>
+              <div style="background:var(--border);border-radius:99px;height:5px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:var(--ok);border-radius:99px;transition:width .4s"></div>
+              </div>
+              <div style="font-size:10.5px;color:var(--t3);text-align:right">${pct}% layak SKPM 5.4.1</div>`
+          }
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* -- Teacher detail view (school admin) ------------------------ */
+function viewTeacherDetail() {
+  const t = DEMO_TEACHERS.find(x=>x.id===S.selectedTeacherId);
+  if (!t) return '<div class="empty">Guru tidak dijumpai</div>';
+  const recs = t.records;
+  const layak = recs.filter(r=>aiKlasifikasi(r).layak).length;
+
+  // group by level
+  const grouped = {};
+  LEVELS.forEach(l => { const items=recs.filter(r=>r.level===l.key); if(items.length) grouped[l.key]=items; });
+
+  const recRow = r => {
+    const ai=aiKlasifikasi(r); const th=TAHAP_MAP[r.tahap];
+    return `<div class="ach-row">
+      <div class="ach-row-dot" style="${ai.layak?'background:var(--ok)':'background:var(--danger)'}"></div>
+      <div class="ach-row-body">
+        <div class="ach-row-name">${r.program}</div>
+        <div class="ach-row-meta">${r.peranan} &middot; ${fmtDate(r.tarikh)}</div>
+        ${th?`<div class="ach-row-meta" style="color:var(--t2);margin-top:1px">${th.short}</div>`:''}
+        ${!ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${ai.reasons[0]||''}</div>`:''}
+      </div>
+      <div style="flex-shrink:0">
+        ${ai.layak
+          ? '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:10px">&#10003; Layak 5.4.1</span>'
+          : '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">&#10007; Tidak Layak</span>'}
+      </div>
+    </div>`;
+  };
+
+  return `
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+    <button class="btn btn-ghost" id="btn-back-users" style="padding:6px 10px;font-size:12px">${IC.arrow} Kembali</button>
+    <div>
+      <div class="pg-title">${t.name}</div>
+      <div class="pg-sub">${t.jawatan} &middot; ${recs.length} rekod &middot; ${layak} layak SKPM 5.4.1</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-ico" style="background:#dbeafe;color:#1e40af">${i('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',22)}</div>
+      <div><div class="stat-lbl">Jumlah Rekod</div><div class="stat-val">${recs.length}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico" style="background:var(--ok-l);color:var(--ok)">${i('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',22)}</div>
+      <div><div class="stat-lbl">Layak SKPM 5.4.1</div><div class="stat-val" style="color:var(--ok)">${layak}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico" style="background:var(--danger-l);color:var(--danger)">${i('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',22)}</div>
+      <div><div class="stat-lbl">Tidak Layak</div><div class="stat-val" style="color:var(--danger)">${recs.length-layak}</div></div>
+    </div>
+  </div>
+
+  ${recs.length===0
+    ? `<div class="panel"><div class="pb"><div class="empty">Tiada rekod pencapaian untuk guru ini.</div></div></div>`
+    : `<div class="panel">
+        <div class="ph"><span class="pt">Semua Rekod Pencapaian</span></div>
+        <div class="ach-section">
+          ${LEVELS.map(l=>{
+            const items=grouped[l.key]; if(!items) return '';
+            return `<div class="ach-group-hdr">${lv(l.key)}<span class="ach-group-count">${items.length} rekod</span></div>
+            ${items.map(recRow).join('')}`;
+          }).join('')}
+        </div>
+      </div>`}`;
+}
+
+/* -- PPD Admin Views ------------------------------------------- */
+function viewPPDAnalysis() {
+  // Aggregate all schools
+  const allTRecs = DEMO_SCHOOLS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))));
+  const allSRecs = DEMO_SCHOOLS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})));
+
+  const tLayakAll  = allTRecs.filter(r=>aiKlasifikasi(r).layak);
+  const tTidakAll  = allTRecs.filter(r=>!aiKlasifikasi(r).layak);
+  const sLayakAll  = allSRecs.filter(r=>aiKlasifikasiSekolah(r).layak);
+  const sTidakAll  = allSRecs.filter(r=>!aiKlasifikasiSekolah(r).layak);
+
+  const tPct = allTRecs.length ? Math.round(tLayakAll.length/allTRecs.length*100) : 0;
+  const sPct = allSRecs.length ? Math.round(sLayakAll.length/allSRecs.length*100) : 0;
+
+  const lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  const countByLevel = arr => {
+    const map = {};
+    arr.forEach(r=>{ const k=LEVEL_MAP_SKPM[r.level]||r.level; map[k]=(map[k]||0)+1; });
+    return lvlOrder.filter(k=>map[k]).map(k=>({key:k,count:map[k]}));
+  };
+
+  const tByLvl = countByLevel(tLayakAll);
+  const sByLvl = countByLevel(sLayakAll);
+
+  const lvlBar = (key,count,total) => {
+    const col = LVL[key]?.color || '#888';
+    const pct = total ? Math.round(count/total*100) : 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="width:80px;font-size:11px;font-weight:700;color:${col};flex-shrink:0">${LVL[key]?.label||key}</span>
+      <div style="flex:1;height:8px;border-radius:4px;background:var(--bdr);overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:4px"></div>
+      </div>
+      <span style="width:32px;text-align:right;font-size:12px;font-weight:700;color:var(--t1)">${count}</span>
+    </div>`;
+  };
+
+  // Per-school stats table
+  const schoolRows = DEMO_SCHOOLS.map(sch => {
+    const tR = sch.teachers.flatMap(t=>t.records||[]);
+    const sR = sch.schoolRecords || [];
+    const tL = tR.filter(r=>aiKlasifikasi(r).layak).length;
+    const sL = sR.filter(r=>aiKlasifikasiSekolah(r).layak).length;
+    const tP = tR.length ? Math.round(tL/tR.length*100) : 0;
+    const sP = sR.length ? Math.round(sL/sR.length*100) : 0;
+    const bar = (pct,col) => `<div style="height:7px;border-radius:4px;background:#e2e8f0;margin-top:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${col};border-radius:4px;transition:width .3s ease"></div></div>`;
+    return `<button data-school="${sch.id}" data-ppdview-school="school_detail" style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;padding:12px 16px;border-radius:10px;border:1px solid var(--bdr);background:var(--card);cursor:pointer;text-align:left;width:100%;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
+      <div>
+        <div style="font-weight:700;font-size:13px;color:var(--t1)">${sch.name}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:1px">${sch.kod} &middot; ${sch.jenis}</div>
+      </div>
+      <div style="min-width:90px">
+        <div style="font-size:10px;color:var(--t3)">Guru: ${tL}/${tR.length}</div>
+        ${bar(tP,'#22c55e')}
+      </div>
+      <div style="min-width:90px">
+        <div style="font-size:10px;color:var(--t3)">Sekolah: ${sL}/${sR.length}</div>
+        ${bar(sP,'#6366f1')}
+      </div>
+    </button>`;
+  });
+
+  const SRC = `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:10px;color:var(--t3);font-weight:400;font-style:normal">Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026</span>`;
+
+  return `
+  <div class="pg-head">
+    <div>
+      <div class="pg-title">Analisis Daerah</div>
+      <div class="pg-sub">PPD Gombak &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
+    </div>
+  </div>
+
+  <!-- Summary tiles -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.1 Pencapaian Guru</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-size:32px;font-weight:800;color:#22c55e">${tLayakAll.length}</span>
+        <span style="font-size:13px;color:var(--t3)">/ ${allTRecs.length} rekod</span>
+      </div>
+      <div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
+        <div style="height:100%;width:${tPct}%;background:#22c55e;border-radius:3px"></div>
+      </div>
+      <div style="font-size:11px;color:var(--t3)">${tPct}% layak &middot; ${tTidakAll.length} tidak layak</div>
+    </div>
+    <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.2 Pencapaian Sekolah</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-size:32px;font-weight:800;color:#6366f1">${sLayakAll.length}</span>
+        <span style="font-size:13px;color:var(--t3)">/ ${allSRecs.length} rekod</span>
+      </div>
+      <div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
+        <div style="height:100%;width:${sPct}%;background:#6366f1;border-radius:3px"></div>
+      </div>
+      <div style="font-size:11px;color:var(--t3)">${sPct}% layak &middot; ${sTidakAll.length} tidak layak</div>
+    </div>
+  </div>
+
+  <!-- Level breakdown -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div class="card" style="padding:18px 20px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:2px">Taburan Peringkat${SRC}</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Pencapaian Guru Layak (SKPM 5.4.1)</div>
+      ${tByLvl.length ? tByLvl.map(l=>lvlBar(l.key,l.count,tLayakAll.length)).join('') : `<div style="font-size:12px;color:var(--t3)">Tiada rekod layak.</div>`}
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:2px">Taburan Peringkat${SRC}</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Pencapaian Sekolah Layak (SKPM 5.4.2)</div>
+      ${sByLvl.length ? sByLvl.map(l=>lvlBar(l.key,l.count,sLayakAll.length)).join('') : `<div style="font-size:12px;color:var(--t3)">Tiada rekod layak.</div>`}
+    </div>
+  </div>
+
+  <!-- Per-school breakdown -->
+  <div class="card" style="padding:18px 20px;margin-bottom:20px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:2px">Prestasi Mengikut Sekolah</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Klik untuk lihat butiran sekolah</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${schoolRows.join('')}
+    </div>
+  </div>
+
+  <!-- Tidak layak summary -->
+  ${tTidakAll.length || sTidakAll.length ? `<div class="card" style="padding:18px 20px;border:1.5px solid #ef444433">
+    <div style="font-weight:700;font-size:13px;color:#ef4444;margin-bottom:2px">Rekod Tidak Layak -- Daerah</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Memerlukan perhatian${SRC}</div>
+    ${tTidakAll.length ? `<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">Pencapaian Guru (${tTidakAll.length} rekod)</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+      ${tTidakAll.map(r=>`<div style="padding:10px 14px;border-radius:8px;background:#ef44440d;border:1px solid #ef444422;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--t1)">${r.program}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">${r._school}</div>
+          <div style="font-size:10px;color:#ef4444;margin-top:2px">${aiKlasifikasi(r).reasons[0]||''}</div>
+        </div>
+        <span style="padding:2px 8px;border-radius:5px;background:${LVL[r.level]?.color||'#888'};color:#fff;font-size:10px;font-weight:700;flex-shrink:0">${LVL[r.level]?.label||r.level}</span>
+      </div>`).join('')}
+    </div>` : ''}
+    ${sTidakAll.length ? `<div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">Pencapaian Sekolah (${sTidakAll.length} rekod)</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${sTidakAll.map(r=>`<div style="padding:10px 14px;border-radius:8px;background:#ef44440d;border:1px solid #ef444422;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--t1)">${r.program}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">${r._school}</div>
+          <div style="font-size:10px;color:#ef4444;margin-top:2px">${aiKlasifikasiSekolah(r).reasons[0]||''}</div>
+        </div>
+        <span style="padding:2px 8px;border-radius:5px;background:${LVL[r.level]?.color||'#888'};color:#fff;font-size:10px;font-weight:700;flex-shrink:0">${LVL[r.level]?.label||r.level}</span>
+      </div>`).join('')}
+    </div>` : ''}
+  </div>` : ''}`;
+}
+
+function viewPPDSchools() {
+  const jenisBadge = j => {
+    const col = j==='SK'?'#3b82f6':j==='SJKC'?'#f59e0b':'#8b5cf6';
+    return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${col}22;color:${col};border:1px solid ${col}44">${j}</span>`;
+  };
+  return `<div class="sa-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1)">Senarai Sekolah</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${DEMO_SCHOOLS.length} sekolah</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${DEMO_SCHOOLS.map(sch=>{
+        const tRecs = sch.teachers.flatMap(t=>t.records||[]);
+        const tLayak = tRecs.filter(r=>aiKlasifikasi(r).layak).length;
+        const sLayak = (sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
+        const tTotal = tRecs.length; const sTotal = (sch.schoolRecords||[]).length;
+        const tPct = tTotal ? Math.round(tLayak/tTotal*100) : 0;
+        const sPct = sTotal ? Math.round(sLayak/sTotal*100) : 0;
+        const bar = (pct,col) => `<div style="height:4px;border-radius:2px;background:var(--bdr);margin-top:5px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:2px;transition:width .3s"></div></div>`;
+        return `<button data-school="${sch.id}" style="display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);cursor:pointer;text-align:left;width:100%;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
+          <div style="width:46px;height:46px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0">${sch.av}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+              <span style="font-weight:700;font-size:14px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sch.name}</span>
+              ${jenisBadge(sch.jenis)}
+            </div>
+            <div style="font-size:11px;color:var(--t3)">${sch.kod}</div>
+          </div>
+          <div style="display:flex;gap:20px;flex-shrink:0">
+            <div style="min-width:80px">
+              <div style="font-size:10px;color:var(--t3);white-space:nowrap">Guru</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t1);margin-top:1px">${tLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${tTotal}</span></div>
+              ${bar(tPct,'var(--ok)')}
+            </div>
+            <div style="min-width:80px">
+              <div style="font-size:10px;color:var(--t3);white-space:nowrap">Sekolah</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t1);margin-top:1px">${sLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${sTotal}</span></div>
+              ${bar(sPct,'#6366f1')}
+            </div>
+          </div>
+          <div style="color:var(--t3);flex-shrink:0;font-size:16px">&rsaquo;</div>
+        </button>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function viewPPDSchoolDetail() {
+  const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
+  if (!sch) return `<div class="sa-wrap"><p>Sekolah tidak dijumpai.</p></div>`;
+
+  const tRecs = sch.teachers.flatMap(t=>(t.records||[]).map(r=>({...r,_tname:t.name})));
+  const sRecs = sch.schoolRecords || [];
+
+  const lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  const sortByLevel = arr => [...arr].sort((a,b)=>lvlOrder.indexOf(a.level)-lvlOrder.indexOf(b.level));
+
+  const tLayak = sortByLevel(tRecs.filter(r=>aiKlasifikasi(r).layak));
+  const tTidak = sortByLevel(tRecs.filter(r=>!aiKlasifikasi(r).layak));
+  const sLayak = sortByLevel(sRecs.filter(r=>aiKlasifikasiSekolah(r).layak));
+  const sTidak = sortByLevel(sRecs.filter(r=>!aiKlasifikasiSekolah(r).layak));
+
+  const tByLevel = {}; tLayak.forEach(r=>{const k=LEVEL_MAP_SKPM[r.level]||r.level; tByLevel[k]=(tByLevel[k]||0)+1;});
+  const sByLevel = {}; sLayak.forEach(r=>{const k=LEVEL_MAP_SKPM[r.level]||r.level; sByLevel[k]=(sByLevel[k]||0)+1;});
+
+  const lvlBadge = l => `<span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:6px;background:${LVL[l]?.color||'#888'};color:#fff;font-size:11px;font-weight:700;flex-shrink:0">${LVL[l]?.label||l}</span>`;
+
+  const section = (label, aspek, layakArr, tidakArr, byLvl, pfx) => {
+    const showLayak = S.ppdFilter===pfx+'_layak';
+    const showTidak = S.ppdFilter===pfx+'_tidak';
+    return `<div class="card" style="margin-bottom:20px;padding:20px">
+      <div style="font-weight:700;font-size:15px;margin-bottom:2px">${label}</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">${aspek}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:${showLayak||showTidak?'16px':'0'}">
+        <button data-ppd-filter="${pfx}_layak" style="flex:1;min-width:120px;padding:16px 18px;border-radius:12px;border:none;background:${showLayak?'#22c55e':'#22c55e18'};cursor:pointer;text-align:left;transition:background .15s">
+          <div style="font-size:26px;font-weight:800;color:${showLayak?'#fff':'#22c55e'}">${layakArr.length}</div>
+          <div style="font-size:11px;color:${showLayak?'#d1fae5':'#22c55e'};margin-top:3px;font-weight:600">Layak &#8599;</div>
+        </button>
+        <button data-ppd-filter="${pfx}_tidak" style="flex:1;min-width:120px;padding:16px 18px;border-radius:12px;border:none;background:${showTidak?'#ef4444':'#ef444418'};cursor:pointer;text-align:left;transition:background .15s">
+          <div style="font-size:26px;font-weight:800;color:${showTidak?'#fff':'#ef4444'}">${tidakArr.length}</div>
+          <div style="font-size:11px;color:${showTidak?'#fee2e2':'#ef4444'};margin-top:3px;font-weight:600">Tidak Layak &#8600;</div>
+        </button>
+      </div>
+      ${showLayak ? `<div style="display:flex;flex-direction:column;gap:8px">${layakArr.map((r,i)=>{
+        const key=pfx+'_l_'+i; const open=S.expandedPpdRecs.includes(key);
+        const th=TAHAP_MAP[r.tahap]; const col=LVL[r.level]?.color||'#888';
+        return `<button data-ppd-rec="${key}" style="display:block;width:100%;text-align:left;padding:0;border:none;background:none;cursor:pointer">
+          <div style="border-radius:10px;border:1.5px solid ${open?col:col+'44'};background:${col}0d;overflow:hidden;transition:border-color .15s">
+            <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between">
+              <div style="min-width:0">
+                <div style="font-weight:700;font-size:13px;color:var(--t1)">${r.program}</div>
+                ${r._tname?`<div style="font-size:11px;color:var(--t3);margin-top:2px">${r._tname}</div>`:''}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                ${lvlBadge(r.level)}
+                <span style="font-size:14px;color:${col};transition:transform .2s;display:inline-block;transform:rotate(${open?'90':'0'}deg)">&rsaquo;</span>
+              </div>
+            </div>
+            ${open?`<div style="padding:0 14px 14px;border-top:1px solid ${col}33;margin-top:0">
+              <div style="padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                ${r.tarikh?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Tarikh</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.tarikh}</div></div>`:''}
+                ${th?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Tahap</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${th.short||th.label}</div></div>`:''}
+                ${r.kategori?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Kategori</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.kategori}</div></div>`:''}
+                ${r.peranan?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Peranan</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.peranan}</div></div>`:''}
+              </div>
+              ${r.pautanEviden?`<div style="margin-top:10px"><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Pautan Evidens</div><div style="font-size:11px;color:${col};word-break:break-all">${r.pautanEviden}</div></div>`:''}
+              ${r.catatan?`<div style="margin-top:8px;padding:8px 10px;border-radius:6px;background:${col}18"><div style="font-size:10px;color:var(--t3);margin-bottom:3px">Catatan</div><div style="font-size:11px;color:var(--t1)">${r.catatan}</div></div>`:''}
+            </div>`:''}
+          </div>
+        </button>`;
+      }).join('')}</div>` : ''}
+      ${showTidak ? `<div style="display:flex;flex-direction:column;gap:8px">${tidakArr.map((r,i)=>{
+        const key=pfx+'_t_'+i; const open=S.expandedPpdRecs.includes(key);
+        const th=TAHAP_MAP[r.tahap];
+        const reasons=(pfx==='guru'?aiKlasifikasi(r):aiKlasifikasiSekolah(r)).reasons;
+        return `<button data-ppd-rec="${key}" style="display:block;width:100%;text-align:left;padding:0;border:none;background:none;cursor:pointer">
+          <div style="border-radius:10px;border:1.5px solid ${open?'#ef4444':'#ef444444'};background:#ef44440d;overflow:hidden;transition:border-color .15s">
+            <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;justify-content:space-between">
+              <div style="min-width:0">
+                <div style="font-weight:700;font-size:13px;color:var(--t1)">${r.program}</div>
+                ${r._tname?`<div style="font-size:11px;color:var(--t3);margin-top:2px">${r._tname}</div>`:''}
+                <div style="font-size:10px;color:#ef4444;margin-top:3px">${reasons[0]||''}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                ${lvlBadge(r.level)}
+                <span style="font-size:14px;color:#ef4444;transition:transform .2s;display:inline-block;transform:rotate(${open?'90':'0'}deg)">&rsaquo;</span>
+              </div>
+            </div>
+            ${open?`<div style="padding:0 14px 14px;border-top:1px solid #ef444433">
+              <div style="padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                ${r.tarikh?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Tarikh</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.tarikh}</div></div>`:''}
+                ${th?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Tahap</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${th.short||th.label}</div></div>`:''}
+                ${r.kategori?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Kategori</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.kategori}</div></div>`:''}
+                ${r.peranan?`<div><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Peranan</div><div style="font-size:12px;font-weight:600;color:var(--t1)">${r.peranan}</div></div>`:''}
+              </div>
+              ${reasons.length?`<div style="margin-top:10px;padding:8px 10px;border-radius:6px;background:#ef44441a"><div style="font-size:10px;color:#ef4444;margin-bottom:4px;font-weight:600">Sebab Tidak Layak</div>${reasons.map(rs=>`<div style="font-size:11px;color:var(--t1);margin-top:2px">&bull; ${rs}</div>`).join('')}</div>`:''}
+              ${r.pautanEviden?`<div style="margin-top:8px"><div style="font-size:10px;color:var(--t3);margin-bottom:2px">Pautan Evidens</div><div style="font-size:11px;color:#ef4444;word-break:break-all">${r.pautanEviden}</div></div>`:''}
+            </div>`:''}
+          </div>
+        </button>`;
+      }).join('')}</div>` : ''}
+    </div>`;
+  };
+
+  return `<div class="sa-wrap">
+    <button id="btn-ppd-back" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;margin-bottom:18px;padding:0;font-weight:600">&larr; Kembali ke Senarai Sekolah</button>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+      <div style="width:52px;height:52px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0">${sch.av}</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1)">${sch.name}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">${sch.kod} &middot; ${sch.jenis} &middot; PPD Gombak</div>
+      </div>
+    </div>
+    ${section('Pencapaian Guru','SKPM 5.4.1',tLayak,tTidak,tByLevel,'guru')}
+    ${section('Pencapaian Sekolah','SKPM 5.4.2',sLayak,sTidak,sByLevel,'skl')}
+  </div>`;
+}
+
+/* -- PPD Reset Password view ----------------------------------- */
+function viewPPDResetPassword() {
+  const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+  const rows = DEMO_SCHOOLS.map(sch => {
+    const done = (S.resetDone||[]).includes(sch.id);
+    return '<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;border:1px solid var(--bdr);background:var(--card)">'
+      + (()=>{const avC=['#2563eb','#7c3aed','#059669','#d97706','#db2777'];const c=avC[DEMO_SCHOOLS.indexOf(sch)%avC.length];return '<div style="width:42px;height:42px;border-radius:12px;background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px '+c+'55">'+esc(sch.av)+'</div>';})()
+      + '<div style="flex:1;min-width:0">'
+      +   '<div style="font-size:13.5px;font-weight:700;color:var(--t1)">' + esc(sch.name) + '</div>'
+      +   '<div style="font-size:11.5px;color:var(--t3);margin-top:1px">' + esc(sch.kod) + ' &middot; ' + esc(sch.jenis) + '</div>'
+      + '</div>'
+      + (done
+          ? '<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ok);padding:7px 14px;border-radius:8px;background:color-mix(in srgb,var(--ok) 12%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Berjaya Direset</div>'
+          : '<button data-reset-school="' + sch.id + '" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#fff;padding:7px 14px;border-radius:8px;background:var(--accent);border:none;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity=\'.8\'" onmouseout="this.style.opacity=\'1\'">' + lockIcon + 'Reset Kata Laluan</button>')
+      + '</div>';
+  }).join('');
+
+  return '<div style="padding:24px;max-width:700px">'
+    + '<div style="margin-bottom:20px">'
+    +   '<div style="font-size:18px;font-weight:800;color:var(--t1)">Urus Kata Laluan Sekolah</div>'
+    +   '<div style="font-size:12.5px;color:var(--t3);margin-top:4px">Reset kata laluan akaun Pentadbir Sekolah dalam PPD Gombak</div>'
+    + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px">' + rows + '</div>'
+    + '</div>';
+}
+
+function buildResetModal() {
+  if (!S.resetModal) return '';
+  const sch = DEMO_SCHOOLS.find(s=>s.id===S.resetModal);
+  return '<div id="reset-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">'
+    + '<div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:28px 24px;max-width:380px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5)">'
+    +   '<div style="width:48px;height:48px;border-radius:12px;background:color-mix(in srgb,var(--accent) 15%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:var(--accent)">'
+    +     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+    +   '</div>'
+    +   '<div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:8px">Reset Kata Laluan?</div>'
+    +   '<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:20px">Kata laluan akaun <strong>' + esc(sch?sch.name:'') + '</strong> akan direset kepada kata laluan sementara. Pentadbir sekolah perlu menukar semula selepas log masuk.</div>'
+    +   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +     '<button id="reset-cancel" style="padding:10px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>'
+    +     '<button id="reset-confirm" style="padding:10px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Ya, Reset</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+/* -- Build app ------------------------------------------------- */
+function buildApp() {
+  if (S.role === 'ppd_admin') {
+    const titles = { analysis:'Analisis Daerah', schools:'Senarai Sekolah', school_detail:'Butiran Sekolah', reset_password:'Urus Kata Laluan' };
+    const contentView = S.ppdView==='school_detail'    ? viewPPDSchoolDetail()
+      : S.ppdView==='schools'         ? viewPPDSchools()
+      : S.ppdView==='reset_password'  ? viewPPDResetPassword()
+      : viewPPDAnalysis();
+    return `${sidebarAdmin()}
+    <div class="main">
+      <div class="topbar">
+        <div class="tb-info"><div class="g">Admin PPD &middot; PPD Gombak</div><div class="n">${titles[S.ppdView]||'SK@S'}</div></div>
+        <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+      </div>
+      <div class="content">${contentView}</div>
+    </div>`;
+  }
+  if (S.role === 'school_admin') {
+    const titles = { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah' };
+    const contentView = S.saView==='users' ? viewUsers()
+      : S.saView==='teacher_detail'     ? viewTeacherDetail()
+      : S.saView==='school_achievements'? viewSchoolAchievements()
+      : S.saView==='school_form'        ? viewSchoolForm()
+      : viewSchoolAdmin();
+    return `${sidebarAdmin()}
+    <div class="main">
+      <div class="topbar">
+        <div class="tb-info"><div class="g">Pentadbir Sekolah &middot; SK Wangsa Maju 1</div><div class="n">${titles[S.saView]||'SK@S'}</div></div>
+        <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+      </div>
+      <div class="content">${contentView}</div>
+    </div>`;
+  }
+  const titles = { dashboard:'Papan Pemuka Guru', form:'Tambah Pencapaian', detail:'Butiran Pencapaian' };
+  const content = S.view==='dashboard' ? viewDashboard() : S.view==='form' ? viewForm() : viewDetail();
+  return `${sidebar()}
+  <div class="main">
+    ${topbar(titles[S.view]||'SK@S')}
+    <div class="content">${content}</div>
+  </div>`;
+}
+
+/* -- Event binding --------------------------------------------- */
+function bind() {
+  // role switcher
+  document.querySelectorAll('[data-role]').forEach(b=>b.addEventListener('click',()=>setState({role:b.dataset.role,view:'dashboard'})));
+
+  // nav
+  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{
+    if(b.dataset.view==='form') setState({view:'form',formStep:1,f:{program:'',tarikhmula:'',tarikhakhir:'',level:'',peranan:'',tahap:'',pengesahan:'',pautanEviden:'',catatan:'',hasSijil:false},extracting:false,extracted:false,generating:false,draftText:'',draftDone:false});
+    else setState({view:b.dataset.view});
+  }));
+
+  // new btn
+  const nb=document.getElementById('btn-new');
+  if(nb)nb.addEventListener('click',()=>setState({view:'form',formStep:1,f:{program:'',tarikhmula:'',tarikhakhir:'',level:'',peranan:'',tahap:'',pengesahan:'',pautanEviden:'',catatan:'',hasSijil:false},extracting:false,extracted:false,generating:false,draftText:'',draftDone:false}));
+
+  // back btn
+  const bk=document.getElementById('btn-back');
+  if(bk)bk.addEventListener('click',()=>setState({view:'dashboard'}));
+
+  // admin nav
+  document.querySelectorAll('[data-saview]').forEach(b=>b.addEventListener('click',()=>{
+    const sv=b.dataset.saview;
+    if(sv==='school_form') setState({saView:'school_form',saFilter:null,sf:{program:'',tarikh:'',level:'',tahap:'',kategori:'',pautanEviden:'',catatan:''}});
+    else setState({saView:sv,saFilter:null});
+  }));
+
+  // teacher dashboard filter cards (layak / tidak)
+  document.querySelectorAll('[data-tfilter]').forEach(b=>b.addEventListener('click',()=>setState({teacherFilter:S.teacherFilter===b.dataset.tfilter?null:b.dataset.tfilter,expandedLevels:[]})));
+
+  // analysis filter cards (toggle)
+  document.querySelectorAll('[data-safilter]').forEach(b=>b.addEventListener('click',()=>setState({saFilter:S.saFilter===b.dataset.safilter?null:b.dataset.safilter,expandedLevels:[]})));
+
+  // teacher cards (school admin users view)
+  document.querySelectorAll('[data-teacher]').forEach(b=>b.addEventListener('click',()=>setState({saView:'teacher_detail',selectedTeacherId:b.dataset.teacher})));
+
+  // back to users list
+  const bku=document.getElementById('btn-back-users');
+  if(bku)bku.addEventListener('click',()=>setState({saView:'users'}));
+
+  // level collapse toggles (school achievements)
+  document.querySelectorAll('[data-lvltoggle]').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.lvltoggle;
+    const idx=S.expandedLevels.indexOf(key);
+    const next=idx>=0?S.expandedLevels.filter(k=>k!==key):[...S.expandedLevels,key];
+    setState({expandedLevels:next});
+  }));
+
+  // ppd admin nav
+  document.querySelectorAll('[data-ppdview]').forEach(b=>b.addEventListener('click',()=>{ const ov=document.getElementById('reset-modal-overlay'); if(ov)ov.remove(); setState({ppdView:b.dataset.ppdview,selectedSchoolId:null,ppdFilter:null}); }));
+
+  // ppd reset password - open modal (inject into body to avoid fixed positioning issues)
+  document.querySelectorAll('[data-reset-school]').forEach(b=>b.addEventListener('click',()=>{
+    const sid=b.dataset.resetSchool;
+    const sch=DEMO_SCHOOLS.find(s=>s.id===sid);
+    let ov=document.getElementById('reset-modal-overlay');
+    if(ov)ov.remove();
+    ov=document.createElement('div');
+    ov.id='reset-modal-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    ov.innerHTML='<div style="background:linear-gradient(135deg,#1e40af,#2563eb);border-radius:20px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6)">'
+      +'<div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:20px">'
+      +'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+      +'</div>'
+      +'<div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:10px">Reset Kata Laluan?</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:24px">Kata laluan akaun <strong style="color:#fff">'+esc(sch?sch.name:'')+'</strong> akan direset kepada kata laluan sementara. Pentadbir sekolah perlu menukar semula selepas log masuk.</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +'<button id="reset-cancel" style="padding:11px;border-radius:10px;border:none;background:rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:13px;cursor:pointer">Batal</button>'
+      +'<button id="reset-confirm" style="padding:11px;border-radius:10px;border:none;background:#fff;color:#1e40af;font-weight:700;font-size:13px;cursor:pointer">Ya, Reset</button>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('reset-cancel').addEventListener('click',()=>ov.remove());
+    document.getElementById('reset-confirm').addEventListener('click',()=>{
+      ov.remove();
+      setState({resetDone:[...S.resetDone,sid]});
+    });
+    ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  }));
+
+  // ppd school cards (both from senarai and from analysis table)
+  document.querySelectorAll('[data-school]').forEach(b=>b.addEventListener('click',()=>setState({ppdView:'school_detail',selectedSchoolId:b.dataset.school,ppdFilter:null,expandedPpdRecs:[]})));
+
+  // ppd back button
+  const bpb=document.getElementById('btn-ppd-back');
+  if(bpb)bpb.addEventListener('click',()=>setState({ppdView:'schools',selectedSchoolId:null,ppdFilter:null}));
+
+  // ppd filter cards
+  document.querySelectorAll('[data-ppd-filter]').forEach(b=>b.addEventListener('click',()=>setState({ppdFilter:S.ppdFilter===b.dataset.ppdFilter?null:b.dataset.ppdFilter,selectedSchoolId:S.selectedSchoolId,expandedPpdRecs:[]})));
+
+  // ppd record expand toggle
+  document.querySelectorAll('[data-ppd-rec]').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.ppdRec;
+    const idx=S.expandedPpdRecs.indexOf(key);
+    setState({expandedPpdRecs:idx>=0?S.expandedPpdRecs.filter(k=>k!==key):[...S.expandedPpdRecs,key]});
+  }));
+
+  // school achievements nav
+  const bsn=document.getElementById('btn-school-new');
+  if(bsn)bsn.addEventListener('click',()=>setState({saView:'school_form',sf:{program:'',tarikh:'',level:'',tahap:'',kategori:'',pautanEviden:'',catatan:''}}));
+
+  const bsb=document.getElementById('btn-school-back');
+  if(bsb)bsb.addEventListener('click',()=>setState({saView:'school_achievements'}));
+  const bsb2=document.getElementById('btn-school-back2');
+  if(bsb2)bsb2.addEventListener('click',()=>setState({saView:'school_achievements'}));
+
+  // school form save
+  const bss=document.getElementById('btn-school-save');
+  if(bss)bss.addEventListener('click',()=>{
+    const newRec={id:'sr'+Date.now(),...S.sf};
+    setState({schoolRecords:[...S.schoolRecords,newRec],saView:'school_achievements'});
+  });
+
+  // school form live update
+  const sfmap={program:'program',tarikh:'tarikh',level:'level',tahap:'tahap',kategori:'kategori',pautanEviden:'pautanEviden',catatan:'catatan'};
+  Object.keys(sfmap).forEach(id=>{
+    const el=document.getElementById('sf-'+id);
+    if(!el)return;
+    const update=()=>{
+      S.sf[sfmap[id]]=el.value;
+      const canSave=S.sf.program&&S.sf.tarikh&&S.sf.level&&S.sf.tahap&&S.sf.kategori;
+      const btn=document.getElementById('btn-school-save');
+      if(btn)btn.disabled=!canSave;
+      if(['level','tahap','tarikh','pautanEviden'].includes(id))render();
+    };
+    el.addEventListener('input',update);
+    if(el.tagName==='SELECT')el.addEventListener('change',update);
+  });
+
+  // detail rows
+  document.querySelectorAll('[data-detail]').forEach(b=>b.addEventListener('click',()=>setState({view:'detail',detailId:b.dataset.detail})));
+
+  // form live update (step 1)
+  const fmap = {program:'program',tmula:'tarikhmula',takhir:'tarikhakhir',
+                level:'level',peranan:'peranan',tahap:'tahap',
+                pengesahan:'pengesahan',pautanEviden:'pautanEviden',catatan:'catatan'};
+  Object.keys(fmap).forEach(id=>{
+    const el=document.getElementById('f-'+id);
+    if(!el)return;
+    const update = ()=>{
+      S.f[fmap[id]]=el.value;
+      const violation=isJurulatihViolation(S.f.peranan,S.f.level);
+      const canNext=S.f.program&&S.f.tarikhmula&&S.f.level&&S.f.peranan&&S.f.tahap&&S.f.pengesahan&&!violation;
+      const nb2=document.getElementById('btn-next');
+      if(nb2) nb2.disabled=!canNext;
+      if(['level','peranan'].includes(id)) render(); // re-render for notes/validation
+    };
+    el.addEventListener('input', update);
+    if(el.tagName==='SELECT') el.addEventListener('change', update);
+  });
+
+  // next / prev / cancel
+  const nx=document.getElementById('btn-next');
+  if(nx)nx.addEventListener('click',()=>setState({formStep:2}));
+  const pv=document.getElementById('btn-prev');
+  if(pv)pv.addEventListener('click',()=>setState({formStep:1}));
+  const cc=document.getElementById('btn-cancel');
+  if(cc)cc.addEventListener('click',()=>setState({view:'dashboard'}));
+
+  // upload zone
+  const uz=document.getElementById('upzone');
+  if(uz&&!S.f.hasSijil)uz.addEventListener('click',()=>{
+    setState({f:{...S.f,hasSijil:true}});
+  });
+
+  // extract
+  const ex=document.getElementById('btn-extract');
+  if(ex)ex.addEventListener('click',()=>{
+    setState({extracting:true});
+    setTimeout(()=>setState({extracting:false,extracted:true}),1800);
+  });
+
+  // draft
+  const dr=document.getElementById('btn-draft');
+  if(dr)dr.addEventListener('click',()=>{
+    setState({generating:true,draftText:'',draftDone:false});
+    const tahapLabel = TAHAP_MAP[S.f.tahap]?.short || '';
+    const pgsh = S.f.pengesahan ? ` Pencapaian ini disahkan melalui ${S.f.pengesahan}.` : '';
+    const full = `Guru telah menyertai ${S.f.program} di peringkat ${LVL[S.f.level]?.label||S.f.level} sebagai ${S.f.peranan}${tahapLabel?` dan mencapai ${tahapLabel}`:''}, membuktikan komitmen peribadi beliau dalam meningkatkan profesionalisme dalam bidang pendidikan.${pgsh} Pencapaian ini merupakan pencapaian individu guru yang diiktiraf secara rasmi oleh KPM, mencerminkan kualiti dan kecemerlangan guru yang menyumbang kepada Standard 5.4.1 Pencapaian Guru dalam SKPM Kualiti@Sekolah ${TAHUN_SEMASA}.`;
+    let ci=0;
+    const iv=setInterval(()=>{
+      ci+=4;
+      const cur=full.slice(0,ci);
+      const ta=document.getElementById('ta-draft');
+      if(ta)ta.value=cur;
+      S.draftText=cur;
+      if(ci>=full.length){
+        clearInterval(iv);
+        setState({generating:false,draftText:full,draftDone:true});
+      }
+    },22);
+  });
+
+  // submit
+  const sb=document.getElementById('btn-submit');
+  if(sb)sb.addEventListener('click',()=>{
+    const ta=document.getElementById('ta-draft');
+    const draft=ta?ta.value:S.draftText;
+    const newRec={
+      id:'r'+Date.now(),
+      program:S.f.program,
+      level:S.f.level,peranan:S.f.peranan,
+      tarikh:S.f.tarikhmula,
+      tahap:S.f.tahap,pengesahan:S.f.pengesahan,
+      pautanEviden:S.f.pautanEviden,
+      status:'pending',draft:draft||null,
+      tags:[`#${LVL[S.f.level]?.label||S.f.level}`,`#5.4.1`],
+    };
+    S.records=[newRec,...S.records];
+    setState({view:'dashboard',formStep:1});
+  });
+}
+
+render();
+</script>
