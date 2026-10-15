@@ -81,7 +81,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* --- Shell --------------------------------------------------- */
 .shell{display:flex;height:100%;overflow:hidden}
-.sidebar{width:228px;flex-shrink:0;background:linear-gradient(175deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar{width:228px;flex-shrink:0;background:linear-gradient(175deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;display:flex;flex-direction:column;overflow:hidden}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 0 var(--border),0 2px 12px rgba(15,23,42,.04)}
 .content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
@@ -90,7 +90,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
 .sb-logo .mark{font-family:var(--h);font-size:22px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(90deg,#93c5fd,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sb-logo .sub{font-size:10.5px;color:rgba(255,255,255,.42);margin-top:2px}
-.sb-section{padding:12px 12px 2px}
+.sb-section{padding:12px 12px 2px;flex:1;overflow-y:auto}
 .sb-section-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.32);padding:0 8px;margin-bottom:4px}
 .sb-btn{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:rgba(255,255,255,.55);font-size:13px;font-family:var(--b);font-weight:500;padding:9px 12px;border-radius:10px;cursor:pointer;text-align:left;transition:background .15s,color .15s}
 .sb-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
@@ -98,6 +98,10 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .sb-btn.active svg{opacity:1}
 .sb-btn svg{flex-shrink:0;opacity:.65}
 .sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.sb-footer-btn{background:none;border:none;color:#fff;cursor:pointer;text-align:left;width:100%;transition:background .2s;border-radius:0}
+.sb-footer-btn:hover{background:rgba(255,255,255,.08)}
+.sb-footer-gear{margin-left:auto;opacity:0;transition:opacity .2s;flex-shrink:0}
+.sb-footer-btn:hover .sb-footer-gear{opacity:.6}
 .av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;border:2px solid rgba(255,255,255,.3)}
 .sb-uname{font-size:11.5px;font-weight:700;color:#fff}
 .sb-urole{font-size:10.5px;color:rgba(255,255,255,.45)}
@@ -247,6 +251,40 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
   .sb-logo .sub,.role-sw,.sb-btn span,.sb-uname,.sb-urole,.sb-ppd{display:none}
   .stat-row{grid-template-columns:1fr 1fr}
   .frow,.frow3{grid-template-columns:1fr}
+}
+
+/* -- School Profile ------------------------------------------- */
+.pf-wrap{display:flex;flex-direction:column;gap:24px;padding:4px 0}
+.pf-hero{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 60%,#3b82f6 100%);border-radius:16px;padding:28px 32px;color:#fff;box-shadow:0 4px 24px rgba(37,99,235,.25)}
+.pf-avatar{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;flex-shrink:0;border:3px solid rgba(255,255,255,.4)}
+.pf-hero-info{flex:1;min-width:0}
+.pf-school-name{font-size:1.35rem;font-weight:700;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.pf-badge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:600}
+.pf-kod{font-size:.8rem;opacity:.8;font-family:monospace}
+.pf-gred{background:#f59e0b;color:#1c1917;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700}
+.pf-ppd{font-size:.82rem;opacity:.75}
+.pf-hero-actions{display:flex;gap:8px;flex-shrink:0}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pf-card{background:var(--card,#fff);border:1px solid var(--bdr,#e2e8f0);border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:2px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pf-section-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;border-bottom:2px solid #e0e7ff;padding-bottom:8px;margin-bottom:12px}
+.pf-field{display:flex;flex-direction:column;gap:3px;padding:6px 0;border-bottom:1px solid var(--bdr,#f1f5f9)}
+.pf-field:last-child{border-bottom:none}
+.pf-lbl{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8}
+.pf-val{font-size:.92rem;color:var(--fg,#1e293b);font-weight:500}
+.pf-inp{font-size:.92rem;color:var(--fg,#1e293b);background:var(--bg,#eef2ff);border:1.5px solid #6366f1;border-radius:6px;padding:5px 9px;outline:none;width:100%;box-sizing:border-box}
+.pf-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.pf-stat{text-align:center;background:#f8fafc;border-radius:10px;padding:16px 8px;border:1px solid var(--bdr,#e2e8f0)}
+.pf-stat-val{font-size:1.8rem;font-weight:800;color:#2563eb}
+.pf-stat-lbl{font-size:.75rem;color:#64748b;margin-top:2px}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#6366f1,#2563eb);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+.btn-outline{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;padding:8px 14px;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-outline:hover{background:rgba(255,255,255,.25)}
+@media(max-width:640px){
+  .pf-grid{grid-template-columns:1fr}
+  .pf-hero{flex-wrap:wrap}
+  .pf-hero-actions{width:100%}
 }
 </style>
 
@@ -521,9 +559,11 @@ let S = {
   detailId: null,
 
   // school admin sub-views
-  saView: 'analysis',  // analysis | users | teacher_detail | school_achievements | school_form
+  saView: 'analysis',  // analysis | users | teacher_detail | school_achievements | school_form | school_profile
   selectedTeacherId: null,
   saFilter: null,      // active detail panel: 'guru_layak' | 'guru_tidak' | 'skl_layak' | 'skl_tidak'
+  _profileEdit: false,
+  _profileReadOnly: false,
 
   // ppd admin sub-views
   ppdView: 'analysis',  // analysis | schools | school_detail | reset_password
@@ -1005,6 +1045,7 @@ function sidebarAdmin() {
     { sv:'school_achievements',label:'Pencapaian Sekolah',       icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
     { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
     { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
+    { sv:'school_profile',     label:'Profil Sekolah',            icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><div class="mark">SK@S</div><div class="sub">Sistem Kualiti Sekolah</div></div>
@@ -1016,10 +1057,11 @@ function sidebarAdmin() {
         return `<button class="sb-btn${active?' active':''}" data-saview="${n.sv}">${n.icon}<span>${n.label}</span></button>`;
       }).join('')}
     </div>
-    <div class="sb-footer">
-      <div class="av">PK</div>
-      <div><div class="sb-uname">Pn. Kamariah Ali</div><div class="sb-urole">Pentadbir Sekolah</div></div>
-    </div>
+    <button class="sb-footer sb-footer-btn" data-pfooter title="Kemaskini Profil Sekolah">
+      <div class="av">SK</div>
+      <div><div class="sb-uname">SK Wangsa Maju 1</div><div class="sb-urole">BBA3021</div></div>
+      <div class="sb-footer-gear">${i('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>')}</div>
+    </button>
   </aside>`;
 }
 
@@ -1547,6 +1589,85 @@ function viewSchoolForm() {
   </div>`;
 }
 
+/* -- School Profile view (school admin) ------------------------ */
+function viewSchoolProfile() {
+  const school = {
+    nama: 'SK Wangsa Maju 1',
+    kod: 'BBA3021',
+    jenis: 'Sekolah Kebangsaan',
+    ppd: 'PPD Gombak',
+    negeri: 'Wilayah Persekutuan Kuala Lumpur',
+    alamat: 'Jalan 12, Wangsa Maju, 53300 Kuala Lumpur',
+    poskod: '53300',
+    bandar: 'Kuala Lumpur',
+    telefon: '03-4149 2200',
+    faks: '03-4149 2201',
+    emel: 'skwm1@moe.gov.my',
+    gred: 'A',
+    bilGuru: 48,
+    bilMurid: 1240,
+    sesi: '2026',
+  };
+
+  const editing = S._profileEdit || false;
+
+  const field = (lbl, val, key, type='text') => editing
+    ? `<div class="pf-field"><label class="pf-lbl">${lbl}</label><input class="pf-inp" type="${type}" value="${val}" data-pfkey="${key}"/></div>`
+    : `<div class="pf-field"><label class="pf-lbl">${lbl}</label><div class="pf-val">${val||'<span style="opacity:.45">-</span>'}</div></div>`;
+
+  const hdr = (t) => `<div class="pf-section-hdr">${t}</div>`;
+
+  return `
+  <div class="pf-wrap">
+    <div class="pf-hero">
+      <div class="pf-avatar">${school.nama.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}</div>
+      <div class="pf-hero-info">
+        <div class="pf-school-name">${school.nama}</div>
+        <div class="pf-meta"><span class="pf-badge">${school.jenis}</span><span class="pf-kod">${school.kod}</span><span class="pf-gred">Gred ${school.gred}</span></div>
+        <div class="pf-ppd">${school.ppd} &middot; ${school.negeri}</div>
+      </div>
+      <div class="pf-hero-actions">
+        ${editing
+          ? `<button class="btn-outline" data-pfcancel>Batal</button><button class="btn-primary" data-pfsave>Simpan</button>`
+          : S._profileReadOnly ? ''
+          : `<button class="btn-primary" data-pfedit>${IC.edit}<span>Kemaskini</span></button>`}
+      </div>
+    </div>
+
+    <div class="pf-grid">
+      <div class="pf-card">
+        ${hdr('Maklumat Asas')}
+        ${field('Nama Sekolah', school.nama, 'nama')}
+        ${field('Kod Sekolah', school.kod, 'kod')}
+        ${field('Jenis Sekolah', school.jenis, 'jenis')}
+        ${field('Gred Sekolah', school.gred, 'gred')}
+        ${field('Sesi Semasa', school.sesi, 'sesi')}
+      </div>
+      <div class="pf-card">
+        ${hdr('Alamat &amp; Lokasi')}
+        ${field('Alamat', school.alamat, 'alamat')}
+        ${field('Poskod', school.poskod, 'poskod')}
+        ${field('Bandar', school.bandar, 'bandar')}
+        ${field('PPD', school.ppd, 'ppd')}
+        ${field('Negeri', school.negeri, 'negeri')}
+      </div>
+      <div class="pf-card">
+        ${hdr('Maklumat Hubungan')}
+        ${field('No. Telefon', school.telefon, 'telefon', 'tel')}
+        ${field('No. Faks', school.faks, 'faks', 'tel')}
+        ${field('Emel Rasmi', school.emel, 'emel', 'email')}
+      </div>
+      <div class="pf-card">
+        ${hdr('Statistik Sekolah')}
+        <div class="pf-stats-grid">
+          <div class="pf-stat"><div class="pf-stat-val">${school.bilGuru}</div><div class="pf-stat-lbl">Jumlah Guru</div></div>
+          <div class="pf-stat"><div class="pf-stat-val">${school.bilMurid}</div><div class="pf-stat-lbl">Jumlah Murid</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 /* -- Users view (school admin) --------------------------------- */
 function viewUsers() {
   return `
@@ -2037,11 +2158,12 @@ function buildApp() {
     </div>`;
   }
   if (S.role === 'school_admin') {
-    const titles = { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah' };
+    const titles = { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' };
     const contentView = S.saView==='users' ? viewUsers()
       : S.saView==='teacher_detail'     ? viewTeacherDetail()
       : S.saView==='school_achievements'? viewSchoolAchievements()
       : S.saView==='school_form'        ? viewSchoolForm()
+      : S.saView==='school_profile'     ? viewSchoolProfile()
       : viewSchoolAdmin();
     return `${sidebarAdmin()}
     <div class="main">
@@ -2084,7 +2206,8 @@ function bind() {
   document.querySelectorAll('[data-saview]').forEach(b=>b.addEventListener('click',()=>{
     const sv=b.dataset.saview;
     if(sv==='school_form') setState({saView:'school_form',saFilter:null,sf:{program:'',tarikh:'',level:'',tahap:'',kategori:'',pautanEviden:'',catatan:''}});
-    else setState({saView:sv,saFilter:null});
+    else if(sv==='school_profile') setState({saView:'school_profile',saFilter:null,_profileEdit:false,_profileReadOnly:true});
+    else setState({saView:sv,saFilter:null,_profileEdit:false,_profileReadOnly:false});
   }));
 
   // teacher dashboard filter cards (layak / tidak)
@@ -2099,6 +2222,17 @@ function bind() {
   // back to users list
   const bku=document.getElementById('btn-back-users');
   if(bku)bku.addEventListener('click',()=>setState({saView:'users'}));
+
+  // school profile edit / save / cancel
+  const pfooter=document.querySelector('[data-pfooter]');
+  if(pfooter)pfooter.addEventListener('click',()=>setState({saView:'school_profile',_profileEdit:true,_profileReadOnly:false,saFilter:null}));
+
+  const pfedit=document.querySelector('[data-pfedit]');
+  if(pfedit)pfedit.addEventListener('click',()=>setState({_profileEdit:true,_profileReadOnly:false}));
+  const pfcancel=document.querySelector('[data-pfcancel]');
+  if(pfcancel)pfcancel.addEventListener('click',()=>setState({_profileEdit:false}));
+  const pfsave=document.querySelector('[data-pfsave]');
+  if(pfsave)pfsave.addEventListener('click',()=>setState({_profileEdit:false}));
 
   // level collapse toggles (school achievements)
   document.querySelectorAll('[data-lvltoggle]').forEach(b=>b.addEventListener('click',()=>{
