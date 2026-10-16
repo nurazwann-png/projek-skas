@@ -1703,31 +1703,48 @@ function viewSchoolAdmin() {
     <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Analisis Mengikut Peringkat</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       ${(()=>{
-        const barChart = (recs, klasifikasiFn, aspek) => {
+        const lvlColors = {INT:'#7c3aed',NAT:'#2563eb',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
+        const barChart = (recs, klasifikasiFn, aspek, chipColor) => {
           const layakRecs = recs.filter(r=>klasifikasiFn(r).layak);
+          const total = recs.length;
           const max = Math.max(1,...LEVELS.map(l=>layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length));
-          return `<div class="panel">
-            <div class="ph"><span class="pt">${aspek}</span></div>
-            <div class="pb" style="display:flex;flex-direction:column;gap:8px">
-              ${LEVELS.filter(l=>LEVELS_LAYAK.includes(l.key)).map(l=>{
+          const pct = total>0?Math.round(layakRecs.length/total*100):0;
+          const levels = LEVELS.filter(l=>LEVELS_LAYAK.includes(l.key));
+          return `<div class="panel" style="overflow:hidden">
+            <div style="padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--t1)">${aspek}</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:2px">${layakRecs.length} rekod layak daripada ${total}</div>
+              </div>
+              <div style="text-align:center;flex-shrink:0">
+                <div style="font-size:22px;font-weight:800;color:${chipColor};line-height:1">${pct}%</div>
+                <div style="font-size:10px;color:var(--t3);margin-top:1px">Layak</div>
+              </div>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+              ${levels.map(l=>{
                 const cnt = layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length;
                 const w   = Math.round(cnt/max*100);
+                const col = lvlColors[l.key]||'#64748b';
                 return `<div>
-                  <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
-                    <span>${l.label}</span>
-                    <span style="font-weight:700;color:var(--ok)">${cnt}</span>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                    <div style="display:flex;align-items:center;gap:7px">
+                      <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;display:inline-block"></span>
+                      <span style="font-size:12px;font-weight:600;color:var(--t1)">${l.label}</span>
+                    </div>
+                    <span style="font-size:13px;font-weight:800;color:${cnt>0?col:'var(--t3)'};">${cnt}</span>
                   </div>
-                  <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
-                    <div style="height:100%;width:${w}%;background:var(--ok);border-radius:99px"></div>
+                  <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
+                    <div style="height:100%;width:${w}%;background:${col};border-radius:99px;transition:width .4s ease"></div>
                   </div>
                 </div>`;
               }).join('')}
-              ${layakRecs.length===0?'<div class="empty" style="padding:8px 0">Tiada rekod layak.</div>':''}
+              ${layakRecs.length===0?'<div class="empty" style="padding:4px 0;font-size:12px">Tiada rekod layak.</div>':''}
             </div>
           </div>`;
         };
-        return barChart(allTeacherRecs, aiKlasifikasi, 'Pencapaian Guru 5.4.1')
-             + barChart(sRecs, aiKlasifikasiSekolah, 'Pencapaian Sekolah 5.4.2');
+        return barChart(allTeacherRecs, aiKlasifikasi, 'Pencapaian Guru 5.4.1', '#2563eb')
+             + barChart(sRecs, aiKlasifikasiSekolah, 'Pencapaian Sekolah 5.4.2', '#7c3aed');
       })()}
     </div>
   </div>
@@ -1738,91 +1755,109 @@ function viewSchoolAdmin() {
       Analisis Kategori Pencapaian Sekolah
       <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.2</span>
     </div>
-    <div class="panel">
-      <div class="pb" style="display:flex;flex-direction:column;gap:8px">
-        ${(()=>{
-          const maxKat = Math.max(1,...KATEGORI.map(k=>sRecs.filter(r=>r.kategori===k.val).length));
-          return KATEGORI.map(k=>{
-            const total  = sRecs.filter(r=>r.kategori===k.val).length;
-            const layakK = sRecs.filter(r=>r.kategori===k.val&&aiKlasifikasiSekolah(r).layak).length;
-            const w      = Math.round(total/maxKat*100);
-            return `<div>
-              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
-                <span style="font-weight:500">${k.label}</span>
-                <span><span style="color:var(--ok);font-weight:700">${layakK}</span><span style="color:var(--t3)"> / ${total}</span></span>
-              </div>
-              <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
-                <div style="height:100%;width:${w}%;background:var(--accent);border-radius:99px"></div>
-              </div>
-            </div>`;
-          }).join('');
-        })()}
-        ${sRecs.length===0?'<div class="empty">Tiada rekod pencapaian sekolah.</div>':''}
+    ${(()=>{
+      const katColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2','#64748b'];
+      const katIcons  = ['🏆','🎓','⚽','🎨','🌍','🔬','📋'];
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+        ${KATEGORI.map((k,ki)=>{
+          const total  = sRecs.filter(r=>r.kategori===k.val).length;
+          const layakK = sRecs.filter(r=>r.kategori===k.val&&aiKlasifikasiSekolah(r).layak).length;
+          const pct    = total>0?Math.round(layakK/total*100):0;
+          const col    = katColors[ki%katColors.length];
+          const dash   = 2*Math.PI*22; // circumference r=22
+          const offset = dash*(1-pct/100);
+          return `<div style="background:var(--surface);border-radius:14px;border:1.5px solid var(--border);padding:16px 14px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:18px">${katIcons[ki%katIcons.length]}</span>
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="4"/>
+                <circle cx="22" cy="22" r="18" fill="none" stroke="${col}" stroke-width="4"
+                  stroke-dasharray="${2*Math.PI*18}" stroke-dashoffset="${2*Math.PI*18*(1-pct/100)}"
+                  stroke-linecap="round" transform="rotate(-90 22 22)"/>
+                <text x="22" y="26" text-anchor="middle" font-size="10" font-weight="800" fill="${col}">${pct}%</text>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--t1);line-height:1.3">${k.label}</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:3px"><span style="color:${col};font-weight:700">${layakK}</span> layak / ${total} rekod</div>
+            </div>
+            <div style="background:var(--border);border-radius:99px;height:5px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${col};border-radius:99px"></div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
-    </div>
+      ${sRecs.length===0?'<div class="panel"><div class="pb"><div class="empty">Tiada rekod pencapaian sekolah.</div></div></div>':''}`;
+    })()}
   </div>
 
   <!-- &#9315; Utiliti Slot 5.4.2 -->
   <div style="margin-bottom:24px">
     <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px;display:flex;align-items:center;gap:8px">
       Utiliti Slot Pencapaian Sekolah
-      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">Maks. 20 slot keseluruhan &middot; Keutamaan tertinggi dahulu</span>
+      <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">Maks. 20 slot &middot; Keutamaan tertinggi dahulu</span>
     </div>
-    <div class="panel">
-      <div class="pb" style="display:flex;flex-direction:column;gap:12px">
-        ${(()=>{
-          const MAX_SLOT = 20;
-          // sort records: highest level first (lowest tier number = highest)
-          const levelOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
-          const sorted = [...sRecs].sort((a,b)=>levelOrder.indexOf(a.level)-levelOrder.indexOf(b.level));
-          const counted  = sorted.slice(0, MAX_SLOT);
-          const overflow = sorted.slice(MAX_SLOT);
-          const used     = counted.length;
-          const pct      = Math.round(used/MAX_SLOT*100);
-          const col      = pct>=90?'var(--danger)':pct>=60?'#f59e0b':'var(--ok)';
+    ${(()=>{
+      const MAX_SLOT = 20;
+      const lvlColors2 = {INT:'#7c3aed',NAT:'#2563eb',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
+      const levelOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
+      const sorted   = [...sRecs].sort((a,b)=>levelOrder.indexOf(a.level)-levelOrder.indexOf(b.level));
+      const counted  = sorted.slice(0,MAX_SLOT);
+      const overflow = sorted.slice(MAX_SLOT);
+      const used     = counted.length;
+      const pct      = Math.round(used/MAX_SLOT*100);
+      const col      = pct>=90?'#dc2626':pct>=60?'#f59e0b':'#059669';
+      const breakdown= LEVELS.filter(l=>LEVELS_SEKOLAH.includes(l.key)).map(l=>({...l,cnt:counted.filter(r=>r.level===l.key).length})).filter(l=>l.cnt>0);
 
-          // breakdown per level among counted slots
-          const breakdown = LEVELS.filter(l=>LEVELS_SEKOLAH.includes(l.key)).map(l=>{
-            const cnt = counted.filter(r=>r.level===l.key).length;
-            return { ...l, cnt };
-          }).filter(l=>l.cnt>0);
+      // 20 slot boxes
+      const boxes = Array.from({length:MAX_SLOT},(_,idx)=>{
+        const rec = counted[idx];
+        const bc  = rec ? (lvlColors2[rec.level]||'#64748b') : 'var(--border)';
+        const title = rec ? rec.program+' ('+( LVL[rec.level]?.label||rec.level)+')' : 'Kosong';
+        return `<div title="${esc(title)}" style="width:100%;aspect-ratio:1;border-radius:6px;background:${bc};opacity:${rec?1:.25};cursor:${rec?'default':'default'}"></div>`;
+      }).join('');
 
-          return `
-          <div style="display:flex;justify-content:space-between;align-items:center">
+      return `<div class="panel">
+        <div class="pb" style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- top row: big number + slot grid -->
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center">
+            <div style="text-align:center;padding:16px 20px;border-radius:12px;background:${col}18;border:2px solid ${col}33">
+              <div style="font-size:40px;font-weight:900;color:${col};line-height:1">${used}</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:2px">/ ${MAX_SLOT} slot</div>
+              <div style="font-size:12px;font-weight:700;color:${col};margin-top:6px">${MAX_SLOT-used} baki</div>
+            </div>
             <div>
-              <span style="font-size:32px;font-weight:800;color:${col}">${used}</span>
-              <span style="font-size:14px;color:var(--t3);margin-left:4px">/ ${MAX_SLOT} slot digunakan</span>
+              <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:8px">${boxes}</div>
+              <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
+                <span>0</span><span style="font-weight:700;color:${col}">${pct}% digunakan</span><span>20</span>
+              </div>
             </div>
-            <span style="font-size:13px;font-weight:700;color:${col}">${MAX_SLOT-used} baki</span>
-          </div>
-          <div style="background:var(--border);border-radius:99px;height:10px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s"></div>
           </div>
 
-          ${breakdown.length?`<div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:600">Pecahan mengikut peringkat (keutamaan tertinggi)</div>
-            <div style="display:flex;flex-direction:column;gap:5px">
-              ${breakdown.map((l,idx)=>`
-              <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:11px;min-width:20px;color:var(--t3);text-align:right">${idx+1}.</span>
-                <span style="font-size:12px;min-width:110px">${l.label}</span>
-                <div style="flex:1;background:var(--border);border-radius:99px;height:5px;overflow:hidden">
-                  <div style="height:100%;width:${Math.round(l.cnt/used*100)}%;background:var(--ok);border-radius:99px"></div>
-                </div>
-                <span style="font-size:12px;font-weight:700;color:var(--ok);min-width:24px;text-align:right">${l.cnt}</span>
-              </div>`).join('')}
-            </div>
+          <!-- legend -->
+          ${breakdown.length?`<div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${breakdown.map(l=>`<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:${lvlColors2[l.key]||'#64748b'}18;border:1px solid ${lvlColors2[l.key]||'#64748b'}44">
+              <span style="width:8px;height:8px;border-radius:50%;background:${lvlColors2[l.key]||'#64748b'};display:inline-block"></span>
+              <span style="font-size:11px;font-weight:600;color:var(--t1)">${l.label}</span>
+              <span style="font-size:12px;font-weight:800;color:${lvlColors2[l.key]||'#64748b'}">${l.cnt}</span>
+            </div>`).join('')}
           </div>`:''}
 
-          ${overflow.length?`<div style="padding:8px 12px;background:var(--danger-l);border-radius:8px;font-size:12px;color:var(--danger)">
-            ! ${overflow.length} rekod melebihi had 20 slot -- tidak dikira dalam SKPM 5.4.2:<br>
-            ${overflow.map(r=>`<strong>${r.program}</strong> (${LVL[r.level]?.label||r.level})`).join(', ')}
-          </div>`:`<div style="padding:8px 12px;background:var(--ok-l);border-radius:8px;font-size:12px;color:var(--ok)">
-            &#10003; Semua rekod dalam had slot yang dibenarkan.
-          </div>`}`;
-        })()}
-      </div>
-    </div>
+          ${overflow.length
+            ?`<div style="padding:10px 14px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca;font-size:12px;color:#dc2626">
+                <b>⚠ ${overflow.length} rekod melebihi had slot</b> — tidak dikira dalam SKPM 5.4.2:<br>
+                <span style="opacity:.8">${overflow.map(r=>`${r.program} (${LVL[r.level]?.label||r.level})`).join(', ')}</span>
+              </div>`
+            :`<div style="padding:10px 14px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;font-size:12px;color:#15803d">
+                ✓ Semua rekod dalam had slot yang dibenarkan.
+              </div>`}
+        </div>
+      </div>`;
+    })()}
   </div>
 
   <!-- &#9316; Analisis Peranan Guru -->
@@ -1831,28 +1866,53 @@ function viewSchoolAdmin() {
       Analisis Peranan Guru
       <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.1</span>
     </div>
-    <div class="panel">
-      <div class="pb" style="display:flex;flex-direction:column;gap:8px">
-        ${(()=>{
-          const maxP = Math.max(1,...PERANAN.map(p=>allTeacherRecs.filter(r=>r.peranan===p.val).length));
-          return PERANAN.map(p=>{
-            const total  = allTeacherRecs.filter(r=>r.peranan===p.val).length;
-            const layakP = tLayak.filter(r=>r.peranan===p.val).length;
-            const w      = Math.round(total/maxP*100);
-            return `<div>
-              <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
-                <span style="font-weight:500">${p.val}</span>
-                <span><span style="color:var(--ok);font-weight:700">${layakP}</span><span style="color:var(--t3)"> layak / ${total} rekod</span></span>
+    ${(()=>{
+      const perananColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777'];
+      const perananIcons  = ['🥇','🎽','👨‍🏫','🎯','🏅'];
+      const maxP = Math.max(1,...PERANAN.map(p=>allTeacherRecs.filter(r=>r.peranan===p.val).length));
+      const rows = PERANAN.map((p,pi)=>{
+        const total  = allTeacherRecs.filter(r=>r.peranan===p.val).length;
+        const layakP = tLayak.filter(r=>r.peranan===p.val).length;
+        const tidakP = total - layakP;
+        const pct    = total>0?Math.round(layakP/total*100):0;
+        const col    = perananColors[pi%perananColors.length];
+        const wLayak = total>0?Math.round(layakP/maxP*100):0;
+        const wTidak = total>0?Math.round(tidakP/maxP*100):0;
+        return `<div style="background:var(--surface);border-radius:12px;border:1.5px solid var(--border);padding:14px 16px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <span style="font-size:20px">${perananIcons[pi%perananIcons.length]}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:var(--t1)">${p.val}</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:1px">${total} rekod</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:18px;font-weight:800;color:${col}">${pct}%</div>
+              <div style="font-size:10px;color:var(--t3)">layak</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:#059669;font-weight:600;min-width:42px">Layak</span>
+              <div style="flex:1;background:var(--border);border-radius:99px;height:7px;overflow:hidden">
+                <div style="height:100%;width:${wLayak}%;background:#059669;border-radius:99px"></div>
               </div>
-              <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
-                <div style="height:100%;width:${w}%;background:var(--accent);border-radius:99px"></div>
+              <span style="font-size:11px;font-weight:700;color:#059669;min-width:18px;text-align:right">${layakP}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:#dc2626;font-weight:600;min-width:42px">Tidak</span>
+              <div style="flex:1;background:var(--border);border-radius:99px;height:7px;overflow:hidden">
+                <div style="height:100%;width:${wTidak}%;background:#fca5a5;border-radius:99px"></div>
               </div>
-            </div>`;
-          }).join('');
-        })()}
-        ${allTeacherRecs.length===0?'<div class="empty">Tiada rekod.</div>':''}
-      </div>
-    </div>
+              <span style="font-size:11px;font-weight:700;color:#dc2626;min-width:18px;text-align:right">${tidakP}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+        ${rows}
+        ${allTeacherRecs.length===0?'<div class="panel" style="grid-column:1/-1"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>':''}
+      </div>`;
+    })()}
   </div>`;
 }
 
