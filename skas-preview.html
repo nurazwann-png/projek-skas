@@ -592,6 +592,7 @@ let S = {
   expandedPpdRecs: [],
   ppdSchoolSearch: '',  // search text in Senarai Sekolah
   ppdSchoolJenis: 'all', // filter by jenis: 'all'|'SK'|'SJKC'|'SJKT'
+  ppdSchoolStatus: 'all', // filter by status: 'all'|'lemah'|'baik'
   ppdNotifSeen: false,   // whether bell notification has been seen
   ppdYearFilter: TAHUN_SEMASA, // cadangan B: year filter for analysis (number)
 
@@ -654,6 +655,7 @@ function sidebar() {
     { v:'dashboard', label:'Papan Pemuka',    icon:IC.dash },
     { v:'records',   label:'Rekod Pencapaian Saya', icon:i('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
     { v:'form',      label:'Tambah Pencapaian', icon:IC.plus },
+    { v:'gallery',   label:'Galeri Aktiviti',  icon:i('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo">
@@ -1001,34 +1003,56 @@ function viewRecords() {
     </div>`;
   }).join('');
 
-  // Cadangan H: progress tracker per peringkat
-  // Had: 20 rekod per peringkat untuk GURU (5.4.1) DAN SEKOLAH (5.4.2)
-  // 4 peringkat diiktiraf SKPM: Daerah, Negeri, Kebangsaan, Antarabangsa (Panduan ms.54)
-  // BAH dan SKL TIDAK dikira dalam SKPM 5.4 — simpan dalaman sahaja
+  // Progress tracker per peringkat (5.4.1)
+  // Had: 20 per peringkat — rekod tetap boleh diisi walaupun penuh
+  // AI akan cadangkan 20 rekod terbaik apabila melebihi had
   const HAD_PER_PERINGKAT = 20;
   const SKPM_LEVELS = ['INT','NAT','NEG','DAE']; // 4 peringkat diiktiraf sahaja
+  const TAHAP_SCORE = { T1:5, T2:4, T3:3, SH:2, SY:1 };
   const recsByLevel = {};
-  SKPM_LEVELS.forEach(k => { recsByLevel[k] = recs.filter(r=>r.level===k&&aiKlasifikasi(r).layak).length; });
-  const anyLayakByLevel = SKPM_LEVELS.some(k=>recsByLevel[k]>0);
+  const allLayakByLevel = {};
+  SKPM_LEVELS.forEach(k => {
+    const layakRecs = recs.filter(r=>r.level===k&&aiKlasifikasi(r).layak);
+    recsByLevel[k] = layakRecs.length;
+    // AI sort: tahap score desc, tarikh desc (terkini diutamakan)
+    allLayakByLevel[k] = [...layakRecs].sort((a,b)=>{
+      const sa = TAHAP_SCORE[a.tahap]||0, sb = TAHAP_SCORE[b.tahap]||0;
+      if(sb!==sa) return sb-sa;
+      return (b.tarikhmula||'').localeCompare(a.tarikhmula||'');
+    });
+  });
   const progressSection = `
   <div class="card" style="padding:14px 16px;margin-bottom:16px">
-    <div style="font-weight:700;font-size:13px;margin-bottom:2px">Pengisian Rekod SKPM 5.4.1</div>
-    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: ${HAD_PER_PERINGKAT} rekod layak setiap peringkat &middot; 4 peringkat diiktiraf (Panduan SKPM 2026, ms. 54)</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div style="font-weight:700;font-size:13px">Pengisian Rekod SKPM 5.4.1</div>
+      <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:#dbeafe;color:#1e40af">AI Aktif</span>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: ${HAD_PER_PERINGKAT} rekod/peringkat &middot; Tambah rekod tanpa had &mdash; AI pilih terbaik untuk SKPM (Panduan 2026, ms. 54)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
     ${SKPM_LEVELS.map(k=>{
       const col = LVL[k]?.color||'#888';
       const label = LVL[k]?.label||k;
       const count = recsByLevel[k];
       const pct = Math.min(count/HAD_PER_PERINGKAT*100,100);
       const penuh = count>=HAD_PER_PERINGKAT;
+      const lebih = count>HAD_PER_PERINGKAT;
+      const top20 = allLayakByLevel[k].slice(0,HAD_PER_PERINGKAT);
+      const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #3b82f644">
+        <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:4px">&#x2728; AI memilih ${HAD_PER_PERINGKAT} rekod terbaik untuk SKPM (daripada ${count} rekod layak):</div>
+        ${top20.slice(0,3).map((r,i)=>`<div style="font-size:10px;color:var(--t2);padding:1px 0">${i+1}. ${esc(r.program||'Rekod')} &mdash; ${TAHAP_MAP[r.tahap]?.short||r.tahap}</div>`).join('')}
+        ${count>HAD_PER_PERINGKAT+3?`<div style="font-size:10px;color:var(--t3);margin-top:2px">... dan ${HAD_PER_PERINGKAT-3} lagi rekod dipilih</div>`:''}
+      </div>` : '';
       return `<div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:12px;font-weight:700;color:${count>0?col:'var(--t3)'}">${label}</span>
-          <span style="font-size:11px;font-weight:700;color:${penuh?'#22c55e':count>0?col:'var(--t3)'}">${count} / ${HAD_PER_PERINGKAT}${penuh?' &#x2713; Penuh':''}</span>
+          <span style="font-size:11px;font-weight:700;color:${lebih?'#3b82f6':penuh?'#22c55e':count>0?col:'var(--t3)'}">
+            ${lebih?`${HAD_PER_PERINGKAT}/${count} (AI pilih)`:count+' / '+HAD_PER_PERINGKAT+(penuh?' &#x2713;':'')}
+          </span>
         </div>
         <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
+          <div style="height:100%;width:${pct}%;background:${lebih?'#3b82f6':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
         </div>
+        ${cadangan}
       </div>`;
     }).join('')}
     </div>
@@ -1523,6 +1547,7 @@ function sidebarAdmin() {
     { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
     { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
     { sv:'school_profile',     label:'Profil Sekolah',            icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
+    { sv:'gallery',            label:'Galeri Gambar',             icon:i('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><div class="mark">SK@S</div><div class="sub">Sistem Kualiti Sekolah</div></div>
@@ -2015,25 +2040,44 @@ function viewSchoolAchievements() {
     </div>
   </div>
 
-  <!-- Progress tracker 5.4.2: 20 per peringkat (sama seperti 5.4.1, Panduan SKPM 2026 ms.54) -->
+  <!-- Progress tracker 5.4.2: 20 per peringkat — rekod boleh melebihi had, AI pilih terbaik -->
   <div class="card" style="padding:14px 16px;margin-bottom:16px">
-    <div style="font-weight:700;font-size:13px;margin-bottom:2px">Pengisian Rekod SKPM 5.4.2</div>
-    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: 20 rekod layak setiap peringkat &middot; 4 peringkat diiktiraf (Panduan SKPM 2026, ms. 54)</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+      <div style="font-weight:700;font-size:13px">Pengisian Rekod SKPM 5.4.2</div>
+      <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:#dbeafe;color:#1e40af">AI Aktif</span>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: 20 rekod/peringkat &middot; Tambah rekod tanpa had &mdash; AI pilih terbaik untuk SKPM (Panduan 2026, ms. 54)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
       ${LEVELS_SEKOLAH.map(k=>{
         const col = LVL[k]?.color||'#888';
         const label = LVL[k]?.label||k;
-        const count = (grouped[k]||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
+        const TAHAP_SCORE_S = { T1:5, T2:4, T3:3, SH:2, SY:1 };
+        const layakRecs = (grouped[k]||[]).filter(r=>aiKlasifikasiSekolah(r).layak);
+        const count = layakRecs.length;
+        const top20S = [...layakRecs].sort((a,b)=>{
+          const sa=TAHAP_SCORE_S[a.tahap]||0, sb=TAHAP_SCORE_S[b.tahap]||0;
+          if(sb!==sa) return sb-sa;
+          return (b.tarikh||'').localeCompare(a.tarikh||'');
+        });
         const pct = Math.min(count/20*100,100);
         const penuh = count>=20;
+        const lebih = count>20;
+        const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #3b82f644">
+          <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:4px">&#x2728; AI memilih 20 rekod terbaik untuk SKPM (daripada ${count} rekod layak):</div>
+          ${top20S.slice(0,3).map((r,i)=>`<div style="font-size:10px;color:var(--t2);padding:1px 0">${i+1}. ${esc(r.program||'Rekod')} &mdash; ${TAHAP_MAP[r.tahap]?.short||r.tahap}</div>`).join('')}
+          ${count>23?`<div style="font-size:10px;color:var(--t3);margin-top:2px">... dan ${17} lagi rekod dipilih</div>`:''}
+        </div>` : '';
         return `<div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
             <span style="font-size:12px;font-weight:700;color:${count>0?col:'var(--t3)'}">${label}</span>
-            <span style="font-size:11px;font-weight:700;color:${penuh?'#22c55e':count>0?col:'var(--t3)'}">${count} / 20${penuh?' &#x2713; Penuh':''}</span>
+            <span style="font-size:11px;font-weight:700;color:${lebih?'#3b82f6':penuh?'#22c55e':count>0?col:'var(--t3)'}">
+              ${lebih?`20/${count} (AI pilih)`:count+' / 20'+(penuh?' &#x2713;':'')}
+            </span>
           </div>
           <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
+            <div style="height:100%;width:${pct}%;background:${lebih?'#3b82f6':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
           </div>
+          ${cadangan}
         </div>`;
       }).join('')}
     </div>
@@ -2910,14 +2954,34 @@ function viewPPDSchools() {
   };
   const search = (S.ppdSchoolSearch||'').toLowerCase();
   const jenisFilter = S.ppdSchoolJenis || 'all';
-  const filtered = DEMO_SCHOOLS.filter(sch => {
+  const statusFilter = S.ppdSchoolStatus || 'all';
+  // compute pct for each school for status filter
+  const withStats = DEMO_SCHOOLS.map(sch => {
+    const tRecs = sch.teachers.flatMap(t=>t.records||[]);
+    const tLayak = tRecs.filter(r=>aiKlasifikasi(r).layak).length;
+    const sLayak = (sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
+    const tTotal = tRecs.length; const sTotal = (sch.schoolRecords||[]).length;
+    const tPct = tTotal ? Math.round(tLayak/tTotal*100) : 0;
+    const sPct = sTotal ? Math.round(sLayak/sTotal*100) : 0;
+    return { sch, tLayak, sLayak, tTotal, sTotal, tPct, sPct };
+  });
+  const filtered = withStats.filter(({sch, tPct, sPct}) => {
     const matchSearch = !search || sch.name.toLowerCase().includes(search) || sch.kod.toLowerCase().includes(search);
     const matchJenis = jenisFilter === 'all' || sch.jenis === jenisFilter;
-    return matchSearch && matchJenis;
+    const matchStatus = statusFilter === 'all'
+      || (statusFilter === 'lemah' && (tPct < 50 || sPct < 50))
+      || (statusFilter === 'baik' && tPct >= 80 && sPct >= 80);
+    return matchSearch && matchJenis && matchStatus;
   });
-  const chipBtn = (val, label) => {
+  const chipJenis = (val, label) => {
     const active = jenisFilter === val;
-    return `<button data-jenis="${val}" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
+    return `<button data-jenis="${val}" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
+  };
+  const chipStatus = (val, label, col) => {
+    const active = statusFilter === val;
+    const bg = active ? (col||'var(--accent)') : 'transparent';
+    const border = active ? (col||'var(--accent)') : 'var(--bdr)';
+    return `<button data-status="${val}" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${border};background:${bg};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
   };
   return `<div class="sa-wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -2926,45 +2990,47 @@ function viewPPDSchools() {
         <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${filtered.length} / ${DEMO_SCHOOLS.length} sekolah</div>
       </div>
     </div>
-    <!-- Search + filter (cadangan 3) -->
+    <!-- Search + filter jenis + filter status (Cadangan 3 + P) -->
     <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:10px">
       <div style="position:relative">
         <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="ppd-school-search" type="text" placeholder="Cari nama atau kod sekolah..." value="${esc(S.ppdSchoolSearch||'')}" style="width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${chipBtn('all','Semua')}${chipBtn('SK','SK')}${chipBtn('SJKC','SJKC')}${chipBtn('SJKT','SJKT')}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;color:var(--t3);font-weight:600">Jenis:</span>
+        ${chipJenis('all','Semua')}${chipJenis('SK','SK')}${chipJenis('SJKC','SJKC')}${chipJenis('SJKT','SJKT')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;color:var(--t3);font-weight:600">Status:</span>
+        ${chipStatus('all','Semua','')}${chipStatus('lemah','Lemah &lt;50%','#ef4444')}${chipStatus('baik','Baik &ge;80%','#22c55e')}
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      ${filtered.length === 0 ? `<div style="text-align:center;padding:40px 20px;color:var(--t3);font-size:14px">Tiada sekolah dijumpai.</div>` : filtered.map(sch=>{
-        const tRecs = sch.teachers.flatMap(t=>t.records||[]);
-        const tLayak = tRecs.filter(r=>aiKlasifikasi(r).layak).length;
-        const sLayak = (sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
-        const tTotal = tRecs.length; const sTotal = (sch.schoolRecords||[]).length;
-        const tPct = tTotal ? Math.round(tLayak/tTotal*100) : 0;
-        const sPct = sTotal ? Math.round(sLayak/sTotal*100) : 0;
+      ${filtered.length === 0 ? `<div style="text-align:center;padding:40px 20px;color:var(--t3);font-size:14px">Tiada sekolah dijumpai.</div>` : filtered.map(({sch, tLayak, sLayak, tTotal, sTotal, tPct, sPct})=>{
         const bar = (pct,col) => `<div style="height:4px;border-radius:2px;background:var(--bdr);margin-top:5px;overflow:hidden">
           <div style="height:100%;width:${pct}%;background:${col};border-radius:2px;transition:width .3s"></div></div>`;
+        const statusDot = (tPct<50||sPct<50) ? `<span style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;display:inline-block"></span>`
+          : (tPct>=80&&sPct>=80) ? `<span style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0;display:inline-block"></span>` : '';
         return `<button data-school="${sch.id}" style="display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);cursor:pointer;text-align:left;width:100%;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
           <div style="width:46px;height:46px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0">${sch.av}</div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+              ${statusDot}
               <span style="font-weight:700;font-size:14px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${sch.name}</span>
               ${jenisBadge(sch.jenis)}
             </div>
             <div style="font-size:11px;color:var(--t3)">${sch.kod}</div>
           </div>
           <div style="display:flex;gap:20px;flex-shrink:0">
-            <div style="min-width:80px">
+            <div style="min-width:70px">
               <div style="font-size:10px;color:var(--t3);white-space:nowrap">Guru</div>
-              <div style="font-size:13px;font-weight:700;color:var(--t1);margin-top:1px">${tLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${tTotal}</span></div>
-              ${bar(tPct,'var(--ok)')}
+              <div style="font-size:13px;font-weight:700;color:${tPct<50?'#ef4444':'var(--t1)'};margin-top:1px">${tLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${tTotal}</span></div>
+              ${bar(tPct, tPct<50?'#ef4444':tPct>=80?'#22c55e':'var(--ok)')}
             </div>
-            <div style="min-width:80px">
+            <div style="min-width:70px">
               <div style="font-size:10px;color:var(--t3);white-space:nowrap">Sekolah</div>
-              <div style="font-size:13px;font-weight:700;color:var(--t1);margin-top:1px">${sLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${sTotal}</span></div>
-              ${bar(sPct,'#6366f1')}
+              <div style="font-size:13px;font-weight:700;color:${sPct<50?'#ef4444':'var(--t1)'};margin-top:1px">${sLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${sTotal}</span></div>
+              ${bar(sPct, sPct<50?'#ef4444':sPct>=80?'#22c55e':'#6366f1')}
             </div>
           </div>
           <div style="color:var(--t3);flex-shrink:0;font-size:16px">&rsaquo;</div>
@@ -3155,6 +3221,53 @@ function buildResetModal() {
     + '</div>';
 }
 
+/* -- Gallery view ---------------------------------------------- */
+function viewGallery() {
+  const isSchool = S.role === 'school_admin';
+  const DEMO_ALBUMS = [
+    { title:'Hari Sukan Sekolah 2026', tarikh:'15 Mac 2026', tag:'Sukan', count:24, grad:'linear-gradient(135deg,#f97316,#ef4444)', emoji:'🏆' },
+    { title:'Program Nilam Pembacaan', tarikh:'2 Feb 2026', tag:'Akademik', count:18, grad:'linear-gradient(135deg,#3b82f6,#6366f1)', emoji:'📚' },
+    { title:'Pertandingan Bahas Antara Kelas', tarikh:'20 Jan 2026', tag:'Bahasa', count:12, grad:'linear-gradient(135deg,#22c55e,#10b981)', emoji:'🎤' },
+    { title:'Bengkel Kepimpinan PBSM', tarikh:'8 Apr 2026', tag:'Kokurikulum', count:31, grad:'linear-gradient(135deg,#a855f7,#7c3aed)', emoji:'⚕️' },
+    { title:'Projek Taman Sekolah Hijau', tarikh:'12 Mei 2026', tag:'Alam Sekitar', count:9, grad:'linear-gradient(135deg,#84cc16,#16a34a)', emoji:'🌿' },
+    { title:'Hari Guru 2026', tarikh:'16 Mei 2026', tag:'Majlis', count:47, grad:'linear-gradient(135deg,#f59e0b,#d97706)', emoji:'🎓' },
+    { title:'Jamuan Akhir Tahun', tarikh:'30 Nov 2026', tag:'Sosial', count:22, grad:'linear-gradient(135deg,#ec4899,#f43f5e)', emoji:'🎉' },
+    { title:'Pertandingan Seni Visual', tarikh:'5 Jun 2026', tag:'Seni', count:15, grad:'linear-gradient(135deg,#06b6d4,#0284c7)', emoji:'🎨' },
+  ];
+
+  const albumCards = DEMO_ALBUMS.map((a,idx)=>`
+    <div style="border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--bdr);cursor:pointer;transition:box-shadow .2s;box-shadow:0 1px 4px rgba(0,0,0,.06)" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.06)'">
+      <div style="height:120px;background:${a.grad};display:flex;align-items:center;justify-content:center;font-size:48px;position:relative">
+        ${a.emoji}
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px">${a.count} foto</div>
+      </div>
+      <div style="padding:10px 12px">
+        <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px;line-height:1.3">${a.title}</div>
+        <div style="font-size:10px;color:var(--t3)">${a.tarikh}</div>
+        <div style="margin-top:6px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--chip);color:var(--t2)">${a.tag}</span></div>
+      </div>
+    </div>`).join('');
+
+  return `<div class="pg-head"><div>
+    <div class="pg-title">Galeri ${isSchool?'Gambar Sekolah':'Aktiviti'}</div>
+    <div class="pg-sub">Koleksi foto dan kenangan aktiviti ${isSchool?'sekolah':'anda'}</div>
+  </div>
+  <button class="btn btn-pri" style="display:flex;align-items:center;gap:6px">
+    ${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',14)}
+    Muat Naik Gambar
+  </button>
+  </div>
+
+  <div class="notice notice-gold" style="border-radius:10px;margin-bottom:16px">
+    <span style="font-size:14px;font-weight:700;flex-shrink:0;color:var(--warn)">i</span>
+    <div style="font-size:12px;color:var(--t2)">Galeri ini untuk simpanan dalaman sahaja. Gambar aktiviti membantu dokumentasi dan boleh dilampirkan sebagai eviden dalam rekod pencapaian. Fungsi muat naik tersedia dalam versi penuh.</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px">
+    ${albumCards}
+  </div>`;
+}
+
 /* -- Build app ------------------------------------------------- */
 function buildContent() {
   if (S.role === 'ppd_admin') {
@@ -3170,12 +3283,14 @@ function buildContent() {
       : S.saView==='school_achievement_detail'       ? viewSchoolAchievementDetail()
       : S.saView==='school_form'                     ? viewSchoolForm()
       : S.saView==='school_profile'                  ? viewSchoolProfile()
+      : S.saView==='gallery'                         ? viewGallery()
       : viewSchoolAdmin();
   }
   return S.view==='dashboard' ? viewDashboard()
     : S.view==='records'      ? viewRecords()
     : S.view==='record_detail'? viewRecordDetail()
     : S.view==='form'         ? viewForm()
+    : S.view==='gallery'      ? viewGallery()
     : viewDetail();
 }
 
@@ -3184,9 +3299,9 @@ function buildTopbarTitle() {
     return { analysis:'Analisis Daerah', schools:'Senarai Sekolah', school_detail:'Butiran Sekolah', reset_password:'Urus Kata Laluan' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
-    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
+    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah', gallery:'Galeri Gambar' }[S.saView] || 'SK@S';
   }
-  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian' }[S.view] || 'SK@S';
+  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian', gallery:'Galeri Aktiviti' }[S.view] || 'SK@S';
 }
 
 function buildApp() {
@@ -3534,6 +3649,7 @@ function bind() {
 
   // ppd jenis filter chips (cadangan 3)
   document.querySelectorAll('[data-jenis]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolJenis:b.dataset.jenis,ppdView:'schools'})));
+  document.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolStatus:b.dataset.status,ppdView:'schools'})));
 
   // ppd bell button (cadangan 7)
   const bellBtn=document.getElementById('ppd-bell-btn');
