@@ -590,6 +590,9 @@ let S = {
   ppdFilter: null,
   resetDone: [],       // schoolIds that have been reset
   expandedPpdRecs: [],
+  ppdSchoolSearch: '',  // search text in Senarai Sekolah
+  ppdSchoolJenis: 'all', // filter by jenis: 'all'|'SK'|'SJKC'|'SJKT'
+  ppdNotifSeen: false,   // whether bell notification has been seen
 
   // teacher roster (mutable)
   teachers: DEMO_TEACHERS.map(t=>({...t})),
@@ -2594,37 +2597,59 @@ function viewPPDAnalysis() {
 
   const SRC = `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:10px;color:var(--t3);font-weight:400;font-style:normal">Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026</span>`;
 
+  // Demo: simulated last-year percentages for comparison arrows (suggestion 8)
+  const tPctLastYear = 78; // Tahun lepas: 78% guru layak
+  const sPctLastYear = 82; // Tahun lepas: 82% sekolah layak
+  const trend = (cur, prev) => {
+    const diff = cur - prev;
+    if (diff === 0) return `<span style="font-size:11px;color:var(--t3);margin-left:6px">= sama</span>`;
+    const up = diff > 0;
+    return `<span style="font-size:11px;font-weight:700;color:${up?'#22c55e':'#ef4444'};margin-left:6px">${up?'&#9650;':'&#9660;'} ${Math.abs(diff)}% vs tahun lepas</span>`;
+  };
+
   return `
   <div class="pg-head">
     <div>
       <div class="pg-title">Analisis Daerah</div>
       <div class="pg-sub">PPD Gombak &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
     </div>
+    <button id="btn-ppd-print" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Cetak Laporan
+    </button>
   </div>
 
   <!-- Summary tiles -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
     <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
       <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.1 Pencapaian Guru</div>
-      <div style="display:flex;align-items:baseline;gap:8px">
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
         <span style="font-size:32px;font-weight:800;color:#22c55e">${tLayakAll.length}</span>
         <span style="font-size:13px;color:var(--t3)">/ ${allTRecs.length} rekod</span>
       </div>
       <div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
         <div style="height:100%;width:${tPct}%;background:#22c55e;border-radius:3px"></div>
       </div>
-      <div style="font-size:11px;color:var(--t3)">${tPct}% layak &middot; ${tTidakAll.length} tidak layak</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+        <span style="font-size:12px;font-weight:700;color:#22c55e">${tPct}%</span>
+        <span style="font-size:11px;color:var(--t3)">layak &middot; ${tTidakAll.length} tidak layak</span>
+        ${trend(tPct, tPctLastYear)}
+      </div>
     </div>
     <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
       <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.2 Pencapaian Sekolah</div>
-      <div style="display:flex;align-items:baseline;gap:8px">
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
         <span style="font-size:32px;font-weight:800;color:#6366f1">${sLayakAll.length}</span>
         <span style="font-size:13px;color:var(--t3)">/ ${allSRecs.length} rekod</span>
       </div>
       <div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
         <div style="height:100%;width:${sPct}%;background:#6366f1;border-radius:3px"></div>
       </div>
-      <div style="font-size:11px;color:var(--t3)">${sPct}% layak &middot; ${sTidakAll.length} tidak layak</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+        <span style="font-size:12px;font-weight:700;color:#6366f1">${sPct}%</span>
+        <span style="font-size:11px;color:var(--t3)">layak &middot; ${sTidakAll.length} tidak layak</span>
+        ${trend(sPct, sPctLastYear)}
+      </div>
     </div>
   </div>
 
@@ -2729,15 +2754,36 @@ function viewPPDSchools() {
     const col = j==='SK'?'#3b82f6':j==='SJKC'?'#f59e0b':'#8b5cf6';
     return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${col}22;color:${col};border:1px solid ${col}44">${j}</span>`;
   };
+  const search = (S.ppdSchoolSearch||'').toLowerCase();
+  const jenisFilter = S.ppdSchoolJenis || 'all';
+  const filtered = DEMO_SCHOOLS.filter(sch => {
+    const matchSearch = !search || sch.name.toLowerCase().includes(search) || sch.kod.toLowerCase().includes(search);
+    const matchJenis = jenisFilter === 'all' || sch.jenis === jenisFilter;
+    return matchSearch && matchJenis;
+  });
+  const chipBtn = (val, label) => {
+    const active = jenisFilter === val;
+    return `<button data-jenis="${val}" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
+  };
   return `<div class="sa-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--t1)">Senarai Sekolah</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${DEMO_SCHOOLS.length} sekolah</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${filtered.length} / ${DEMO_SCHOOLS.length} sekolah</div>
+      </div>
+    </div>
+    <!-- Search + filter (cadangan 3) -->
+    <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="position:relative">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="ppd-school-search" type="text" placeholder="Cari nama atau kod sekolah..." value="${esc(S.ppdSchoolSearch||'')}" style="width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${chipBtn('all','Semua')}${chipBtn('SK','SK')}${chipBtn('SJKC','SJKC')}${chipBtn('SJKT','SJKT')}
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      ${DEMO_SCHOOLS.map(sch=>{
+      ${filtered.length === 0 ? `<div style="text-align:center;padding:40px 20px;color:var(--t3);font-size:14px">Tiada sekolah dijumpai.</div>` : filtered.map(sch=>{
         const tRecs = sch.teachers.flatMap(t=>t.records||[]);
         const tLayak = tRecs.filter(r=>aiKlasifikasi(r).layak).length;
         const sLayak = (sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
@@ -2773,6 +2819,8 @@ function viewPPDSchools() {
     </div>
   </div>`;
 }
+
+
 
 function viewPPDSchoolDetail() {
   const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
@@ -2871,13 +2919,37 @@ function viewPPDSchoolDetail() {
     </div>`;
   };
 
+  // Mini-analitik summary (cadangan 2)
+  const tTotal = tRecs.length, sTotal = sRecs.length;
+  const tPct = tTotal ? Math.round(tLayak.length/tTotal*100) : 0;
+  const sPct = sTotal ? Math.round(sLayak.length/sTotal*100) : 0;
+  const progBar = (pct, col) => `<div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden;margin-top:5px"><div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .4s"></div></div>`;
+  const lvlChips = obj => Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--bdr);color:var(--t2)">${k}: ${v}</span>`).join('');
+
   return `<div class="sa-wrap">
     <button id="btn-ppd-back" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;margin-bottom:18px;padding:0;font-weight:600">&larr; Kembali ke Senarai Sekolah</button>
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
       <div style="width:52px;height:52px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0">${sch.av}</div>
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--t1)">${sch.name}</div>
         <div style="font-size:12px;color:var(--t3);margin-top:2px">${sch.kod} &middot; ${sch.jenis} &middot; PPD Gombak</div>
+      </div>
+    </div>
+    <!-- Mini-analitik (cadangan 2) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Guru (5.4.1)</div>
+        <div style="font-size:28px;font-weight:800;color:#22c55e">${tPct}%</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:1px">${tLayak.length} / ${tTotal} layak</div>
+        ${progBar(tPct,'#22c55e')}
+        ${Object.keys(tByLevel).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${lvlChips(tByLevel)}</div>` : ''}
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Sekolah (5.4.2)</div>
+        <div style="font-size:28px;font-weight:800;color:#6366f1">${sPct}%</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:1px">${sLayak.length} / ${sTotal} layak</div>
+        ${progBar(sPct,'#6366f1')}
+        ${Object.keys(sByLevel).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${lvlChips(sByLevel)}</div>` : ''}
       </div>
     </div>
     ${section('Pencapaian Guru','SKPM 5.4.1',tLayak,tTidak,tByLevel,'guru')}
@@ -2966,11 +3038,20 @@ function buildTopbarTitle() {
 function buildApp() {
   const contentHtml = buildContent();
   if (S.role === 'ppd_admin') {
+    // Count new records (demo: records submitted in last 7 days across all schools)
+    const allNewRecs = DEMO_SCHOOLS.flatMap(sch=>[
+      ...sch.teachers.flatMap(t=>(t.records||[]).filter(r=>r.tarikh&&((new Date()-new Date(r.tarikh))/864e5)<7)),
+      ...(sch.schoolRecords||[]).filter(r=>r.tarikh&&((new Date()-new Date(r.tarikh))/864e5)<7)
+    ]);
+    const notifCount = S.ppdNotifSeen ? 0 : allNewRecs.length;
+    const bellBadge = notifCount>0
+      ? `<span style="position:absolute;top:4px;right:4px;min-width:16px;height:16px;background:#ef4444;border-radius:8px;border:2px solid var(--surface);font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 2px">${notifCount>9?'9+':notifCount}</span>`
+      : `<span class="bell-dot"></span>`;
     return `${sidebarAdmin()}
     <div class="main">
       <div class="topbar">
         <div class="tb-info"><div class="g">Admin PPD &middot; PPD Gombak</div><div class="n">${buildTopbarTitle()}</div></div>
-        <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+        <button id="ppd-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadge}</button>
       </div>
       <div class="content">${contentHtml}</div>
     </div>`;
@@ -3292,6 +3373,24 @@ function bind() {
 
   // ppd filter cards
   document.querySelectorAll('[data-ppd-filter]').forEach(b=>b.addEventListener('click',()=>setState({ppdFilter:S.ppdFilter===b.dataset.ppdFilter?null:b.dataset.ppdFilter,selectedSchoolId:S.selectedSchoolId,expandedPpdRecs:[]})));
+
+  // ppd school search (cadangan 3)
+  const pss=document.getElementById('ppd-school-search');
+  if(pss)pss.addEventListener('input',()=>setState({ppdSchoolSearch:pss.value,ppdView:'schools'}));
+
+  // ppd jenis filter chips (cadangan 3)
+  document.querySelectorAll('[data-jenis]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolJenis:b.dataset.jenis,ppdView:'schools'})));
+
+  // ppd bell button (cadangan 7)
+  const bellBtn=document.getElementById('ppd-bell-btn');
+  if(bellBtn)bellBtn.addEventListener('click',()=>setState({ppdNotifSeen:true}));
+
+  // ppd print button (cadangan 5)
+  const printBtn=document.getElementById('btn-ppd-print');
+  if(printBtn)printBtn.addEventListener('click',()=>{
+    const d=new Date(); const ts=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');
+    alert('Laporan Analisis Daerah PPD Gombak\nTarikh: '+ts+'\n\nFungsi cetak/eksport PDF akan disediakan dalam versi penuh.');
+  });
 
   // ppd record expand toggle
   document.querySelectorAll('[data-ppd-rec]').forEach(b=>b.addEventListener('click',()=>{
