@@ -1001,18 +1001,21 @@ function viewRecords() {
     </div>`;
   }).join('');
 
-  // Cadangan H: progress tracker per peringkat (had 20 rekod per peringkat mengikut SKPM Panduan ms.54)
+  // Cadangan H: progress tracker per peringkat
+  // Had: 20 rekod per peringkat untuk GURU (5.4.1) DAN SEKOLAH (5.4.2)
+  // 4 peringkat diiktiraf SKPM: Daerah, Negeri, Kebangsaan, Antarabangsa (Panduan ms.54)
+  // BAH dan SKL TIDAK dikira dalam SKPM 5.4 — simpan dalaman sahaja
   const HAD_PER_PERINGKAT = 20;
-  const lvlKeys = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  const SKPM_LEVELS = ['INT','NAT','NEG','DAE']; // 4 peringkat diiktiraf sahaja
   const recsByLevel = {};
-  lvlKeys.forEach(k => { recsByLevel[k] = recs.filter(r=>r.level===k&&aiKlasifikasi(r).layak).length; });
-  const anyLayakByLevel = lvlKeys.some(k=>recsByLevel[k]>0);
-  const progressSection = anyLayakByLevel ? `
+  SKPM_LEVELS.forEach(k => { recsByLevel[k] = recs.filter(r=>r.level===k&&aiKlasifikasi(r).layak).length; });
+  const anyLayakByLevel = SKPM_LEVELS.some(k=>recsByLevel[k]>0);
+  const progressSection = `
   <div class="card" style="padding:14px 16px;margin-bottom:16px">
     <div style="font-weight:700;font-size:13px;margin-bottom:2px">Pengisian Rekod SKPM 5.4.1</div>
-    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: ${HAD_PER_PERINGKAT} rekod layak setiap peringkat (Panduan SKPM 2026, ms. 54)</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: ${HAD_PER_PERINGKAT} rekod layak setiap peringkat &middot; 4 peringkat diiktiraf (Panduan SKPM 2026, ms. 54)</div>
     <div style="display:flex;flex-direction:column;gap:8px">
-    ${lvlKeys.filter(k=>recsByLevel[k]>0||recs.some(r=>r.level===k)).map(k=>{
+    ${SKPM_LEVELS.map(k=>{
       const col = LVL[k]?.color||'#888';
       const label = LVL[k]?.label||k;
       const count = recsByLevel[k];
@@ -1020,8 +1023,8 @@ function viewRecords() {
       const penuh = count>=HAD_PER_PERINGKAT;
       return `<div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:12px;font-weight:700;color:${col}">${label}</span>
-          <span style="font-size:11px;font-weight:700;color:${penuh?'#22c55e':count>0?col:'var(--t3)'}">${count} / ${HAD_PER_PERINGKAT} ${penuh?'&#x2713; Penuh':''}</span>
+          <span style="font-size:12px;font-weight:700;color:${count>0?col:'var(--t3)'}">${label}</span>
+          <span style="font-size:11px;font-weight:700;color:${penuh?'#22c55e':count>0?col:'var(--t3)'}">${count} / ${HAD_PER_PERINGKAT}${penuh?' &#x2713; Penuh':''}</span>
         </div>
         <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
           <div style="height:100%;width:${pct}%;background:${penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
@@ -1029,7 +1032,8 @@ function viewRecords() {
       </div>`;
     }).join('')}
     </div>
-  </div>` : '';
+    ${recs.some(r=>['BAH','SKL'].includes(r.level)) ? `<div style="margin-top:10px;padding:8px 10px;border-radius:7px;background:#f59e0b18;border:1px solid #f59e0b44"><span style="font-size:11px;color:#92400e">&#x26A0; Rekod peringkat Bahagian/Sekolah tidak dikira dalam SKPM 5.4.1 &mdash; disimpan sebagai dalaman sahaja.</span></div>` : ''}
+  </div>`;
 
   return `<div class="pg-head"><div>
     <div class="pg-title">Rekod Pencapaian Saya</div>
