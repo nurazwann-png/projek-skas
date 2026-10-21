@@ -1,3 +1,4 @@
+<meta charset="UTF-8">
 <title>SK@S App</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
 
@@ -1757,7 +1758,7 @@ function viewSchoolAdmin() {
     </div>
     ${(()=>{
       const katColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2','#64748b'];
-      const katIcons  = ['🏆','🎓','⚽','🎨','🌍','🔬','📋'];
+      const katIcons  = ['&#x1F3C6;','&#x1F393;','&#x26BD;','&#x1F3A8;','&#x1F30D;','&#x1F52C;','&#x1F4CB;'];
       return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
         ${KATEGORI.map((k,ki)=>{
           const total  = sRecs.filter(r=>r.kategori===k.val).length;
@@ -1849,11 +1850,11 @@ function viewSchoolAdmin() {
 
           ${overflow.length
             ?`<div style="padding:10px 14px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca;font-size:12px;color:#dc2626">
-                <b>⚠ ${overflow.length} rekod melebihi had slot</b> — tidak dikira dalam SKPM 5.4.2:<br>
+                <b>&#x26A0; ${overflow.length} rekod melebihi had slot</b> — tidak dikira dalam SKPM 5.4.2:<br>
                 <span style="opacity:.8">${overflow.map(r=>`${r.program} (${LVL[r.level]?.label||r.level})`).join(', ')}</span>
               </div>`
             :`<div style="padding:10px 14px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;font-size:12px;color:#15803d">
-                ✓ Semua rekod dalam had slot yang dibenarkan.
+                &#x2713; Semua rekod dalam had slot yang dibenarkan.
               </div>`}
         </div>
       </div>`;
@@ -1868,7 +1869,7 @@ function viewSchoolAdmin() {
     </div>
     ${(()=>{
       const perananColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777'];
-      const perananIcons  = ['🥇','🎽','👨‍🏫','🎯','🏅'];
+      const perananIcons  = ['&#x1F947;','&#x1F3BD;','&#x1F468;&#x200D;&#x1F3EB;','&#x1F3AF;','&#x1F3C5;'];
       const maxP = Math.max(1,...PERANAN.map(p=>allTeacherRecs.filter(r=>r.peranan===p.val).length));
       const rows = PERANAN.map((p,pi)=>{
         const total  = allTeacherRecs.filter(r=>r.peranan===p.val).length;
@@ -2664,7 +2665,7 @@ function viewPPDAnalysis() {
     </div>
     <div id="ppd-rank-body">
       ${(()=>{
-        const medal = i => i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
+        const medal = i => i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
         const ranked = DEMO_SCHOOLS.map(sch=>{
           const tR=sch.teachers.flatMap(t=>t.records||[]);
           const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
@@ -3257,7 +3258,7 @@ function bind() {
       tabSkl.style.background=isGuru?'transparent':'var(--accent)';
       tabSkl.style.color=isGuru?'var(--t2)':'#fff';
       tabSkl.style.borderColor=isGuru?'var(--bdr)':'var(--accent)';
-      const medal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
+      const medal=i=>i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
       const ranked=DEMO_SCHOOLS.map(sch=>{
         let recs,layak;
         if(isGuru){recs=sch.teachers.flatMap(t=>t.records||[]);layak=recs.filter(r=>aiKlasifikasi(r).layak).length;}
