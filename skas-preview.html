@@ -593,6 +593,7 @@ let S = {
   ppdSchoolSearch: '',  // search text in Senarai Sekolah
   ppdSchoolJenis: 'all', // filter by jenis: 'all'|'SK'|'SJKC'|'SJKT'
   ppdNotifSeen: false,   // whether bell notification has been seen
+  ppdYearFilter: TAHUN_SEMASA, // cadangan B: year filter for analysis (number)
 
   // teacher roster (mutable)
   teachers: DEMO_TEACHERS.map(t=>({...t})),
@@ -1000,6 +1001,36 @@ function viewRecords() {
     </div>`;
   }).join('');
 
+  // Cadangan H: progress tracker per peringkat (had 20 rekod per peringkat mengikut SKPM Panduan ms.54)
+  const HAD_PER_PERINGKAT = 20;
+  const lvlKeys = ['INT','NAT','NEG','BAH','DAE','SKL'];
+  const recsByLevel = {};
+  lvlKeys.forEach(k => { recsByLevel[k] = recs.filter(r=>r.level===k&&aiKlasifikasi(r).layak).length; });
+  const anyLayakByLevel = lvlKeys.some(k=>recsByLevel[k]>0);
+  const progressSection = anyLayakByLevel ? `
+  <div class="card" style="padding:14px 16px;margin-bottom:16px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:2px">Pengisian Rekod SKPM 5.4.1</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Had: ${HAD_PER_PERINGKAT} rekod layak setiap peringkat (Panduan SKPM 2026, ms. 54)</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+    ${lvlKeys.filter(k=>recsByLevel[k]>0||recs.some(r=>r.level===k)).map(k=>{
+      const col = LVL[k]?.color||'#888';
+      const label = LVL[k]?.label||k;
+      const count = recsByLevel[k];
+      const pct = Math.min(count/HAD_PER_PERINGKAT*100,100);
+      const penuh = count>=HAD_PER_PERINGKAT;
+      return `<div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:700;color:${col}">${label}</span>
+          <span style="font-size:11px;font-weight:700;color:${penuh?'#22c55e':count>0?col:'var(--t3)'}">${count} / ${HAD_PER_PERINGKAT} ${penuh?'&#x2713; Penuh':''}</span>
+        </div>
+        <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>
+  </div>` : '';
+
   return `<div class="pg-head"><div>
     <div class="pg-title">Rekod Pencapaian Saya</div>
     <div class="pg-sub">Disusun mengikut peringkat tertinggi &middot; Status dinilai automatik oleh AI berdasarkan SKPM 5.4.1</div>
@@ -1020,6 +1051,7 @@ function viewRecords() {
       <div><div style="font-size:11px;color:var(--t2);font-weight:500">Simpan Dalaman</div><div style="font-size:20px;font-weight:800;color:#854d0e">${dalaman}</div></div>
     </div>
   </div>
+  ${progressSection}
   <div style="display:flex;flex-direction:column;gap:8px">${groupHtml}</div>`;
 }
 
@@ -2536,9 +2568,22 @@ function viewTeacherDetail() {
 
 /* -- PPD Admin Views ------------------------------------------- */
 function viewPPDAnalysis() {
-  // Aggregate all schools
-  const allTRecs = DEMO_SCHOOLS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))));
-  const allSRecs = DEMO_SCHOOLS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})));
+  // Cadangan B: year filter
+  const selectedYear = S.ppdYearFilter || TAHUN_SEMASA;
+  const filterByYear = r => {
+    if (!r.tarikh) return true;
+    return new Date(r.tarikh).getFullYear() === selectedYear;
+  };
+  const availYears = [...new Set(
+    DEMO_SCHOOLS.flatMap(sch=>[
+      ...sch.teachers.flatMap(t=>(t.records||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())),
+      ...(sch.schoolRecords||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())
+    ]).filter(Boolean)
+  )].sort((a,b)=>b-a);
+
+  // Aggregate all schools (filtered by year)
+  const allTRecs = DEMO_SCHOOLS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})))).filter(filterByYear);
+  const allSRecs = DEMO_SCHOOLS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))).filter(filterByYear);
 
   const tLayakAll  = allTRecs.filter(r=>aiKlasifikasi(r).layak);
   const tTidakAll  = allTRecs.filter(r=>!aiKlasifikasi(r).layak);
@@ -2595,6 +2640,39 @@ function viewPPDAnalysis() {
     </button>`;
   });
 
+  // Cadangan D: trend rekod mengikut bulan (bar chart SVG)
+  const monthCounts = {};
+  [...allTRecs,...allSRecs].forEach(r=>{
+    if(!r.tarikh) return;
+    const d=new Date(r.tarikh); const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    monthCounts[k]=(monthCounts[k]||0)+1;
+  });
+  const monthKeys = Object.keys(monthCounts).sort();
+  const maxMonth = Math.max(...Object.values(monthCounts),1);
+  const BULAN = ['','Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
+  const trendBars = monthKeys.map(k=>{
+    const [,m]=k.split('-'); const pct=monthCounts[k]/maxMonth*100;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:28px">
+      <div style="font-size:10px;font-weight:700;color:var(--t1)">${monthCounts[k]}</div>
+      <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:60px">
+        <div style="width:100%;border-radius:4px 4px 0 0;background:var(--accent);opacity:.85;height:${pct}%;min-height:3px;transition:height .4s"></div>
+      </div>
+      <div style="font-size:9px;color:var(--t3);white-space:nowrap">${BULAN[+m]||m}</div>
+    </div>`;
+  }).join('');
+
+  // Cadangan C: sekolah lemah (<50%)
+  const schoolsWeak = DEMO_SCHOOLS.map(sch=>{
+    const tR=sch.teachers.flatMap(t=>(t.records||[]).filter(filterByYear));
+    const sR=(sch.schoolRecords||[]).filter(filterByYear);
+    const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
+    const sL=sR.filter(r=>aiKlasifikasiSekolah(r).layak).length;
+    const tP=tR.length?Math.round(tL/tR.length*100):null;
+    const sP=sR.length?Math.round(sL/sR.length*100):null;
+    const weak=(tP!==null&&tP<50)||(sP!==null&&sP<50);
+    return {sch,tP,sP,tTotal:tR.length,sTotal:sR.length,weak};
+  }).filter(x=>x.weak);
+
   const SRC = `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:10px;color:var(--t3);font-weight:400;font-style:normal">Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026</span>`;
 
   // Demo: simulated last-year percentages for comparison arrows (suggestion 8)
@@ -2611,12 +2689,26 @@ function viewPPDAnalysis() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Analisis Daerah</div>
-      <div class="pg-sub">PPD Gombak &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
+      <div class="pg-sub">PPD Gombak &middot; SKPM Aspek 5.4 &middot; Tahun ${selectedYear} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
     </div>
-    <button id="btn-ppd-print" style="display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Cetak Laporan
-    </button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button id="btn-ppd-csv" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Eksport CSV
+      </button>
+      <button id="btn-ppd-print" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak Laporan
+      </button>
+    </div>
+  </div>
+  <!-- Cadangan B: Penapis tahun -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+    <span style="font-size:11px;color:var(--t3);font-weight:600">Tahun:</span>
+    ${[...availYears,selectedYear].filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>b-a).map(yr=>{
+      const active=yr===selectedYear;
+      return `<button data-ppd-year="${yr}" style="padding:5px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${yr}</button>`;
+    }).join('')}
   </div>
 
   <!-- Summary tiles -->
@@ -2652,6 +2744,40 @@ function viewPPDAnalysis() {
       </div>
     </div>
   </div>
+
+  <!-- Cadangan C: Sekolah perlu perhatian (<50%) -->
+  ${schoolsWeak.length ? `<div class="card" style="padding:16px 18px;margin-bottom:16px;border:1.5px solid #ef444444;background:#ef44440a">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:16px">&#x26A0;&#xFE0F;</span>
+      <div>
+        <div style="font-weight:700;font-size:13px;color:#ef4444">Sekolah Perlu Perhatian</div>
+        <div style="font-size:11px;color:var(--t3)">Pencapaian &lt; 50% &mdash; ${schoolsWeak.length} sekolah memerlukan tindakan susulan</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${schoolsWeak.map(({sch,tP,sP,tTotal,sTotal})=>`
+        <button data-school="${sch.id}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid #ef444433;background:var(--card);cursor:pointer;text-align:left;width:100%;transition:border-color .15s" onmouseover="this.style.borderColor='#ef4444'" onmouseout="this.style.borderColor='#ef444433'">
+          <div style="width:38px;height:38px;border-radius:9px;background:#ef44441a;display:flex;align-items:center;justify-content:center;color:#ef4444;font-weight:800;font-size:13px;flex-shrink:0">${sch.av}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13px;color:var(--t1)">${sch.name}</div>
+            <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap">
+              ${tP!==null?`<span style="font-size:11px;color:${tP<50?'#ef4444':'var(--t3)'}">Guru: <b>${tP}%</b> (${tTotal} rekod)</span>`:''}
+              ${sP!==null?`<span style="font-size:11px;color:${sP<50?'#ef4444':'var(--t3)'}">Sekolah: <b>${sP}%</b> (${sTotal} rekod)</span>`:''}
+            </div>
+          </div>
+          <span style="color:#ef4444;font-size:16px">&rsaquo;</span>
+        </button>`).join('')}
+    </div>
+  </div>` : ''}
+
+  <!-- Cadangan D: Graf trend rekod mengikut bulan -->
+  ${monthKeys.length ? `<div class="card" style="padding:16px 18px;margin-bottom:16px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:2px">Trend Penyerahan Rekod</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Jumlah rekod guru + sekolah mengikut bulan &middot; ${selectedYear}</div>
+    <div style="display:flex;gap:4px;align-items:flex-end;padding-bottom:4px;overflow-x:auto">
+      ${trendBars}
+    </div>
+  </div>` : ''}
 
   <!-- Level breakdown -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
@@ -3390,6 +3516,31 @@ function bind() {
   if(printBtn)printBtn.addEventListener('click',()=>{
     const d=new Date(); const ts=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');
     alert('Laporan Analisis Daerah PPD Gombak\nTarikh: '+ts+'\n\nFungsi cetak/eksport PDF akan disediakan dalam versi penuh.');
+  });
+
+  // ppd year filter chips (cadangan B)
+  document.querySelectorAll('[data-ppd-year]').forEach(b=>b.addEventListener('click',()=>setState({ppdYearFilter:+b.dataset.ppdYear,ppdView:'analysis'})));
+
+  // ppd CSV export (cadangan A)
+  const csvBtn=document.getElementById('btn-ppd-csv');
+  if(csvBtn)csvBtn.addEventListener('click',()=>{
+    const yr=S.ppdYearFilter||TAHUN_SEMASA;
+    const filterYr=r=>!r.tarikh||new Date(r.tarikh).getFullYear()===yr;
+    const rows=[['Sekolah','Kod','Jenis','Guru Layak','Guru Total','% Guru','Sekolah Layak','Sekolah Total','% Sekolah']];
+    DEMO_SCHOOLS.forEach(sch=>{
+      const tR=sch.teachers.flatMap(t=>(t.records||[])).filter(filterYr);
+      const sR=(sch.schoolRecords||[]).filter(filterYr);
+      const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
+      const sL=sR.filter(r=>aiKlasifikasiSekolah(r).layak).length;
+      const tP=tR.length?Math.round(tL/tR.length*100):0;
+      const sP=sR.length?Math.round(sL/sR.length*100):0;
+      rows.push([sch.name,sch.kod,sch.jenis,tL,tR.length,tP+'%',sL,sR.length,sP+'%']);
+    });
+    const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='skpm-ppd-gombak-'+yr+'.csv'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
 
   // ppd record expand toggle
