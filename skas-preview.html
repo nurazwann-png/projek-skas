@@ -3089,11 +3089,12 @@ function viewPPDAnalysis() {
     <div id="ppd-rank-body">
       ${(()=>{
         const medal = i => i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
+        const MAX_SLOT = HAD_PER_PERINGKAT * LEVELS_LAYAK.length; // 20 × 4 = 80
         const ranked = DEMO_SCHOOLS.map(sch=>{
           const tR=sch.teachers.flatMap(t=>t.records||[]);
           const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
-          const pct=tR.length?Math.round(tL/tR.length*100):0;
-          return {sch,tL,total:tR.length,pct};
+          const pct=Math.min(100,Math.round(tL/MAX_SLOT*100));
+          return {sch,tL,pct};
         }).sort((a,b)=>b.pct-a.pct||b.tL-a.tL);
         return ranked.map((d,i)=>{
           const col = d.pct>=80?'#22c55e':d.pct>=50?'#f59e0b':'#ef4444';
@@ -3110,7 +3111,7 @@ function viewPPDAnalysis() {
             </div>
             <div style="text-align:right;flex-shrink:0">
               <div style="font-size:15px;font-weight:800;color:var(--t1)">${d.tL}</div>
-              <div style="font-size:10px;color:var(--t3)">/ ${d.total} layak</div>
+              <div style="font-size:10px;color:var(--t3)">/ ${MAX_SLOT} layak</div>
             </div>
           </div>`;
         }).join('');
@@ -3762,12 +3763,14 @@ function bind() {
       tabSkl.style.color=isGuru?'var(--t2)':'#fff';
       tabSkl.style.borderColor=isGuru?'var(--bdr)':'var(--accent)';
       const medal=i=>i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
+      const levelsForMode = isGuru ? LEVELS_LAYAK : LEVELS_SEKOLAH;
+      const MAX_SLOT = HAD_PER_PERINGKAT * levelsForMode.length; // 20 × 4 = 80
       const ranked=DEMO_SCHOOLS.map(sch=>{
-        let recs,layak;
-        if(isGuru){recs=sch.teachers.flatMap(t=>t.records||[]);layak=recs.filter(r=>aiKlasifikasi(r).layak).length;}
-        else{recs=sch.schoolRecords||[];layak=recs.filter(r=>aiKlasifikasiSekolah(r).layak).length;}
-        const pct=recs.length?Math.round(layak/recs.length*100):0;
-        return{sch,layak,total:recs.length,pct};
+        let layak;
+        if(isGuru){layak=sch.teachers.flatMap(t=>t.records||[]).filter(r=>aiKlasifikasi(r).layak).length;}
+        else{layak=(sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;}
+        const pct=Math.min(100,Math.round(layak/MAX_SLOT*100));
+        return{sch,layak,pct};
       }).sort((a,b)=>b.pct-a.pct||b.layak-a.layak);
       rankBody.innerHTML=ranked.map((d,i)=>{
         const col=d.pct>=80?'#22c55e':d.pct>=50?'#f59e0b':'#ef4444';
@@ -3784,7 +3787,7 @@ function bind() {
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:15px;font-weight:800;color:var(--t1)">${d.layak}</div>
-            <div style="font-size:10px;color:var(--t3)">/ ${d.total} layak</div>
+            <div style="font-size:10px;color:var(--t3)">/ ${MAX_SLOT} layak</div>
           </div>
         </div>`;
       }).join('');
