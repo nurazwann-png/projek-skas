@@ -1,4 +1,5 @@
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SK@S App</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
 
@@ -265,6 +266,30 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
   .sb-logo .sub,.role-sw,.sb-btn span,.sb-uname,.sb-urole,.sb-ppd{display:none}
   .stat-row{grid-template-columns:1fr 1fr}
   .frow,.frow3{grid-template-columns:1fr}
+}
+
+.grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+
+@media(max-width:480px){
+  .grid-2col{grid-template-columns:1fr}
+  .content{padding:14px 12px;gap:14px}
+  .topbar{padding:10px 14px}
+  .stat-row{grid-template-columns:1fr}
+  .stat-card{padding:14px 16px}
+  .stat-val{font-size:22px}
+  .stat-ico{width:38px;height:38px;border-radius:9px}
+  .pg-title{font-size:17px}
+  .pg-head{gap:8px}
+  .pg-head .btn,.pg-head button{font-size:12px;padding:7px 12px}
+  .panel .pb{padding:14px}
+  .panel .ph{padding:12px 14px}
+  .ach-row{padding:10px 14px}
+  .form-wrap{gap:14px}
+  .upzone{padding:22px 16px}
+  .sa-wrap{padding:0}
+  .sb-logo{padding:14px 10px 12px}
+  .pf-hero{padding:20px 18px}
+  .pf-grid{grid-template-columns:1fr}
 }
 
 /* -- School Profile ------------------------------------------- */
@@ -1365,6 +1390,38 @@ function viewForm() {
           </div>
         </div>
       </div>
+
+      ${(()=>{
+        // Cadangan K: AI preview eligibility sebelum simpan
+        if (!f.level || !f.peranan || !f.tahap) {
+          return `<div style="border-radius:10px;border:1.5px dashed var(--bdr);background:var(--chip);padding:14px 16px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:20px;opacity:.4">&#x2728;</span>
+            <div style="font-size:12px;color:var(--t3)">Pratonton AI akan muncul setelah anda memilih <b>Peringkat</b>, <b>Peranan</b> dan <b>Tahap Pencapaian</b>.</div>
+          </div>`;
+        }
+        const draftRec = { level:f.level, peranan:f.peranan, tahap:f.tahap, program:f.program, tarikhmula:f.tarikhmula, pautanEviden:f.pautanEviden };
+        const aiDraft = aiKlasifikasi(draftRec);
+        const col = aiDraft.layak ? '#15803d' : '#854d0e';
+        const bg  = aiDraft.layak ? '#dcfce7' : '#fef9c3';
+        const bdr = aiDraft.layak ? '#86efac' : '#fde047';
+        const icon = aiDraft.layak
+          ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+          : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#854d0e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        const allPoints = [
+          ...aiDraft.reasons.map(r=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:4px"><span style="color:#ef4444;flex-shrink:0;margin-top:1px">&#x2715;</span><span>${r}</span></div>`),
+          ...aiDraft.passes.map(r=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:4px"><span style="color:#22c55e;flex-shrink:0;margin-top:1px">&#x2713;</span><span>${r}</span></div>`),
+        ].join('');
+        return `<div style="border-radius:10px;border:1.5px solid ${bdr};background:${bg};padding:14px 16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            ${icon}
+            <div style="font-weight:700;font-size:13px;color:${col}">
+              Pratonton AI: Rekod ini akan <u>${aiDraft.layak?'LAYAK':'TIDAK LAYAK'}</u> untuk SKPM 5.4.1
+            </div>
+            <span style="margin-left:auto;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:${aiDraft.layak?'#bbf7d0':'#fef08a'};color:${col}">AI</span>
+          </div>
+          <div style="font-size:12px;line-height:1.7;color:${col}">${allPoints}</div>
+        </div>`;
+      })()}
 
       <div style="display:flex;gap:10px;justify-content:flex-end">
         <button class="btn btn-ghost" id="btn-cancel">Batal</button>
@@ -2784,7 +2841,7 @@ function viewPPDAnalysis() {
   </div>
 
   <!-- Summary tiles -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="grid-2col">
     <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
       <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.1 Pencapaian Guru</div>
       <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
@@ -2852,7 +2909,7 @@ function viewPPDAnalysis() {
   </div>` : ''}
 
   <!-- Level breakdown -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+  <div class="grid-2col">
     <div class="card" style="padding:18px 20px">
       <div style="font-weight:700;font-size:13px;margin-bottom:2px">Taburan Peringkat${SRC}</div>
       <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Pencapaian Guru Layak (SKPM 5.4.1)</div>
@@ -3897,12 +3954,8 @@ function bind() {
         list.remove();
         btn.classList.remove('open');
         checkCanNext();
-        if(['level','peranan'].includes(id)) render();
-        else {
-          // just update label
-          btn.querySelector('span').textContent = o.label;
-          btn.classList.remove('placeholder');
-        }
+        // always render to refresh AI preview panel (cadangan K)
+        render();
       });
       list.appendChild(opt);
     });
