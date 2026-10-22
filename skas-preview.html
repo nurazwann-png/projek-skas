@@ -684,7 +684,6 @@ function sidebar() {
     { v:'dashboard', label:'Papan Pemuka',    icon:IC.dash },
     { v:'records',   label:'Rekod Pencapaian Saya', icon:i('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
     { v:'form',      label:'Tambah Pencapaian', icon:IC.plus },
-    { v:'gallery',   label:'Galeri Aktiviti',  icon:i('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo">
@@ -1609,7 +1608,6 @@ function sidebarAdmin() {
     { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
     { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
     { sv:'school_profile',     label:'Profil Sekolah',            icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
-    { sv:'gallery',            label:'Galeri Gambar',             icon:i('<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><div class="mark">SK@S</div><div class="sub">Sistem Kualiti Sekolah</div></div>
@@ -3424,52 +3422,6 @@ function buildResetModal() {
 }
 
 /* -- Gallery view ---------------------------------------------- */
-function viewGallery() {
-  const isSchool = S.role === 'school_admin';
-  const DEMO_ALBUMS = [
-    { title:'Hari Sukan Sekolah 2026', tarikh:'15 Mac 2026', tag:'Sukan', count:24, grad:'linear-gradient(135deg,#f97316,#ef4444)', emoji:'🏆' },
-    { title:'Program Nilam Pembacaan', tarikh:'2 Feb 2026', tag:'Akademik', count:18, grad:'linear-gradient(135deg,#3b82f6,#6366f1)', emoji:'📚' },
-    { title:'Pertandingan Bahas Antara Kelas', tarikh:'20 Jan 2026', tag:'Bahasa', count:12, grad:'linear-gradient(135deg,#22c55e,#10b981)', emoji:'🎤' },
-    { title:'Bengkel Kepimpinan PBSM', tarikh:'8 Apr 2026', tag:'Kokurikulum', count:31, grad:'linear-gradient(135deg,#a855f7,#7c3aed)', emoji:'⚕️' },
-    { title:'Projek Taman Sekolah Hijau', tarikh:'12 Mei 2026', tag:'Alam Sekitar', count:9, grad:'linear-gradient(135deg,#84cc16,#16a34a)', emoji:'🌿' },
-    { title:'Hari Guru 2026', tarikh:'16 Mei 2026', tag:'Majlis', count:47, grad:'linear-gradient(135deg,#f59e0b,#d97706)', emoji:'🎓' },
-    { title:'Jamuan Akhir Tahun', tarikh:'30 Nov 2026', tag:'Sosial', count:22, grad:'linear-gradient(135deg,#ec4899,#f43f5e)', emoji:'🎉' },
-    { title:'Pertandingan Seni Visual', tarikh:'5 Jun 2026', tag:'Seni', count:15, grad:'linear-gradient(135deg,#06b6d4,#0284c7)', emoji:'🎨' },
-  ];
-
-  const albumCards = DEMO_ALBUMS.map((a,idx)=>`
-    <div style="border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--bdr);cursor:pointer;transition:box-shadow .2s;box-shadow:0 1px 4px rgba(0,0,0,.06)" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.06)'">
-      <div style="height:120px;background:${a.grad};display:flex;align-items:center;justify-content:center;font-size:48px;position:relative">
-        ${a.emoji}
-        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px">${a.count} foto</div>
-      </div>
-      <div style="padding:10px 12px">
-        <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px;line-height:1.3">${a.title}</div>
-        <div style="font-size:10px;color:var(--t3)">${a.tarikh}</div>
-        <div style="margin-top:6px"><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--chip);color:var(--t2)">${a.tag}</span></div>
-      </div>
-    </div>`).join('');
-
-  return `<div class="pg-head"><div>
-    <div class="pg-title">Galeri ${isSchool?'Gambar Sekolah':'Aktiviti'}</div>
-    <div class="pg-sub">Koleksi foto dan kenangan aktiviti ${isSchool?'sekolah':'anda'}</div>
-  </div>
-  <button class="btn btn-pri" style="display:flex;align-items:center;gap:6px">
-    ${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',14)}
-    Muat Naik Gambar
-  </button>
-  </div>
-
-  <div class="notice notice-gold" style="border-radius:10px;margin-bottom:16px">
-    <span style="font-size:14px;font-weight:700;flex-shrink:0;color:var(--warn)">i</span>
-    <div style="font-size:12px;color:var(--t2)">Galeri ini untuk simpanan dalaman sahaja. Gambar aktiviti membantu dokumentasi dan boleh dilampirkan sebagai eviden dalam rekod pencapaian. Fungsi muat naik tersedia dalam versi penuh.</div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px">
-    ${albumCards}
-  </div>`;
-}
-
 /* -- Build app ------------------------------------------------- */
 function buildContent() {
   if (S.role === 'ppd_admin') {
@@ -3486,14 +3438,12 @@ function buildContent() {
       : S.saView==='school_achievement_detail'       ? viewSchoolAchievementDetail()
       : S.saView==='school_form'                     ? viewSchoolForm()
       : S.saView==='school_profile'                  ? viewSchoolProfile()
-      : S.saView==='gallery'                         ? viewGallery()
       : viewSchoolAdmin();
   }
   return S.view==='dashboard' ? viewDashboard()
     : S.view==='records'      ? viewRecords()
     : S.view==='record_detail'? viewRecordDetail()
     : S.view==='form'         ? viewForm()
-    : S.view==='gallery'      ? viewGallery()
     : viewDetail();
 }
 
@@ -3502,9 +3452,9 @@ function buildTopbarTitle() {
     return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_detail:'Butiran Sekolah', reset_password:'Urus Kata Laluan' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
-    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah', gallery:'Galeri Gambar' }[S.saView] || 'SK@S';
+    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
   }
-  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian', gallery:'Galeri Aktiviti' }[S.view] || 'SK@S';
+  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian' }[S.view] || 'SK@S';
 }
 
 function buildApp() {
