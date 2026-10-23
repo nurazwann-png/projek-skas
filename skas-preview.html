@@ -3556,33 +3556,33 @@ function viewPPDSchoolUsers() {
   const filtered = search ? allUsers.filter(u=>u.name.toLowerCase().includes(search)||u.email.toLowerCase().includes(search)) : allUsers;
   const roleLabel = r => r==='school_admin'?'Pentadbir Sekolah':'Guru';
   const roleBadge = r => r==='school_admin'
-    ? `<span style="font-size:10px;font-weight:700;background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:2px 8px">Pentadbir</span>`
-    : `<span style="font-size:10px;font-weight:700;background:#f3e8ff;color:#7c3aed;border-radius:6px;padding:2px 8px">Guru</span>`;
-  return `<div style="padding:20px 16px;max-width:760px;margin:0 auto">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
-      <button id="btn-school-users-back" style="background:none;border:1.5px solid var(--bdr);border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px">
-        ${i('<polyline points="15 18 9 12 15 6"/>','16')} Kembali
+    ? `<span style="font-size:13px;font-weight:700;background:#dbeafe;color:#1d4ed8;border-radius:8px;padding:4px 12px">Pentadbir</span>`
+    : `<span style="font-size:13px;font-weight:700;background:#f3e8ff;color:#7c3aed;border-radius:8px;padding:4px 12px">Guru</span>`;
+  return `<div style="padding:24px 20px;max-width:800px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap">
+      <button id="btn-school-users-back" style="background:none;border:1.5px solid var(--bdr);border-radius:12px;padding:10px 18px;font-size:15px;font-weight:600;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:8px">
+        ${i('<polyline points="15 18 9 12 15 6"/>','18')} Kembali
       </button>
       <div style="flex:1;min-width:180px">
-        <div style="font-size:17px;font-weight:800;color:var(--t1)">${esc(sch.name)}</div>
-        <div style="font-size:12px;color:var(--t3)">Pengurusan Pengguna</div>
+        <div style="font-size:20px;font-weight:800;color:var(--t1)">${esc(sch.name)}</div>
+        <div style="font-size:14px;color:var(--t3)">Pengurusan Pengguna</div>
       </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:14px;margin-bottom:16px">
-      <input id="ppd-usr-search" value="${esc(S.ppdUserSearch||'')}" placeholder="Cari nama atau emel..." style="width:100%;padding:9px 12px;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);color:var(--t1);font-size:13px;box-sizing:border-box">
+    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:16px;margin-bottom:16px">
+      <input id="ppd-usr-search" value="${esc(S.ppdUserSearch||'')}" placeholder="Cari nama atau emel..." style="width:100%;padding:12px 16px;border:1px solid var(--bdr);border-radius:10px;background:var(--bg);color:var(--t1);font-size:15px;box-sizing:border-box">
     </div>
-    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden">
-      ${filtered.length===0?`<div style="padding:32px;text-align:center;color:var(--t3);font-size:13px">Tiada pengguna dijumpai.</div>`
+    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;overflow:hidden">
+      ${filtered.length===0?`<div style="padding:40px;text-align:center;color:var(--t3);font-size:15px">Tiada pengguna dijumpai.</div>`
         :filtered.map((u,idx)=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;${idx>0?'border-top:1px solid var(--bdr)':''}">
-          <div style="width:36px;height:36px;background:var(--accent-soft,#e8f0fe);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0">${esc(u.name.charAt(0))}</div>
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${idx>0?'border-top:1px solid var(--bdr)':''}">
+          <div style="width:46px;height:46px;background:var(--accent-soft,#e8f0fe);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);flex-shrink:0">${esc(u.name.charAt(0))}</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.name)}</div>
-            <div style="font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div>
+            <div style="font-size:16px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.name)}</div>
+            <div style="font-size:13px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
             ${roleBadge(u.role)}
-            <button data-usr-assign="${u.id}" style="background:none;border:1px solid var(--bdr);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--t2);cursor:pointer">Tukar</button>
+            <button data-usr-assign="${u.id}" style="background:none;border:1.5px solid var(--bdr);border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--t2);cursor:pointer">Tukar</button>
           </div>
         </div>`).join('')}
     </div>
