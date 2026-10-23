@@ -338,6 +338,79 @@ body {
   color: var(--t3);
 }
 
+/* ── Profile chip in header ───────────────────────────── */
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 40px;
+  padding: 6px 14px 6px 6px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.profile-chip:hover { background: rgba(255,255,255,.2); }
+.profile-av {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.profile-info { line-height: 1.25; }
+.profile-name { font-size: 12px; font-weight: 700; color: #fff; }
+.profile-role { font-size: 10px; color: rgba(255,255,255,.6); font-weight: 500; }
+.profile-caret { margin-left: 2px; }
+.profile-caret svg { width: 12px; height: 12px; stroke: rgba(255,255,255,.6); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Role modal ───────────────────────────────────────── */
+.role-modal-ov {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.role-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,.35);
+}
+.role-opt {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all .15s;
+  margin-bottom: 10px;
+}
+.role-opt:last-child { margin-bottom: 0; }
+.role-opt:hover { border-color: var(--accent); background: var(--accent-l); }
+.role-opt.active { border-color: var(--accent); background: var(--accent-l); }
+.role-opt-av {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.role-opt-name { font-size: 14px; font-weight: 700; color: var(--t1); }
+.role-opt-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
+.role-opt-check { margin-left: auto; flex-shrink: 0; }
+.role-opt-check svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 600px) {
   .hub-header { padding: 28px 20px 32px; }
@@ -352,13 +425,24 @@ body {
 <!-- ── Header ──────────────────────────────────────────── -->
 <div class="hub-header">
   <div class="hub-header-inner">
-    <div class="hub-logo-row">
-      <div class="hub-logo-mark">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div class="hub-logo-row" style="margin-bottom:0">
+        <div class="hub-logo-mark">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+          <div class="hub-org">Kementerian Pendidikan Malaysia</div>
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85)">Pejabat Pendidikan Daerah</div>
+        </div>
       </div>
-      <div>
-        <div class="hub-org">Kementerian Pendidikan Malaysia</div>
-        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85)">Pejabat Pendidikan Daerah</div>
+      <!-- Profile chip -->
+      <div class="profile-chip" id="profile-chip">
+        <div class="profile-av" id="profile-av">?</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profile-name">—</div>
+          <div class="profile-role" id="profile-role">—</div>
+        </div>
+        <div class="profile-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
     </div>
     <div class="hub-title">PPD Dalat</div>
@@ -366,18 +450,9 @@ body {
 
     <div style="margin-top:28px">
       <div class="hub-stats">
-        <div class="hub-stat">
-          <div class="hub-stat-num">2</div>
-          <div class="hub-stat-lbl">Aplikasi Aktif</div>
-        </div>
-        <div class="hub-stat">
-          <div class="hub-stat-num">47</div>
-          <div class="hub-stat-lbl">Sekolah</div>
-        </div>
-        <div class="hub-stat">
-          <div class="hub-stat-num">1,240</div>
-          <div class="hub-stat-lbl">Pengguna Berdaftar</div>
-        </div>
+        <div class="hub-stat"><div class="hub-stat-num">2</div><div class="hub-stat-lbl">Aplikasi Aktif</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">47</div><div class="hub-stat-lbl">Sekolah</div></div>
+        <div class="hub-stat"><div class="hub-stat-num">1,240</div><div class="hub-stat-lbl">Pengguna Berdaftar</div></div>
       </div>
     </div>
   </div>
@@ -389,7 +464,7 @@ body {
   <div class="app-grid">
 
     <!-- SK@S Card -->
-    <a class="app-card" href="/skas-preview.html">
+    <a class="app-card" id="skas-card" href="/skas-preview.html">
       <div class="app-card-bg" style="background:#2563eb"></div>
       <div class="app-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -449,6 +524,73 @@ body {
   Pejabat Pendidikan Daerah Dalat &nbsp;&middot;&nbsp; Kementerian Pendidikan Malaysia<br>
   <span style="margin-top:4px;display:inline-block">Versi 1.0 &nbsp;&middot;&nbsp; 2026</span>
 </div>
+
+<script>
+// ── Demo users (simulate login) ──────────────────────────
+const DEMO_USERS = [
+  { id:'ppd_admin',    name:'Azlan bin Hamid',         initials:'AH', role:'ppd_admin',    roleLabel:'Admin PPD',          color:'#1d4ed8', sub:'PPD Dalat' },
+  { id:'school_admin', name:'Siti Rahimah binti Zain', initials:'SR', role:'school_admin', roleLabel:'Pentadbir Sekolah',   color:'#7c3aed', sub:'SK Wangsa Maju 1' },
+  { id:'teacher',      name:'Cikgu Azman Harun',       initials:'AZ', role:'teacher',      roleLabel:'Guru',                color:'#059669', sub:'SK Wangsa Maju 1' },
+];
+
+const ROLE_KEY = 'ppd_dalat_role';
+
+function getRole() {
+  try { return localStorage.getItem(ROLE_KEY) || 'teacher'; } catch { return 'teacher'; }
+}
+function setRole(r) {
+  try { localStorage.setItem(ROLE_KEY, r); } catch {}
+}
+
+function getUser() {
+  const role = getRole();
+  return DEMO_USERS.find(u => u.id === role) || DEMO_USERS[2];
+}
+
+function updateUI() {
+  const u = getUser();
+  document.getElementById('profile-av').textContent   = u.initials;
+  document.getElementById('profile-name').textContent = u.name;
+  document.getElementById('profile-role').textContent = u.roleLabel + ' · ' + u.sub;
+  document.getElementById('profile-av').style.background = u.color;
+  // Update SK@S card link with role param
+  document.getElementById('skas-card').href = '/skas-preview.html?role=' + u.role;
+}
+
+function openRoleModal() {
+  const current = getRole();
+  const ov = document.createElement('div');
+  ov.className = 'role-modal-ov';
+  ov.innerHTML = `<div class="role-modal">
+    <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px">Tukar Peranan</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">Pilih peranan anda untuk sesi ini</div>
+    ${DEMO_USERS.map(u => `
+      <div class="role-opt${u.id===current?' active':''}" data-role="${u.id}">
+        <div class="role-opt-av" style="background:${u.color}">${u.initials}</div>
+        <div>
+          <div class="role-opt-name">${u.name}</div>
+          <div class="role-opt-sub">${u.roleLabel} · ${u.sub}</div>
+        </div>
+        ${u.id===current?`<div class="role-opt-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
+      </div>`).join('')}
+    <button id="modal-close" style="margin-top:18px;width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#modal-close').addEventListener('click', () => ov.remove());
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  ov.querySelectorAll('[data-role]').forEach(el => {
+    el.addEventListener('click', () => {
+      setRole(el.dataset.role);
+      ov.remove();
+      updateUI();
+    });
+  });
+}
+
+// Init
+updateUI();
+document.getElementById('profile-chip').addEventListener('click', openRoleModal);
+</script>
 
 </body>
 </html>

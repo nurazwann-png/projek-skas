@@ -4817,5 +4817,16 @@ function bind() {
   });
 }
 
+// Read ?role= from URL (set by PPD Dalat portal)
+(function() {
+  try {
+    const urlRole = new URLSearchParams(window.location.search).get('role');
+    const valid = ['ppd_admin','school_admin','teacher'];
+    if (urlRole && valid.includes(urlRole)) {
+      S.role = urlRole;
+    }
+  } catch(e) {}
+})();
+
 render();
 </script>
