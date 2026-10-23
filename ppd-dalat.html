@@ -558,14 +558,18 @@ const DEMO_USERS = [
 
 const USER_KEY = 'ppd_dalat_user';
 
-function getUserId() {
+// In-memory state (primary) + localStorage (persistence across reloads)
+let _currentUserId = (function() {
   try { return localStorage.getItem(USER_KEY) || 'u_azman'; } catch { return 'u_azman'; }
-}
+})();
+
+function getUserId() { return _currentUserId; }
 function saveUserId(id) {
+  _currentUserId = id;
   try { localStorage.setItem(USER_KEY, id); } catch {}
 }
 function getUser() {
-  return DEMO_USERS.find(u => u.id === getUserId()) || DEMO_USERS[2];
+  return DEMO_USERS.find(u => u.id === _currentUserId) || DEMO_USERS[2];
 }
 
 // ── Bina role strip untuk satu app ───────────────────────
