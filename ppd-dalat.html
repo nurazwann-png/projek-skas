@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPD Dalat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap">
+<style>
+:root {
+  --bg:       #f0f4ff;
+  --surface:  #ffffff;
+  --border:   #e2e8f0;
+  --t1:       #0f172a;
+  --t2:       #334155;
+  --t3:       #94a3b8;
+  --accent:   #1d4ed8;
+  --accent-l: #dbeafe;
+  --shadow:   0 2px 8px rgba(15,23,42,.06), 0 8px 32px rgba(15,23,42,.08);
+  --shadow-lg: 0 4px 16px rgba(15,23,42,.08), 0 16px 48px rgba(15,23,42,.12);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      #0b1120;
+    --surface: #131f35;
+    --border:  #1e2d45;
+    --t1:      #f1f5f9;
+    --t2:      #94a3b8;
+    --t3:      #475569;
+    --accent:  #3b82f6;
+    --accent-l:#1e3a5f;
+    --shadow:  0 2px 8px rgba(0,0,0,.2), 0 8px 32px rgba(0,0,0,.3);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,.25), 0 16px 48px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:      #0b1120;
+  --surface: #131f35;
+  --border:  #1e2d45;
+  --t1:      #f1f5f9;
+  --t2:      #94a3b8;
+  --t3:      #475569;
+  --accent:  #3b82f6;
+  --accent-l:#1e3a5f;
+  --shadow:  0 2px 8px rgba(0,0,0,.2), 0 8px 32px rgba(0,0,0,.3);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,.25), 0 16px 48px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--t1);
+}
+
+body {
+  padding: 0 16px 48px;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.hub-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #1d4ed8 100%);
+  margin: 0 -16px;
+  padding: 36px 32px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hub-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(99,102,241,.25) 0%, transparent 60%),
+              radial-gradient(ellipse at 10% 90%, rgba(59,130,246,.15) 0%, transparent 50%);
+}
+.hub-header-inner {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.hub-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.hub-logo-mark {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.25);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hub-logo-mark svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hub-org {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,.55);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.hub-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}
+.hub-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255,255,255,.6);
+  font-weight: 500;
+}
+.hub-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.hub-stat {
+  display: flex;
+  flex-direction: column;
+}
+.hub-stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+}
+.hub-stat-lbl {
+  font-size: 11px;
+  color: rgba(255,255,255,.5);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* ── Section ─────────────────────────────────────────── */
+.section {
+  max-width: 900px;
+  margin: 36px auto 0;
+}
+.section-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--t3);
+  margin-bottom: 16px;
+}
+
+/* ── App grid ────────────────────────────────────────── */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* ── App card ────────────────────────────────────────── */
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  position: relative;
+  overflow: hidden;
+}
+.app-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
+}
+.app-card.coming-soon {
+  cursor: default;
+  opacity: .7;
+}
+.app-card.coming-soon:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+  border-color: var(--border);
+}
+.app-card-bg {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: .07;
+}
+
+.app-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.app-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: #fff;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-card-body { flex: 1; }
+.app-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--t1);
+  margin-bottom: 2px;
+}
+.app-full-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+.app-desc {
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.55;
+}
+
+.app-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.app-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.app-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.badge-live   { background: #dcfce7; color: #166534; }
+.badge-beta   { background: #fef3c7; color: #92400e; }
+.badge-soon   { background: var(--border); color: var(--t3); }
+
+.app-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-arrow svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--t3);
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.app-card:hover .app-arrow {
+  background: var(--accent);
+}
+.app-card:hover .app-arrow svg {
+  stroke: #fff;
+}
+.app-card.coming-soon:hover .app-arrow {
+  background: var(--bg);
+}
+.app-card.coming-soon:hover .app-arrow svg {
+  stroke: var(--t3);
+}
+
+/* ── Info bar ─────────────────────────────────────────── */
+.info-bar {
+  max-width: 900px;
+  margin: 28px auto 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.info-bar svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--t3);
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+.info-bar-text {
+  font-size: 12px;
+  color: var(--t3);
+  line-height: 1.4;
+}
+
+/* ── Footer ───────────────────────────────────────────── */
+.hub-footer {
+  max-width: 900px;
+  margin: 40px auto 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--t3);
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 600px) {
+  .hub-header { padding: 28px 20px 32px; }
+  .hub-title  { font-size: 22px; }
+  .hub-stats  { gap: 16px; }
+  .app-grid   { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────── -->
+<div class="hub-header">
+  <div class="hub-header-inner">
+    <div class="hub-logo-row">
+      <div class="hub-logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div>
+        <div class="hub-org">Kementerian Pendidikan Malaysia</div>
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85)">Pejabat Pendidikan Daerah</div>
+      </div>
+    </div>
+    <div class="hub-title">PPD Dalat</div>
+    <div class="hub-subtitle">Portal Aplikasi Digital Daerah Dalat</div>
+
+    <div style="margin-top:28px">
+      <div class="hub-stats">
+        <div class="hub-stat">
+          <div class="hub-stat-num">2</div>
+          <div class="hub-stat-lbl">Aplikasi Aktif</div>
+        </div>
+        <div class="hub-stat">
+          <div class="hub-stat-num">47</div>
+          <div class="hub-stat-lbl">Sekolah</div>
+        </div>
+        <div class="hub-stat">
+          <div class="hub-stat-num">1,240</div>
+          <div class="hub-stat-lbl">Pengguna Berdaftar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── App Grid ──────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-lbl">Aplikasi Tersedia</div>
+  <div class="app-grid">
+
+    <!-- SK@S Card -->
+    <a class="app-card" href="/skas-preview.html">
+      <div class="app-card-bg" style="background:#2563eb"></div>
+      <div class="app-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="app-card-body">
+        <div class="app-name">SK@S</div>
+        <div class="app-full-name">Sistem Kualiti Sekolah</div>
+        <div class="app-desc">Pemantauan pencapaian guru dan sekolah berdasarkan Standard Kualiti Pendidikan Malaysia (SKPM 5.4).</div>
+      </div>
+      <div class="app-tags">
+        <span class="app-tag" style="background:#dbeafe;color:#1e40af">Guru</span>
+        <span class="app-tag" style="background:#ede9fe;color:#6d28d9">Pentadbir Sekolah</span>
+        <span class="app-tag" style="background:#e0e7ff;color:#3730a3">Admin PPD</span>
+      </div>
+      <div class="app-footer">
+        <span class="app-badge badge-live">Aktif</span>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- SPM Card -->
+    <div class="app-card coming-soon">
+      <div class="app-card-bg" style="background:#d97706"></div>
+      <div class="app-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div class="app-card-body">
+        <div class="app-name">SPM</div>
+        <div class="app-full-name">Sistem Pengurusan Murid</div>
+        <div class="app-desc">Pengurusan data murid, kehadiran, dan rekod akademik seluruh daerah dalam satu platform bersepadu.</div>
+      </div>
+      <div class="app-tags">
+        <span class="app-tag" style="background:#fef3c7;color:#92400e">Guru</span>
+        <span class="app-tag" style="background:#fed7aa;color:#9a3412">Pentadbir</span>
+      </div>
+      <div class="app-footer">
+        <span class="app-badge badge-soon">Akan Datang</span>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Info bar ──────────────────────────────────────────── -->
+<div class="info-bar">
+  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  <div class="info-bar-text">Portal ini adalah sistem dalaman PPD Dalat. Untuk bantuan teknikal, sila hubungi pegawai ICT daerah.</div>
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────── -->
+<div class="hub-footer">
+  Pejabat Pendidikan Daerah Dalat &nbsp;&middot;&nbsp; Kementerian Pendidikan Malaysia<br>
+  <span style="margin-top:4px;display:inline-block">Versi 1.0 &nbsp;&middot;&nbsp; 2026</span>
+</div>
+
+</body>
+</html>
