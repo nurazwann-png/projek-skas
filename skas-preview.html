@@ -122,6 +122,19 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .bell-btn{position:relative;background:none;border:none;cursor:pointer;padding:7px;border-radius:10px;color:var(--t2);transition:background .15s}
 .bell-btn:hover{background:var(--border)}
 .bell-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:2px solid var(--surface)}
+.bell-badge{position:absolute;top:2px;right:2px;min-width:17px;height:17px;background:#ef4444;border-radius:9px;border:2px solid var(--surface);font-size:9px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 3px}
+.notif-panel{position:fixed;top:58px;right:16px;width:340px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9998;overflow:hidden;animation:notif-in .18s ease}
+@keyframes notif-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.notif-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.notif-hdr-title{font-size:14px;font-weight:800;color:var(--t1)}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.notif-item:hover{background:var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-item.unread{background:#eff6ff}
+.notif-item.unread:hover{background:#dbeafe}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;margin-top:5px}
+.notif-dot.read{background:transparent}
+.notif-empty{padding:28px 16px;text-align:center;color:var(--t3);font-size:13px}
 
 /* --- Generic -------------------------------------------------- */
 .btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--b);font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;border:none;cursor:pointer;transition:all .15s}
@@ -744,9 +757,49 @@ function sidebar() {
   </aside>`;
 }
 
+/* -- Notif helpers -------------------------------------------- */
+function bellBadgeHtml(unread) {
+  if(unread<=0) return '';
+  return `<span class="bell-badge">${unread>9?'9+':unread}</span>`;
+}
+
+function buildNotifPanel(anns, userId, validSasaran, annViewState) {
+  const filtered = anns.filter(a => validSasaran.includes(a.sasaran));
+  const unread = filtered.filter(a => !a.dibaca.includes(userId));
+  const katColor = k => k==='segera'?'#dc2626':k==='penting'?'#d97706':'#6366f1';
+  const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
+  const items = filtered.slice(0,6).map(a => {
+    const isUnread = !a.dibaca.includes(userId);
+    return `<div class="notif-item${isUnread?' unread':''}" data-notif-read="${a.id}" data-notif-goto="${annViewState}">
+      <div class="notif-dot${isUnread?'':' read'}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:${isUnread?700:600};color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.tajuk)}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+          <span style="font-size:10px;font-weight:700;background:${katColor(a.kategori)}18;color:${katColor(a.kategori)};border-radius:5px;padding:1px 6px">${katLabel(a.kategori)}</span>
+          <span style="font-size:11px;color:var(--t3)">${a.tarikh}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="notif-panel" id="notif-panel">
+    <div class="notif-hdr">
+      <div class="notif-hdr-title">Notifikasi${unread.length>0?` <span style="background:#ef444420;color:#ef4444;border-radius:6px;font-size:11px;padding:1px 6px">${unread.length} baru</span>`:''}</div>
+      <button id="notif-close" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;line-height:1;padding:2px 6px">&times;</button>
+    </div>
+    ${filtered.length===0
+      ? `<div class="notif-empty">Tiada siaran untuk anda.</div>`
+      : items + (unread.length>0
+          ? `<div style="padding:10px 16px;border-top:1px solid var(--border)"><button id="notif-mark-all" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer">Tandakan Semua Dibaca</button></div>`
+          : `<div style="padding:10px 16px;text-align:center;color:var(--t3);font-size:12px">Semua siaran telah dibaca</div>`)
+    }
+  </div>`;
+}
+
 /* -- Topbar ---------------------------------------------------- */
 function topbar(title) {
   const back = S.view==='form'||S.view==='detail'||S.view==='record_detail';
+  const validSasaran = ['semua','guru'];
+  const unread = S.announcements.filter(a=>validSasaran.includes(a.sasaran)&&!a.dibaca.includes('teacher1')).length;
 
   return `<div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
@@ -757,7 +810,7 @@ function topbar(title) {
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+      <button id="teacher-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadgeHtml(unread)}</button>
     </div>
   </div>`;
 }
@@ -3831,11 +3884,12 @@ function buildApp() {
     </div>`;
   }
   if (S.role === 'school_admin') {
+    const saUnread = S.announcements.filter(a=>['semua','sekolah'].includes(a.sasaran)&&!a.dibaca.includes('school1')).length;
     return `${sidebarAdmin()}
     <div class="main">
       <div class="topbar">
         <div class="tb-info"><div class="g">Pentadbir Sekolah &middot; SK Wangsa Maju 1</div><div class="n">${buildTopbarTitle()}</div></div>
-        <button class="bell-btn">${IC.bell}<span class="bell-dot"></span></button>
+        <button id="sa-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadgeHtml(saUnread)}</button>
       </div>
       <div class="content">${contentHtml}</div>
     </div>`;
@@ -4169,9 +4223,56 @@ function bind() {
   document.querySelectorAll('[data-jenis]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolJenis:b.dataset.jenis,ppdView:'schools'})));
   document.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolStatus:b.dataset.status,ppdView:'schools'})));
 
-  // ppd bell button (cadangan 7)
+  // Bell notification dropdown (shared helper)
+  function openNotifPanel(btn, anns, userId, validSasaran, annViewState) {
+    const existing = document.getElementById('notif-panel');
+    if(existing){ existing.remove(); return; }
+    document.body.insertAdjacentHTML('beforeend', buildNotifPanel(anns, userId, validSasaran, annViewState));
+    const panel = document.getElementById('notif-panel');
+    // Position relative to button
+    const rect = btn.getBoundingClientRect();
+    panel.style.top = (rect.bottom + 8) + 'px';
+    panel.style.right = (window.innerWidth - rect.right) + 'px';
+    panel.style.left = 'auto';
+    panel.style.width = '320px';
+    // Close button
+    document.getElementById('notif-close').addEventListener('click', ()=>panel.remove());
+    // Mark all read
+    const markAllBtn = document.getElementById('notif-mark-all');
+    if(markAllBtn) markAllBtn.addEventListener('click', ()=>{
+      const updated = anns.map(a => validSasaran.includes(a.sasaran) ? {...a, dibaca:[...new Set([...a.dibaca, userId])]} : a);
+      panel.remove();
+      setState({announcements: updated});
+    });
+    // Click item to go to announcements & mark read
+    panel.querySelectorAll('[data-notif-read]').forEach(el => {
+      el.addEventListener('click', ()=>{
+        const aid = el.dataset.notifRead;
+        const goto = el.dataset.notifGoto;
+        const updated = anns.map(a => a.id===aid ? {...a, dibaca:[...new Set([...a.dibaca, userId])]} : a);
+        panel.remove();
+        if(goto==='ppd') setState({announcements:updated, ppdView:'announcements'});
+        else if(goto==='sa') setState({announcements:updated, saView:'announcements'});
+        else setState({announcements:updated, view:'announcements'});
+      });
+    });
+    // Close on outside click
+    setTimeout(()=>document.addEventListener('click', function outsideClick(e){
+      if(!panel.contains(e.target)&&e.target!==btn){ panel.remove(); document.removeEventListener('click',outsideClick); }
+    }),10);
+  }
+
+  // ppd bell button
   const bellBtn=document.getElementById('ppd-bell-btn');
-  if(bellBtn)bellBtn.addEventListener('click',()=>setState({ppdNotifSeen:true}));
+  if(bellBtn)bellBtn.addEventListener('click',()=>openNotifPanel(bellBtn, S.announcements, 'ppd', ['semua','sekolah','guru'], 'ppd'));
+
+  // school admin bell button
+  const saBellBtn=document.getElementById('sa-bell-btn');
+  if(saBellBtn)saBellBtn.addEventListener('click',()=>openNotifPanel(saBellBtn, S.announcements, 'school1', ['semua','sekolah'], 'sa'));
+
+  // teacher bell button
+  const teacherBellBtn=document.getElementById('teacher-bell-btn');
+  if(teacherBellBtn)teacherBellBtn.addEventListener('click',()=>openNotifPanel(teacherBellBtn, S.announcements, 'teacher1', ['semua','guru'], 'teacher'));
 
   // ppd print button (cadangan 5)
   const printBtn=document.getElementById('btn-ppd-print');
@@ -4681,11 +4782,30 @@ function bind() {
       ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
       ov.querySelector('#usr-modal-save').addEventListener('click',()=>{
         const newRole=radioAdmin.checked?'school_admin':'guru';
+        // No change — close without confirmation
+        if(newRole===u.role){ ov.remove(); return; }
         // School context: use current school; otherwise clear
         const newSchoolId=newRole==='school_admin'?(contextSchoolId||u.schoolId||null):null;
-        const updated=S.demoUsers.map(x=>x.id===uid?{...x,role:newRole,schoolId:newSchoolId}:x);
-        ov.remove();
-        setState({demoUsers:updated});
+        const roleDisplayOld = u.role==='school_admin'?'Pentadbir Sekolah':'Guru';
+        const roleDisplayNew = newRole==='school_admin'?'Pentadbir Sekolah':'Guru';
+        // Show confirmation step inside the modal
+        const modalBox = ov.querySelector('div');
+        modalBox.innerHTML=`
+          <div style="text-align:center;padding:8px 0 20px">
+            <div style="width:52px;height:52px;border-radius:14px;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px">⚠️</div>
+            <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:8px">Sahkan Perubahan Peranan</div>
+            <div style="font-size:13px;color:var(--t3);line-height:1.5">Tukar peranan <strong style="color:var(--t1)">${esc(u.name)}</strong><br>daripada <strong>${roleDisplayOld}</strong> kepada <strong>${roleDisplayNew}</strong>?</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button id="usr-confirm-batal" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
+            <button id="usr-confirm-ya" style="flex:2;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">Ya, Tukar Peranan</button>
+          </div>`;
+        ov.querySelector('#usr-confirm-batal').addEventListener('click',()=>ov.remove());
+        ov.querySelector('#usr-confirm-ya').addEventListener('click',()=>{
+          const updated=S.demoUsers.map(x=>x.id===uid?{...x,role:newRole,schoolId:newSchoolId}:x);
+          ov.remove();
+          setState({demoUsers:updated});
+        });
       });
     });
   });
