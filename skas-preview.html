@@ -622,7 +622,7 @@ let S = {
   _profileReadOnly: false,
 
   // ppd admin sub-views
-  ppdView: 'analysis',  // analysis | charts | schools | school_detail | reset_password | announcements
+  ppdView: 'analysis',  // analysis | charts | schools | school_detail | reset_password | announcements | user_mgmt
   selectedSchoolId: null,
   ppdFilter: null,
   resetDone: [],       // schoolIds that have been reset
@@ -632,6 +632,20 @@ let S = {
   ppdSchoolStatus: 'all', // filter by status: 'all'|'lemah'|'baik'
   ppdNotifSeen: false,   // whether bell notification has been seen
   ppdYearFilter: TAHUN_SEMASA, // cadangan B: year filter for analysis (number)
+
+  // pengurusan pengguna
+  demoUsers: [
+    { id:'u1', name:'Ahmad Faizal bin Mohd',      email:'a.faizal@moe.gov.my',   role:'guru',         schoolId:null },
+    { id:'u2', name:'Siti Rahimah binti Zain',     email:'s.rahimah@moe.gov.my',  role:'school_admin', schoolId:'s1' },
+    { id:'u3', name:'Mohamad Hafiz bin Razali',    email:'m.hafiz@moe.gov.my',    role:'guru',         schoolId:null },
+    { id:'u4', name:'Nurul Ain binti Hassan',       email:'n.ain@moe.gov.my',      role:'school_admin', schoolId:'s2' },
+    { id:'u5', name:'Razif bin Othman',            email:'razif@moe.gov.my',      role:'guru',         schoolId:null },
+    { id:'u6', name:'Zarina binti Abdul Karim',    email:'zarina@moe.gov.my',     role:'guru',         schoolId:null },
+    { id:'u7', name:'Khairul Nizam bin Ismail',    email:'k.nizam@moe.gov.my',    role:'guru',         schoolId:null },
+    { id:'u8', name:'Faridah binti Mahmud',        email:'faridah@moe.gov.my',    role:'school_admin', schoolId:'s3' },
+  ],
+  ppdUserFilter: 'semua',  // 'semua' | 'school_admin' | 'guru'
+  ppdUserSearch: '',
 
   // teacher roster (mutable)
   teachers: DEMO_TEACHERS.map(t=>({...t})),
@@ -1606,6 +1620,7 @@ function sidebarAdmin() {
       { pv:'charts',          label:'Carta & Analitik',  icon:i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>') },
       { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
       { pv:'reset_password',  label:'Urus Kata Laluan',  icon:i('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') },
+      { pv:'user_mgmt',       label:'Pengurusan Pengguna', icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
       { pv:'announcements',   label:'Siaran & Hebahan',  icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
     ];
     return `<aside class="sidebar">
@@ -2896,6 +2911,85 @@ function viewPPDCharts() {
   </div>`;
 }
 
+function viewPPDUserMgmt() {
+  const search = (S.ppdUserSearch||'').toLowerCase();
+  const filter = S.ppdUserFilter || 'semua';
+
+  const filtered = S.demoUsers.filter(u => {
+    const matchSearch = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
+    const matchFilter = filter === 'semua' || u.role === filter;
+    return matchSearch && matchFilter;
+  });
+
+  const totalAdmins = S.demoUsers.filter(u => u.role === 'school_admin').length;
+  const totalGurus  = S.demoUsers.filter(u => u.role === 'guru').length;
+
+  const chipFilter = (val, label) => {
+    const active = filter === val;
+    return `<button data-usr-filter="${val}" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
+  };
+
+  const avColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
+
+  const cards = filtered.length === 0
+    ? `<div style="text-align:center;padding:48px 20px;color:var(--t3);font-size:14px">Tiada pengguna dijumpai.</div>`
+    : filtered.map((u,idx) => {
+        const isAdmin = u.role === 'school_admin';
+        const school = isAdmin ? DEMO_SCHOOLS.find(s => s.id === u.schoolId) : null;
+        const av = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const avCol = avColors[S.demoUsers.findIndex(x=>x.id===u.id) % avColors.length];
+        return `<div class="card" style="padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="width:44px;height:44px;border-radius:12px;background:${avCol};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0">${av}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+              <span style="font-weight:700;font-size:14px;color:var(--t1)">${esc(u.name)}</span>
+              <span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:${isAdmin?'#818cf818':'var(--chip)'};color:${isAdmin?'#818cf8':'var(--chip-fg)'};border:1px solid ${isAdmin?'#818cf840':'transparent'}">${isAdmin?'Pentadbir Sekolah':'Guru'}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--t3)">${esc(u.email)}</div>
+            ${isAdmin && school ? `<div style="font-size:11.5px;color:var(--accent);margin-top:3px;font-weight:600">&#x1F3EB; ${esc(school.name)}</div>` : ''}
+          </div>
+          <button data-usr-assign="${u.id}" style="flex-shrink:0;padding:8px 16px;border-radius:9px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--t1)'">${isAdmin?'Tukar Peranan':'Tetapkan Peranan'}</button>
+        </div>`;
+      }).join('');
+
+  return `<div class="sa-wrap">
+    <div class="ppd-analysis-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1)">Pengurusan Pengguna</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${S.demoUsers.length} pengguna berdaftar</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      <div class="card" style="padding:16px 18px;text-align:center">
+        <div style="font-size:26px;font-weight:800;color:var(--t1)">${S.demoUsers.length}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Jumlah Pengguna</div>
+      </div>
+      <div class="card" style="padding:16px 18px;text-align:center">
+        <div style="font-size:26px;font-weight:800;color:#818cf8">${totalAdmins}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Pentadbir Sekolah</div>
+      </div>
+      <div class="card" style="padding:16px 18px;text-align:center">
+        <div style="font-size:26px;font-weight:800;color:var(--accent)">${totalGurus}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Guru</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <div style="position:relative">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="ppd-user-search" type="text" placeholder="Cari nama atau emel pengguna..." value="${esc(S.ppdUserSearch||'')}" style="width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${chipFilter('semua','Semua')}
+        ${chipFilter('school_admin','Pentadbir Sekolah')}
+        ${chipFilter('guru','Guru')}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${cards}
+    </div>
+  </div>`;
+}
+
 function viewPPDAnnouncements() {
   const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#6366f1';
   const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
@@ -3610,6 +3704,7 @@ function buildContent() {
       : S.ppdView==='schools'           ? viewPPDSchools()
       : S.ppdView==='charts'            ? viewPPDCharts()
       : S.ppdView==='reset_password'    ? viewPPDResetPassword()
+      : S.ppdView==='user_mgmt'         ? viewPPDUserMgmt()
       : S.ppdView==='announcements'     ? viewPPDAnnouncements()
       : viewPPDAnalysis();
   }
@@ -3633,7 +3728,7 @@ function buildContent() {
 
 function buildTopbarTitle() {
   if (S.role === 'ppd_admin') {
-    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_detail:'Butiran Sekolah', reset_password:'Urus Kata Laluan', announcements:'Siaran & Hebahan' }[S.ppdView] || 'SK@S';
+    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_detail:'Butiran Sekolah', reset_password:'Urus Kata Laluan', user_mgmt:'Pengurusan Pengguna', announcements:'Siaran & Hebahan' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
     return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah', announcements:'Siaran Diterima' }[S.saView] || 'SK@S';
@@ -4424,6 +4519,102 @@ function bind() {
     const validSasaran=S.role==='school_admin'?['semua','sekolah']:['semua','guru'];
     const updated=S.announcements.map(a=>validSasaran.includes(a.sasaran)&&!a.dibaca.includes(uid)?{...a,dibaca:[...a.dibaca,uid]}:a);
     setState({announcements:updated});
+  });
+
+  // -- Pengurusan Pengguna handlers --
+
+  // ppd user search
+  const pusEl=document.getElementById('ppd-user-search');
+  if(pusEl)pusEl.addEventListener('input',()=>setState({ppdUserSearch:pusEl.value,ppdView:'user_mgmt'}));
+
+  // ppd user filter chips
+  document.querySelectorAll('[data-usr-filter]').forEach(b=>
+    b.addEventListener('click',()=>setState({ppdUserFilter:b.dataset.usrFilter,ppdView:'user_mgmt'}))
+  );
+
+  // ppd user role assignment modal
+  const avColors=['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
+  document.querySelectorAll('[data-usr-assign]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const uid=btn.dataset.usrAssign;
+      const u=S.demoUsers.find(x=>x.id===uid);
+      if(!u)return;
+      let ov=document.getElementById('usr-assign-modal');
+      if(ov)ov.remove();
+      ov=document.createElement('div');
+      ov.id='usr-assign-modal';
+      ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      const av=u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const avCol=avColors[S.demoUsers.findIndex(x=>x.id===uid)%avColors.length];
+      const schoolOptions=DEMO_SCHOOLS.map(s=>`<option value="${s.id}" ${u.schoolId===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
+      ov.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4)">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+          <div style="width:48px;height:48px;border-radius:13px;background:${avCol};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;flex-shrink:0">${av}</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:var(--t1)">${esc(u.name)}</div>
+            <div style="font-size:12px;color:var(--t3)">${esc(u.email)}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Peranan</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+          <label id="lbl-role-guru" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid ${u.role==='guru'?'var(--accent)':'var(--bdr)'};background:${u.role==='guru'?'rgba(59,130,246,.1)':'transparent'};transition:all .15s">
+            <input type="radio" name="usr-role" id="radio-guru" value="guru" ${u.role==='guru'?'checked':''} style="accent-color:var(--accent);width:16px;height:16px">
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--t1)">Guru</div>
+              <div style="font-size:11px;color:var(--t3)">Akses standard — hantar &amp; lihat rekod sendiri sahaja</div>
+            </div>
+          </label>
+          <label id="lbl-role-admin" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid ${u.role==='school_admin'?'#818cf8':'var(--bdr)'};background:${u.role==='school_admin'?'rgba(129,140,248,.1)':'transparent'};transition:all .15s">
+            <input type="radio" name="usr-role" id="radio-admin" value="school_admin" ${u.role==='school_admin'?'checked':''} style="accent-color:#818cf8;width:16px;height:16px">
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--t1)">Pentadbir Sekolah</div>
+              <div style="font-size:11px;color:var(--t3)">Akses penuh rekod dan pengguna sekolah yang ditetapkan</div>
+            </div>
+          </label>
+        </div>
+        <div id="school-select-wrap" style="margin-bottom:18px;display:${u.role==='school_admin'?'block':'none'}">
+          <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Sekolah yang Diuruskan</div>
+          <select id="usr-school-select" style="width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none">
+            <option value="">-- Pilih Sekolah --</option>
+            ${schoolOptions}
+          </select>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button id="usr-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>
+          <button id="usr-modal-save" style="flex:2;padding:11px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Simpan Peranan</button>
+        </div>
+      </div>`;
+      document.body.appendChild(ov);
+      const radioGuru=ov.querySelector('#radio-guru');
+      const radioAdmin=ov.querySelector('#radio-admin');
+      const schoolWrap=ov.querySelector('#school-select-wrap');
+      const lblGuru=ov.querySelector('#lbl-role-guru');
+      const lblAdmin=ov.querySelector('#lbl-role-admin');
+      const updateLabels=()=>{
+        const isAdmin=radioAdmin.checked;
+        schoolWrap.style.display=isAdmin?'block':'none';
+        lblGuru.style.borderColor=isAdmin?'var(--bdr)':'var(--accent)';
+        lblGuru.style.background=isAdmin?'transparent':'rgba(59,130,246,.1)';
+        lblAdmin.style.borderColor=isAdmin?'#818cf8':'var(--bdr)';
+        lblAdmin.style.background=isAdmin?'rgba(129,140,248,.1)':'transparent';
+      };
+      radioGuru.addEventListener('change',updateLabels);
+      radioAdmin.addEventListener('change',updateLabels);
+      ov.querySelector('#usr-modal-cancel').addEventListener('click',()=>ov.remove());
+      ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+      ov.querySelector('#usr-modal-save').addEventListener('click',()=>{
+        const newRole=radioAdmin.checked?'school_admin':'guru';
+        const newSchoolId=newRole==='school_admin'?(ov.querySelector('#usr-school-select').value||null):null;
+        if(newRole==='school_admin'&&!newSchoolId){
+          ov.querySelector('#usr-school-select').style.borderColor='#ef4444';
+          ov.querySelector('#usr-school-select').focus();
+          return;
+        }
+        const updated=S.demoUsers.map(x=>x.id===uid?{...x,role:newRole,schoolId:newSchoolId}:x);
+        ov.remove();
+        setState({demoUsers:updated,ppdView:'user_mgmt'});
+      });
+    });
   });
 }
 
