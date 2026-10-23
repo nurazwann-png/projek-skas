@@ -4630,7 +4630,9 @@ function bind() {
       ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
       const av=u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       const avCol=avColors[S.demoUsers.findIndex(x=>x.id===uid)%avColors.length];
-      const schoolOptions=DEMO_SCHOOLS.map(s=>`<option value="${s.id}" ${u.schoolId===s.id?'selected':''}>${esc(s.name)}</option>`).join('');
+      // When opened from school_users context, schoolId is fixed to the selected school
+      const contextSchoolId = S.ppdView==='school_users' ? S.selectedSchoolId : null;
+      const contextSchool = contextSchoolId ? DEMO_SCHOOLS.find(s=>s.id===contextSchoolId) : null;
       ov.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4)">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
           <div style="width:48px;height:48px;border-radius:13px;background:${avCol};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;flex-shrink:0">${av}</div>
@@ -4652,16 +4654,9 @@ function bind() {
             <input type="radio" name="usr-role" id="radio-admin" value="school_admin" ${u.role==='school_admin'?'checked':''} style="accent-color:#818cf8;width:16px;height:16px">
             <div>
               <div style="font-size:13.5px;font-weight:700;color:var(--t1)">Pentadbir Sekolah</div>
-              <div style="font-size:11px;color:var(--t3)">Akses penuh rekod dan pengguna sekolah yang ditetapkan</div>
+              <div style="font-size:11px;color:var(--t3)">${contextSchool?`Pentadbir untuk ${esc(contextSchool.name)}`:'Akses penuh rekod dan pengguna sekolah yang ditetapkan'}</div>
             </div>
           </label>
-        </div>
-        <div id="school-select-wrap" style="margin-bottom:18px;display:${u.role==='school_admin'?'block':'none'}">
-          <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Sekolah yang Diuruskan</div>
-          <select id="usr-school-select" style="width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none">
-            <option value="">-- Pilih Sekolah --</option>
-            ${schoolOptions}
-          </select>
         </div>
         <div style="display:flex;gap:10px">
           <button id="usr-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>
@@ -4671,12 +4666,10 @@ function bind() {
       document.body.appendChild(ov);
       const radioGuru=ov.querySelector('#radio-guru');
       const radioAdmin=ov.querySelector('#radio-admin');
-      const schoolWrap=ov.querySelector('#school-select-wrap');
       const lblGuru=ov.querySelector('#lbl-role-guru');
       const lblAdmin=ov.querySelector('#lbl-role-admin');
       const updateLabels=()=>{
         const isAdmin=radioAdmin.checked;
-        schoolWrap.style.display=isAdmin?'block':'none';
         lblGuru.style.borderColor=isAdmin?'var(--bdr)':'var(--accent)';
         lblGuru.style.background=isAdmin?'transparent':'rgba(59,130,246,.1)';
         lblAdmin.style.borderColor=isAdmin?'#818cf8':'var(--bdr)';
@@ -4688,12 +4681,8 @@ function bind() {
       ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
       ov.querySelector('#usr-modal-save').addEventListener('click',()=>{
         const newRole=radioAdmin.checked?'school_admin':'guru';
-        const newSchoolId=newRole==='school_admin'?(ov.querySelector('#usr-school-select').value||null):null;
-        if(newRole==='school_admin'&&!newSchoolId){
-          ov.querySelector('#usr-school-select').style.borderColor='#ef4444';
-          ov.querySelector('#usr-school-select').focus();
-          return;
-        }
+        // School context: use current school; otherwise clear
+        const newSchoolId=newRole==='school_admin'?(contextSchoolId||u.schoolId||null):null;
         const updated=S.demoUsers.map(x=>x.id===uid?{...x,role:newRole,schoolId:newSchoolId}:x);
         ov.remove();
         setState({demoUsers:updated});
