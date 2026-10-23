@@ -613,12 +613,8 @@ function handleAppCardClick(appKey, appUrl) {
   const u = getUser();
   const roles = (u.appRoles || {})[appKey] || [];
   if (roles.length === 0) return; // tiada akses
-  if (roles.length === 1) {
-    window.location.href = appUrl + '?role=' + roles[0].role;
-    return;
-  }
-  // Tunjuk picker peranan
-  openRolePicker(roles, appUrl);
+  // Masuk terus dengan peranan pertama (yang dipapar pada strip kad)
+  window.location.href = appUrl + '?role=' + roles[0].role;
 }
 
 function openRolePicker(roles, appUrl) {
