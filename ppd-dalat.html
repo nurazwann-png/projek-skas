@@ -352,26 +352,34 @@ body {
 }
 .profile-chip:hover { background: rgba(255,255,255,.2); }
 .profile-av {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff;
-  flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
 }
 .profile-info { line-height: 1.25; }
 .profile-name { font-size: 12px; font-weight: 700; color: #fff; }
-.profile-role { font-size: 10px; color: rgba(255,255,255,.6); font-weight: 500; }
+.profile-org  { font-size: 10px; color: rgba(255,255,255,.6); font-weight: 500; }
 .profile-caret { margin-left: 2px; }
 .profile-caret svg { width: 12px; height: 12px; stroke: rgba(255,255,255,.6); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ── Role modal ───────────────────────────────────────── */
-.role-modal-ov {
+/* ── App card role strip ──────────────────────────────── */
+.app-role-strip {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.app-role-av {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.app-role-label { font-size: 12px; font-weight: 700; color: var(--t1); }
+.app-role-sub   { font-size: 11px; color: var(--t3); }
+.app-role-multi { margin-left: auto; font-size: 10px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+/* ── Modal overlay ────────────────────────────────────── */
+.modal-ov {
   position: fixed; inset: 0;
   background: rgba(0,0,0,.5);
   backdrop-filter: blur(4px);
@@ -380,7 +388,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
-.role-modal {
+.modal-box {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -391,15 +399,12 @@ body {
 }
 .role-opt {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
+  padding: 14px 16px; border-radius: 12px;
   border: 1.5px solid var(--border);
-  cursor: pointer;
-  transition: all .15s;
-  margin-bottom: 10px;
+  cursor: pointer; transition: all .15s; margin-bottom: 10px;
 }
 .role-opt:last-child { margin-bottom: 0; }
-.role-opt:hover { border-color: var(--accent); background: var(--accent-l); }
+.role-opt:hover  { border-color: var(--accent); background: var(--accent-l); }
 .role-opt.active { border-color: var(--accent); background: var(--accent-l); }
 .role-opt-av {
   width: 40px; height: 40px; border-radius: 12px;
@@ -440,7 +445,7 @@ body {
         <div class="profile-av" id="profile-av">?</div>
         <div class="profile-info">
           <div class="profile-name" id="profile-name">—</div>
-          <div class="profile-role" id="profile-role">—</div>
+          <div class="profile-org" id="profile-org">—</div>
         </div>
         <div class="profile-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
@@ -463,8 +468,8 @@ body {
   <div class="section-lbl">Aplikasi Tersedia</div>
   <div class="app-grid">
 
-    <!-- SK@S Card -->
-    <a class="app-card" id="skas-card" href="/skas-preview.html">
+    <!-- SKPM Card -->
+    <div class="app-card" id="skpm-card" style="cursor:pointer">
       <div class="app-card-bg" style="background:#2563eb"></div>
       <div class="app-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -474,18 +479,15 @@ body {
         <div class="app-full-name">Kualiti@Sekolah</div>
         <div class="app-desc">Pemantauan pencapaian guru dan sekolah berdasarkan Standard Kualiti Pendidikan Malaysia (SKPM 5.4).</div>
       </div>
-      <div class="app-tags">
-        <span class="app-tag" style="background:#dbeafe;color:#1e40af">Guru</span>
-        <span class="app-tag" style="background:#ede9fe;color:#6d28d9">Pentadbir Sekolah</span>
-        <span class="app-tag" style="background:#e0e7ff;color:#3730a3">Admin PPD</span>
-      </div>
+      <!-- Role strip — rendered by JS -->
+      <div id="skpm-role-strip"></div>
       <div class="app-footer">
         <span class="app-badge badge-live">Aktif</span>
         <div class="app-arrow">
           <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </div>
-    </a>
+    </div>
 
     <!-- SPM Card -->
     <div class="app-card coming-soon">
@@ -498,10 +500,7 @@ body {
         <div class="app-full-name">Sistem Pengurusan Murid</div>
         <div class="app-desc">Pengurusan data murid, kehadiran, dan rekod akademik seluruh daerah dalam satu platform bersepadu.</div>
       </div>
-      <div class="app-tags">
-        <span class="app-tag" style="background:#fef3c7;color:#92400e">Guru</span>
-        <span class="app-tag" style="background:#fed7aa;color:#9a3412">Pentadbir</span>
-      </div>
+      <div id="spm-role-strip"></div>
       <div class="app-footer">
         <span class="app-badge badge-soon">Akan Datang</span>
         <div class="app-arrow">
@@ -526,70 +525,160 @@ body {
 </div>
 
 <script>
-// ── Demo users (simulate login) ──────────────────────────
+// ── Data pengguna demo ────────────────────────────────────
+// Setiap pengguna ada senarai peranan per-app (appRoles)
+// Setiap peranan: { role, label, sub, color }
 const DEMO_USERS = [
-  { id:'ppd_admin',    name:'Azlan bin Hamid',         initials:'AH', role:'ppd_admin',    roleLabel:'Admin PPD',          color:'#1d4ed8', sub:'PPD Dalat' },
-  { id:'school_admin', name:'Siti Rahimah binti Zain', initials:'SR', role:'school_admin', roleLabel:'Pentadbir Sekolah',   color:'#7c3aed', sub:'SK Wangsa Maju 1' },
-  { id:'teacher',      name:'Cikgu Azman Harun',       initials:'AZ', role:'teacher',      roleLabel:'Guru',                color:'#059669', sub:'SK Wangsa Maju 1' },
+  {
+    id: 'u_azlan', name: 'Azlan bin Hamid', initials: 'AH',
+    org: 'PPD Dalat', color: '#1d4ed8',
+    appRoles: {
+      skpm: [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#1d4ed8' }],
+      spm:  [{ role:'ppd_admin', label:'Admin SPM',  sub:'PPD Dalat', color:'#1d4ed8' }],
+    }
+  },
+  {
+    id: 'u_razif', name: 'Encik Razif bin Othman', initials: 'RO',
+    org: 'SK Wangsa Maju 1', color: '#7c3aed',
+    appRoles: {
+      skpm: [
+        { role:'school_admin', label:'Admin SKPM',   sub:'SK Wangsa Maju 1', color:'#7c3aed' },
+        { role:'teacher',      label:'Guru',          sub:'SK Wangsa Maju 1', color:'#059669' },
+      ],
+    }
+  },
+  {
+    id: 'u_azman', name: 'Cikgu Azman Harun', initials: 'AZ',
+    org: 'SK Wangsa Maju 1', color: '#059669',
+    appRoles: {
+      skpm: [{ role:'teacher', label:'Guru', sub:'SK Wangsa Maju 1', color:'#059669' }],
+    }
+  },
 ];
 
-const ROLE_KEY = 'ppd_dalat_role';
+const USER_KEY = 'ppd_dalat_user';
 
-function getRole() {
-  try { return localStorage.getItem(ROLE_KEY) || 'teacher'; } catch { return 'teacher'; }
+function getUserId() {
+  try { return localStorage.getItem(USER_KEY) || 'u_azman'; } catch { return 'u_azman'; }
 }
-function setRole(r) {
-  try { localStorage.setItem(ROLE_KEY, r); } catch {}
+function saveUserId(id) {
+  try { localStorage.setItem(USER_KEY, id); } catch {}
 }
-
 function getUser() {
-  const role = getRole();
-  return DEMO_USERS.find(u => u.id === role) || DEMO_USERS[2];
+  return DEMO_USERS.find(u => u.id === getUserId()) || DEMO_USERS[2];
 }
 
+// ── Bina role strip untuk satu app ───────────────────────
+function buildRoleStrip(appKey, stripId) {
+  const u = getUser();
+  const roles = (u.appRoles || {})[appKey] || [];
+  const el = document.getElementById(stripId);
+  if (!el) return;
+  if (roles.length === 0) {
+    el.innerHTML = `<div class="app-role-strip">
+      <div style="font-size:12px;color:var(--t3);font-style:italic">Tiada peranan ditetapkan</div>
+    </div>`;
+    return;
+  }
+  const first = roles[0];
+  el.innerHTML = `<div class="app-role-strip">
+    <div class="app-role-av" style="background:${first.color}">${u.initials}</div>
+    <div style="flex:1;min-width:0">
+      <div class="app-role-label">${first.label}</div>
+      <div class="app-role-sub">${first.sub}</div>
+    </div>
+    ${roles.length > 1
+      ? `<div class="app-role-multi">${roles.length} peranan &rsaquo;</div>`
+      : ''}
+  </div>`;
+}
+
+// ── Kemas kini profil chip ────────────────────────────────
 function updateUI() {
   const u = getUser();
-  document.getElementById('profile-av').textContent   = u.initials;
-  document.getElementById('profile-name').textContent = u.name;
-  document.getElementById('profile-role').textContent = u.roleLabel + ' · ' + u.sub;
+  document.getElementById('profile-av').textContent = u.initials;
   document.getElementById('profile-av').style.background = u.color;
-  // Update SK@S card link with role param
-  document.getElementById('skas-card').href = '/skas-preview.html?role=' + u.role;
+  document.getElementById('profile-name').textContent = u.name;
+  document.getElementById('profile-org').textContent = u.org;
+  buildRoleStrip('skpm', 'skpm-role-strip');
+  buildRoleStrip('spm',  'spm-role-strip');
 }
 
-function openRoleModal() {
-  const current = getRole();
+// ── Klik kad app — pilih peranan jika lebih dari 1 ───────
+function handleAppCardClick(appKey, appUrl) {
+  const u = getUser();
+  const roles = (u.appRoles || {})[appKey] || [];
+  if (roles.length === 0) return; // tiada akses
+  if (roles.length === 1) {
+    window.location.href = appUrl + '?role=' + roles[0].role;
+    return;
+  }
+  // Tunjuk picker peranan
+  openRolePicker(roles, appUrl);
+}
+
+function openRolePicker(roles, appUrl) {
   const ov = document.createElement('div');
-  ov.className = 'role-modal-ov';
-  ov.innerHTML = `<div class="role-modal">
-    <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px">Tukar Peranan</div>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">Pilih peranan anda untuk sesi ini</div>
-    ${DEMO_USERS.map(u => `
-      <div class="role-opt${u.id===current?' active':''}" data-role="${u.id}">
-        <div class="role-opt-av" style="background:${u.color}">${u.initials}</div>
+  ov.className = 'modal-ov';
+  ov.innerHTML = `<div class="modal-box">
+    <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px">Masuk Sebagai</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">Pilih peranan untuk sesi ini</div>
+    ${roles.map(r => `
+      <div class="role-opt" data-role="${r.role}">
+        <div class="role-opt-av" style="background:${r.color}">${getUser().initials}</div>
         <div>
-          <div class="role-opt-name">${u.name}</div>
-          <div class="role-opt-sub">${u.roleLabel} · ${u.sub}</div>
+          <div class="role-opt-name">${r.label}</div>
+          <div class="role-opt-sub">${r.sub}</div>
         </div>
-        ${u.id===current?`<div class="role-opt-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
       </div>`).join('')}
-    <button id="modal-close" style="margin-top:18px;width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
+    <button id="picker-batal" style="margin-top:14px;width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
   </div>`;
   document.body.appendChild(ov);
-  ov.querySelector('#modal-close').addEventListener('click', () => ov.remove());
+  ov.querySelector('#picker-batal').addEventListener('click', () => ov.remove());
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
   ov.querySelectorAll('[data-role]').forEach(el => {
     el.addEventListener('click', () => {
-      setRole(el.dataset.role);
+      ov.remove();
+      window.location.href = appUrl + '?role=' + el.dataset.role;
+    });
+  });
+}
+
+// ── Modal tukar pengguna (dari profile chip) ──────────────
+function openUserModal() {
+  const currentId = getUserId();
+  const ov = document.createElement('div');
+  ov.className = 'modal-ov';
+  ov.innerHTML = `<div class="modal-box">
+    <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px">Tukar Pengguna</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:20px">Demo — pilih pengguna untuk simulasi</div>
+    ${DEMO_USERS.map(u => `
+      <div class="role-opt${u.id===currentId?' active':''}" data-uid="${u.id}">
+        <div class="role-opt-av" style="background:${u.color}">${u.initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="role-opt-name">${u.name}</div>
+          <div class="role-opt-sub">${u.org} · ${Object.values(u.appRoles).flat().map(r=>r.label).join(', ')}</div>
+        </div>
+        ${u.id===currentId?`<div class="role-opt-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
+      </div>`).join('')}
+    <button id="user-modal-batal" style="margin-top:14px;width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#user-modal-batal').addEventListener('click', () => ov.remove());
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  ov.querySelectorAll('[data-uid]').forEach(el => {
+    el.addEventListener('click', () => {
+      saveUserId(el.dataset.uid);
       ov.remove();
       updateUI();
     });
   });
 }
 
-// Init
+// ── Init ──────────────────────────────────────────────────
 updateUI();
-document.getElementById('profile-chip').addEventListener('click', openRoleModal);
+document.getElementById('profile-chip').addEventListener('click', openUserModal);
+document.getElementById('skpm-card').addEventListener('click', () => handleAppCardClick('skpm', '/skas-preview.html'));
 </script>
 
 </body>
