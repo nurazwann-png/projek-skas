@@ -3836,7 +3836,24 @@ function janaLaporan(jenis, skId) {
     </body></html>`;
     const blob = new Blob([full], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    const win = window.open(url, '_blank');
+    if (!win) {
+      // Fallback: papar dalam modal overlay
+      const id = 'laporan-modal-' + Date.now();
+      const overlay = document.createElement('div');
+      overlay.id = id;
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;flex-direction:column';
+      overlay.innerHTML = `
+        <div style="background:#1e3a5f;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <span style="font-weight:700;font-size:13px">📄 Laporan PPD Dalat</span>
+          <div style="display:flex;gap:8px">
+            <a href="${url}" download="laporan-ppd-dalat.html" style="background:#22c55e;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">⬇ Muat Turun</a>
+            <button onclick="document.getElementById('${id}').remove()" style="background:#dc2626;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">✕ Tutup</button>
+          </div>
+        </div>
+        <iframe src="${url}" style="flex:1;border:none;background:#fff"></iframe>`;
+      document.body.appendChild(overlay);
+    }
   }
 
   // ── JANA mengikut jenis ──────────────────────────────────
