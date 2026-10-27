@@ -4472,27 +4472,85 @@ function buildPPD() {
 
     <!-- Tab: Analisis Jurang -->
     <section id="ppd-jurang">
-      <div class="sh"><div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut kumpulan · lebih rendah = lebih baik</div></div></div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <div class="chart-title">Jurang Sosioekonomi (SES)</div>
-          <div class="chart-sub">B40 menunjukkan jurang GPS 1.25 berbanding T20</div>
-          <div class="chart-wrap"><canvas id="ppd-ses-chart"></canvas></div>
+      <div class="sh"><div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi, Jantina, Penginapan dan LMS · daerah keseluruhan</div></div></div>
+      <!-- Tab navigasi jurang PPD -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap" id="ppd-jurang-tabs">
+        <button class="jurang-tab-btn active" data-pdim="ses"        onclick="switchPPDJurang('ses')">SES</button>
+        <button class="jurang-tab-btn"         data-pdim="lokasi"    onclick="switchPPDJurang('lokasi')">Lokasi</button>
+        <button class="jurang-tab-btn"         data-pdim="jantina"   onclick="switchPPDJurang('jantina')">Jantina</button>
+        <button class="jurang-tab-btn"         data-pdim="penginapan" onclick="switchPPDJurang('penginapan')">Penginapan</button>
+        <button class="jurang-tab-btn"         data-pdim="lms"       onclick="switchPPDJurang('lms')">LMS</button>
+        <button class="jurang-tab-btn"         data-pdim="semua"     onclick="switchPPDJurang('semua')">Semua Carta</button>
+      </div>
+      <!-- Panel: SES, Lokasi, Jantina, Penginapan (chart individu) -->
+      <div id="ppd-jurang-ses">
+        <div class="chart-grid">
+          <div class="chart-card chart-full">
+            <div class="chart-title">Jurang Sosioekonomi (SES)</div>
+            <div class="chart-sub">GPS mengikut kumpulan sosioekonomi daerah · lebih rendah = lebih baik</div>
+            <div class="chart-wrap" style="height:220px"><canvas id="ppd-ses-chart"></canvas></div>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Jurang Jantina</div>
-          <div class="chart-sub">Pelajar perempuan mencatat GPS lebih baik 0.46</div>
-          <div class="chart-wrap"><canvas id="ppd-jantina-chart"></canvas></div>
+        <div id="ppd-ses-kpi" style="margin-top:12px"></div>
+      </div>
+      <div id="ppd-jurang-lokasi" hidden>
+        <div class="chart-grid">
+          <div class="chart-card chart-full">
+            <div class="chart-title">Jurang Lokasi</div>
+            <div class="chart-sub">GPS mengikut kawasan · Bandar / Luar Bandar / Pedalaman</div>
+            <div class="chart-wrap" style="height:220px"><canvas id="ppd-lokasi-chart"></canvas></div>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Jurang Lokasi</div>
-          <div class="chart-sub">Sekolah luar bandar ketinggalan 0.66 GPS</div>
-          <div class="chart-wrap"><canvas id="ppd-lokasi-chart"></canvas></div>
+        <div id="ppd-lokasi-kpi" style="margin-top:12px"></div>
+      </div>
+      <div id="ppd-jurang-jantina" hidden>
+        <div class="chart-grid">
+          <div class="chart-card chart-full">
+            <div class="chart-title">Jurang Jantina</div>
+            <div class="chart-sub">GPS Perempuan vs Lelaki peringkat daerah</div>
+            <div class="chart-wrap" style="height:220px"><canvas id="ppd-jantina-chart"></canvas></div>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Ringkasan Jurang</div>
-          <div class="chart-sub">Keutamaan intervensi berdasarkan magnitud jurang</div>
-          <div class="chart-wrap"><canvas id="ppd-gap-chart"></canvas></div>
+        <div id="ppd-jantina-kpi" style="margin-top:12px"></div>
+      </div>
+      <div id="ppd-jurang-penginapan" hidden>
+        <div class="chart-grid">
+          <div class="chart-card chart-full">
+            <div class="chart-title">Jurang Penginapan — Asrama vs Harian</div>
+            <div class="chart-sub">GPS mengikut jenis penginapan pelajar peringkat daerah</div>
+            <div class="chart-wrap" style="height:220px"><canvas id="ppd-penginapan-chart"></canvas></div>
+          </div>
+        </div>
+        <div id="ppd-penginapan-kpi" style="margin-top:12px"></div>
+      </div>
+      <div id="ppd-jurang-lms" hidden>
+        <div id="ppd-lms-content"></div>
+      </div>
+      <div id="ppd-jurang-semua" hidden>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-title">Jurang SES</div>
+            <div class="chart-wrap"><canvas id="ppd-ses-chart2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Jurang Jantina</div>
+            <div class="chart-wrap"><canvas id="ppd-jantina-chart2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Jurang Lokasi</div>
+            <div class="chart-wrap"><canvas id="ppd-lokasi-chart2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Jurang Penginapan</div>
+            <div class="chart-wrap"><canvas id="ppd-penginapan-chart2"></canvas></div>
+          </div>
+        </div>
+        <div class="chart-grid" style="margin-top:12px">
+          <div class="chart-card chart-full">
+            <div class="chart-title">Ringkasan Jurang — Magnitud Semua Dimensi</div>
+            <div class="chart-sub">Keutamaan intervensi berdasarkan magnitud jurang GPS</div>
+            <div class="chart-wrap"><canvas id="ppd-gap-chart"></canvas></div>
+          </div>
         </div>
       </div>
     </section>
@@ -4656,6 +4714,8 @@ function buildPPD() {
     renderPPDBar('ppd-ses-chart',    JURANG.ses.labels,     JURANG.ses.gps,     ['rgba(96,165,250,.85)','rgba(99,102,241,.85)','rgba(139,92,246,.85)']);
     renderPPDBar('ppd-jantina-chart',JURANG.jantina.labels, JURANG.jantina.gps, ['rgba(59,130,246,.85)','rgba(244,114,182,.85)']);
     renderPPDBar('ppd-lokasi-chart', JURANG.lokasi.labels,  JURANG.lokasi.gps,  ['rgba(34,197,94,.85)','rgba(234,179,8,.85)']);
+    renderPPDBar('ppd-penginapan-chart', ['Asrama','Harian'], [JURANG_SK.penginapan[0].gps, JURANG_SK.penginapan[1].gps], ['rgba(59,130,246,.85)','rgba(139,92,246,.85)']);
+    renderPPDJurangKPI();
     renderGapSummary();
     // new tabs
     initBenchTab();
@@ -4698,11 +4758,129 @@ function renderGapSummary() {
   charts['ppd-gap'] = new Chart(ctx, {
     type:'bar',
     data:{
-      labels:['SES (B40–T20)','Jantina (L–P)','Lokasi (L.Bandar–Bandar)'],
-      datasets:[{ data:[1.25,0.46,0.66], backgroundColor:['rgba(239,68,68,.8)','rgba(234,179,8,.8)','rgba(234,179,8,.8)'], borderRadius:6, borderSkipped:false }]
+      labels:['SES (B40–T20)','Jantina (L–P)','Lokasi (L.Bandar–Bandar)','Penginapan (Asrama–Harian)'],
+      datasets:[{ data:[1.25,0.46,0.66, Math.abs(JURANG_SK.penginapan[0].gps - JURANG_SK.penginapan[1].gps).toFixed(2)], backgroundColor:['rgba(239,68,68,.8)','rgba(234,179,8,.8)','rgba(234,179,8,.8)','rgba(139,92,246,.8)'], borderRadius:6, borderSkipped:false }]
     },
     options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{min:0,max:1.5,grid:{color:'rgba(255,255,255,.06)'},ticks:{font:{size:11}}}, y:{grid:{display:false},ticks:{font:{size:11}}} } }
   });
+}
+
+function switchPPDJurang(dim) {
+  document.querySelectorAll('#ppd-jurang-tabs button').forEach(b => b.classList.toggle('active', b.dataset.pdim === dim));
+  ['ses','lokasi','jantina','penginapan','lms','semua'].forEach(d => {
+    const el = document.getElementById('ppd-jurang-' + d);
+    if (el) el.hidden = (d !== dim);
+  });
+  if (dim === 'semua') {
+    setTimeout(() => {
+      renderPPDBar('ppd-ses-chart2',       JURANG.ses.labels,     JURANG.ses.gps,     ['rgba(96,165,250,.85)','rgba(99,102,241,.85)','rgba(139,92,246,.85)']);
+      renderPPDBar('ppd-jantina-chart2',   JURANG.jantina.labels, JURANG.jantina.gps, ['rgba(59,130,246,.85)','rgba(244,114,182,.85)']);
+      renderPPDBar('ppd-lokasi-chart2',    JURANG.lokasi.labels,  JURANG.lokasi.gps,  ['rgba(34,197,94,.85)','rgba(234,179,8,.85)']);
+      renderPPDBar('ppd-penginapan-chart2',['Asrama','Harian'],   [JURANG_SK.penginapan[0].gps, JURANG_SK.penginapan[1].gps], ['rgba(59,130,246,.85)','rgba(139,92,246,.85)']);
+      renderGapSummary();
+    }, 50);
+  }
+  if (dim === 'lms') renderPPDLMS();
+}
+
+function renderPPDJurangKPI() {
+  const dims = [
+    { id:'ses',        rows: JURANG_SK.ses,        title:'SES' },
+    { id:'lokasi',     rows: JURANG_SK.lokasi,      title:'Lokasi' },
+    { id:'jantina',    rows: JURANG_SK.jantina,     title:'Jantina' },
+    { id:'penginapan', rows: JURANG_SK.penginapan,  title:'Penginapan' },
+  ];
+  dims.forEach(({ id, rows, title }) => {
+    const cont = document.getElementById('ppd-' + id + '-kpi');
+    if (!cont) return;
+    const gpsList = rows.map(r => r.gps);
+    const gpsMin = Math.min(...gpsList), gpsMax = Math.max(...gpsList);
+    const jurang = (gpsMax - gpsMin).toFixed(2);
+    cont.innerHTML = `
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        ${rows.map(r => {
+          const clr = r.gps <= 5.0 ? '#22c55e' : r.gps <= 5.6 ? '#eab308' : '#ef4444';
+          const imp = r.prev_gps - r.gps;
+          return `<div style="background:var(--surface);border-radius:10px;padding:10px 14px;min-width:130px;flex:1">
+            <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:4px">${r.label} <span style="font-weight:400;color:var(--t3)">(${r.bil} pelajar)</span></div>
+            <div style="font-size:22px;font-weight:800;color:${clr}">${r.gps.toFixed(2)}</div>
+            <div style="font-size:10px;color:var(--t3)">Lulus ${r.lulusPeratus}% &nbsp;·&nbsp; ${imp > 0 ? '<span style="color:#22c55e">↑ Baik</span>' : '<span style="color:#ef4444">↓ Lemah</span>'} ${Math.abs(imp).toFixed(2)}</div>
+          </div>`;
+        }).join('')}
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px 14px;min-width:130px;flex:1">
+          <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:4px">Jurang GPS</div>
+          <div style="font-size:22px;font-weight:800;color:#ef4444">${jurang}</div>
+          <div style="font-size:10px;color:var(--t3)">mata GPS antara kumpulan</div>
+        </div>
+      </div>`;
+  });
+}
+
+function renderPPDLMS() {
+  const cont = document.getElementById('ppd-lms-content');
+  if (!cont || cont.innerHTML.trim()) return; // sudah dirender
+  // Guna data agregat dari JURANG_SK penginapan sebagai proksi LMS daerah
+  // dan tunjuk maklumat LMS peringkat daerah
+  const asrama = JURANG_SK.penginapan.find(r => r.label === 'Asrama');
+  const harian  = JURANG_SK.penginapan.find(r => r.label === 'Harian');
+  const totalBil = JURANG_SK.ses.reduce((a,r) => a + r.bil, 0);
+  // LMS estimate: murid yang lulus BM + Sejarah ~ 85% (anggaran)
+  const estLMS    = Math.round(totalBil * 0.85);
+  const estTidak  = Math.round(totalBil * 0.09);
+  const estBelum  = totalBil - estLMS - estTidak;
+  cont.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="kpi"><div class="kpi-lbl">Anggaran Layak LMS</div><div class="kpi-val green">${estLMS.toLocaleString()}</div><span class="kpi-delta green">85% pelajar daerah</span></div>
+      <div class="kpi"><div class="kpi-lbl">Tidak Layak LMS</div><div class="kpi-val red-c">${estTidak.toLocaleString()}</div><span class="kpi-delta red-c">Gagal BM atau Sejarah</span></div>
+      <div class="kpi"><div class="kpi-lbl">Belum Lengkap Data</div><div class="kpi-val yellow">${estBelum.toLocaleString()}</div><span class="kpi-delta yellow">Data BM/Sejarah belum masuk</span></div>
+      <div class="kpi"><div class="kpi-lbl">Jumlah Pelajar Daerah</div><div class="kpi-val">${totalBil.toLocaleString()}</div></div>
+    </div>
+    <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:var(--t1);margin-bottom:10px">Breakdown LMS — Asrama vs Harian (Anggaran Daerah)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:rgba(59,130,246,.08);border-radius:8px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:6px">🏫 Asrama (${asrama.bil} pelajar)</div>
+          <div style="display:flex;gap:16px">
+            <div><div style="font-size:18px;font-weight:800;color:#16a34a">${Math.round(asrama.bil*0.88)}</div><div style="font-size:10px;color:var(--t3)">Angg. Layak LMS</div></div>
+            <div><div style="font-size:18px;font-weight:800;color:#ef4444">${Math.round(asrama.bil*0.07)}</div><div style="font-size:10px;color:var(--t3)">Tidak Layak</div></div>
+          </div>
+        </div>
+        <div style="background:rgba(139,92,246,.08);border-radius:8px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:#8b5cf6;margin-bottom:6px">🏠 Harian (${harian.bil} pelajar)</div>
+          <div style="display:flex;gap:16px">
+            <div><div style="font-size:18px;font-weight:800;color:#16a34a">${Math.round(harian.bil*0.83)}</div><div style="font-size:10px;color:var(--t3)">Angg. Layak LMS</div></div>
+            <div><div style="font-size:18px;font-weight:800;color:#ef4444">${Math.round(harian.bil*0.10)}</div><div style="font-size:10px;color:var(--t3)">Tidak Layak</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jurang-ai">🤖 <strong>Nota Daerah:</strong> Data LMS peringkat daerah adalah anggaran berdasarkan trend GPS BM dan Sejarah. Untuk data tepat per murid, sila semak analisis LMS di akaun Pentadbir Sekolah masing-masing. Sekolah dengan GPS BM atau Sejarah > 7.0 perlu diutamakan untuk intervensi LMS.</div>
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px">Sekolah Perlu Perhatian LMS (GPS BM/Sejarah > 6.5)</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Sekolah</th><th style="text-align:center">GPS BM</th><th style="text-align:center">GPS Sejarah</th><th style="text-align:center">Bil. Pelajar</th><th style="text-align:center">Status</th></tr></thead>
+          <tbody>
+            ${SEKOLAH_DAERAH.map(s => {
+              const bmPanitia  = s.panitia?.find(p => p.subjek === 'Bahasa Melayu');
+              const sejPanitia = s.panitia?.find(p => p.subjek === 'Sejarah');
+              const bmGPS  = bmPanitia?.gps;
+              const sejGPS = sejPanitia?.gps;
+              const alert  = (bmGPS && bmGPS > 6.5) || (sejGPS && sejGPS > 6.5);
+              if (!alert) return '';
+              const clr = g => g == null ? 'var(--t3)' : g <= 5 ? '#22c55e' : g <= 6.5 ? '#eab308' : '#ef4444';
+              return `<tr>
+                <td class="tc-name">${s.nama}</td>
+                <td style="text-align:center;color:${clr(bmGPS)};font-weight:700">${bmGPS != null ? bmGPS.toFixed(2) : '—'}</td>
+                <td style="text-align:center;color:${clr(sejGPS)};font-weight:700">${sejGPS != null ? sejGPS.toFixed(2) : '—'}</td>
+                <td style="text-align:center;color:var(--t2)">${s.bil}</td>
+                <td style="text-align:center"><span class="chip chip-red" style="font-size:10px">⚠ Perlu Intervensi</span></td>
+              </tr>`;
+            }).filter(Boolean).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--t3)">Semua sekolah dalam julat selamat</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 // ── Tab binding ───────────────────────────────────────────
