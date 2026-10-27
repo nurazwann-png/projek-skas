@@ -332,6 +332,7 @@ section.active { display: block; }
 }
 .ujian-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); }
 .dot-sep { background:rgba(234,179,8,.15); color:var(--yellow); }
+.mark-input::placeholder { color:var(--t3); }
 .rekod-ujian-header {
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
   background:rgba(59,130,246,.06); border:1px solid rgba(59,130,246,.2);
@@ -843,12 +844,13 @@ const UJIAN_LIST = [
 
 function ujianStatus(ak, key) {
   if (!ak || ak.pelajar.length === 0) return 'tiada';
-  const filled = ak.pelajar.filter(p => {
+  // "selesai" = ada markah (number) ATAU ditanda TH (null)
+  const selesai = ak.pelajar.filter(p => {
     const v = (markState[p.id] || {})[key];
-    return v !== undefined && v !== '' && v !== 0;
+    return v !== undefined; // ada nilai (number atau null=TH)
   }).length;
-  if (filled === 0)              return 'belum';
-  if (filled < ak.pelajar.length) return 'separa';
+  if (selesai === 0)                  return 'belum';
+  if (selesai < ak.pelajar.length)    return 'separa';
   return 'lengkap';
 }
 
@@ -885,9 +887,11 @@ function renderRekodView(ak) {
       </div>
       <div class="ujian-card-footer">
         <span class="chip ${statusCfg.chip}" style="font-size:11px">${statusCfg.label}</span>
-        ${status !== 'tiada' ? `<span style="font-size:11px;color:var(--t3)">${
-          ak.pelajar.filter(p=>{const v=(markState[p.id]||{})[u.key];return v!==undefined&&v!==''&&v!==0;}).length
-        }/${bil} murid</span>` : ''}
+        ${status !== 'tiada' ? (() => {
+          const selesai = ak.pelajar.filter(p => (markState[p.id]||{})[u.key] !== undefined).length;
+          const th      = ak.pelajar.filter(p => (markState[p.id]||{})[u.key] === null).length;
+          return `<span style="font-size:11px;color:var(--t3)">${selesai}/${bil} murid${th>0?` · ${th} TH`:''}</span>`;
+        })() : ''}
       </div>
     </div>`;
   }).join('');
@@ -1080,6 +1084,53 @@ function padamKelas(kelasId) {
   bindTabs();
 }
 
+// markState[id][pep] values:
+//   number (0-100) = markah sah
+//   null           = Tidak Hadir (TH)
+//   undefined      = belum diisi (murid baru / ujian belum buka)
+
+function isTH(id, pep) {
+  return markState[id] !== undefined && markState[id][pep] === null;
+}
+
+function toggleTH(id, pep) {
+  if (!markState[id]) markState[id] = {};
+  markState[id][pep] = isTH(id, pep) ? undefined : null;
+  refreshMarkTable();
+  refreshUjianCards();
+}
+
+function refreshUjianCards() {
+  // Re-render just the ujian grid status chips without full re-render
+  const ak = getActiveKelas();
+  if (!ak) return;
+  UJIAN_LIST.forEach(u => {
+    const status = ujianStatus(ak, u.key);
+    const filled = ak.pelajar.filter(p => {
+      const v = (markState[p.id] || {})[u.key];
+      return v !== undefined && v !== null && v !== '';
+    }).length;
+    const th = ak.pelajar.filter(p => isTH(p.id, u.key)).length;
+    const total = ak.pelajar.length;
+    // find card by data attr and update footer
+    const cards = document.querySelectorAll('.ujian-card');
+    cards.forEach(card => {
+      if (card.querySelector('.ujian-label')?.textContent === u.label) {
+        const footer = card.querySelector('.ujian-card-footer');
+        if (!footer) return;
+        const statusCfg = {
+          tiada:   { chip:'chip-gray',   label:'Tiada murid' },
+          belum:   { chip:'chip-gray',   label:'Belum diisi' },
+          separa:  { chip:'chip-yellow', label:'Sedang diisi' },
+          lengkap: { chip:'chip-green',  label:'Lengkap' },
+        }[status];
+        footer.innerHTML = `<span class="chip ${statusCfg.chip}" style="font-size:11px">${statusCfg.label}</span>
+          ${status !== 'tiada' ? `<span style="font-size:11px;color:var(--t3)">${filled+th}/${total} murid${th>0?` · ${th} TH`:''}</span>` : ''}`;
+      }
+    });
+  });
+}
+
 function refreshMarkTable() {
   const tbody = document.getElementById('guru-mark-tbody');
   if (!tbody) return;
@@ -1089,26 +1140,53 @@ function refreshMarkTable() {
   const prev = { percubaan:'ar2', ar2:'ar1', ar1:null };
 
   tbody.innerHTML = ak.pelajar.map((p, i) => {
-    const ms = markState[p.id] || { ar1:0, ar2:0, percubaan:0 };
-    const mark = ms[pep];
-    const prevPep = prev[pep];
-    const prevMark = prevPep ? ms[prevPep] : null;
-    const gred = markToGred(mark);
-    const trendHtml = prevMark !== null
-      ? (mark < prevMark - 3 ? `<span class="trend-up">▲ Turun</span>` : mark > prevMark + 3 ? `<span class="trend-dn">▼ Naik</span>` : `<span class="trend-eq">— Stabil</span>`)
-      : `<span class="trend-eq">—</span>`;
-    const jIcon = p.jantina === 'P' ? '♀' : '♂';
-    return `<tr>
+    if (!markState[p.id]) markState[p.id] = {};
+    const ms       = markState[p.id];
+    const th       = ms[pep] === null;
+    const rawMark  = ms[pep];
+    const noData   = rawMark === undefined; // belum diisi langsung
+    const mark     = (!th && !noData) ? rawMark : 0;
+    const prevPep  = prev[pep];
+    const prevRaw  = prevPep !== null ? ms[prevPep] : undefined;
+    const prevMark = (prevRaw !== undefined && prevRaw !== null) ? prevRaw : null;
+    const gred     = (!th && !noData) ? markToGred(mark) : null;
+    const jIcon    = p.jantina === 'P' ? '♀' : '♂';
+
+    const trendHtml = th || noData || prevMark === null
+      ? `<span class="trend-eq">—</span>`
+      : mark < prevMark - 3
+        ? `<span class="trend-up">▼ Turun</span>`
+        : mark > prevMark + 3
+          ? `<span class="trend-dn">▲ Naik</span>`
+          : `<span class="trend-eq">— Stabil</span>`;
+
+    // row highlight: merah kalau TH, kuning kalau noData
+    const rowStyle = th ? 'opacity:.6' : noData ? 'background:rgba(234,179,8,.04)' : '';
+
+    return `<tr style="${rowStyle}">
       <td style="color:var(--t3);text-align:center">${String(i+1).padStart(2,'0')}</td>
-      <td class="tc-name">${p.nama}</td>
+      <td class="tc-name">${p.nama}${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}</td>
       <td style="text-align:center;color:var(--t3);font-size:13px">${jIcon}</td>
-      <td style="text-align:center"><input type="number" class="mark-input" value="${mark}" min="0" max="100" data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)"></td>
-      <td style="text-align:center"><span class="chip ${gredClass(gred)}">${gred}</span></td>
-      <td style="text-align:center">${trendHtml}</td>
       <td style="text-align:center">
-        <div style="display:flex;gap:5px;justify-content:center">
-          <button class="btn-sm" onclick="openEditPelajar('${p.id}')">Edit</button>
-          <button class="btn-sm" title="Padam" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">✕</button>
+        ${th
+          ? `<span class="chip chip-gray" style="font-size:12px;letter-spacing:.04em">TH</span>`
+          : `<input type="number" class="mark-input" value="${noData?'':mark}" placeholder="—"
+               min="0" max="100" data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)">`
+        }
+      </td>
+      <td style="text-align:center">
+        ${th  ? `<span style="color:var(--t3);font-size:12px">—</span>`
+              : noData ? `<span style="color:var(--yellow);font-size:12px">—</span>`
+              : `<span class="chip ${gredClass(gred)}">${gred}</span>`}
+      </td>
+      <td style="text-align:center">${trendHtml}</td>
+      <td>
+        <div style="display:flex;gap:5px;justify-content:flex-end">
+          <button class="btn-sm${th?' btn-th-active':''}" title="${th?'Batal TH':'Tandakan Tidak Hadir'}"
+            onclick="toggleTH('${p.id}','${pep}')"
+            style="${th?'background:rgba(100,116,139,.2);color:var(--t2);border-color:var(--border)':'color:var(--t3)'}">
+            ${th?'Batal TH':'TH'}
+          </button>
         </div>
       </td>
     </tr>`;
@@ -1118,15 +1196,15 @@ function refreshMarkTable() {
 function updateMark(el) {
   const id  = el.dataset.id;
   const pep = el.dataset.pep;
-  const val = Math.max(0, Math.min(100, +el.value || 0));
-  if (!markState[id]) markState[id] = { ar1:0, ar2:0, percubaan:0 };
-  markState[id][pep] = val;
-  el.value = val;
-}
-
-function saveSingleMark(id) {
-  const p = pelajarList.find(x => x.id === id);
-  showToast(`✓ Markah ${p?.nama || id} disimpan`);
+  const raw = el.value.trim();
+  if (!markState[id]) markState[id] = {};
+  if (raw === '') {
+    markState[id][pep] = undefined; // kosongkan semula
+  } else {
+    markState[id][pep] = Math.max(0, Math.min(100, +raw || 0));
+    el.value = markState[id][pep];
+  }
+  refreshUjianCards();
 }
 
 function saveAllMarks() {
