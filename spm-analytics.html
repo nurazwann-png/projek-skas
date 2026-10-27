@@ -470,6 +470,13 @@ section.active { display: block; overflow: visible; }
         <option value="P">Perempuan</option>
       </select>
     </div>
+    <div class="form-group">
+      <label class="form-label">Jenis Penginapan</label>
+      <select class="form-input" id="inp-penginapan">
+        <option value="Harian">Harian</option>
+        <option value="Asrama">Asrama</option>
+      </select>
+    </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">AR1</label>
@@ -665,18 +672,18 @@ const DEMO = {
 };
 
 const PELAJAR_5A = [
-  { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
-  { id:'p2', nama:'Nurul Farhana Azman',   no:'02', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
-  { id:'p3', nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
-  { id:'p4', nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'T20', lokasi:'Bandar', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
-  { id:'p5', nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Luar Bandar', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
-  { id:'p6', nama:'Amirah Syuhada',        no:'06', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'T20', lokasi:'Bandar', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
-  { id:'p7', nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
-  { id:'p8', nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
-  { id:'p9', nama:'Zulhilmi Bakar',        no:'09', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
-  { id:'p10',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
-  { id:'p11',nama:'Hairudin Salleh',       no:'11', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
-  { id:'p12',nama:'Farah Nadia Kamal',     no:'12', kelas:'5 Bestari', guru:'En. Johari Taib',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
+  { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
+  { id:'p2', nama:'Nurul Farhana Azman',   no:'02', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
+  { id:'p3', nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
+  { id:'p4', nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
+  { id:'p5', nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
+  { id:'p6', nama:'Amirah Syuhada',        no:'06', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
+  { id:'p7', nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
+  { id:'p8', nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
+  { id:'p9', nama:'Zulhilmi Bakar',        no:'09', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
+  { id:'p10',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
+  { id:'p11',nama:'Hairudin Salleh',       no:'11', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
+  { id:'p12',nama:'Farah Nadia Kamal',     no:'12', kelas:'5 Bestari', guru:'En. Johari Taib',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
 ];
 
 const PANITIA_SK = [
@@ -1103,13 +1110,14 @@ function renderPelajarListDOM(k) {
   const el = document.getElementById('guru-pelajar-list-wrap');
   if (!el || k.pelajar.length === 0) return;
   el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>No.</th><th>Nama Murid</th><th style="text-align:center">Jantina</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
+    <thead><tr><th>No.</th><th>Nama Murid</th><th style="text-align:center">Jantina</th><th style="text-align:center">Penginapan</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
     <tbody>${k.pelajar.map((p,i) => {
       const m = markState[p.id] || { ar1:'—', ar2:'—', percubaan:'—' };
       return `<tr>
         <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
         <td class="tc-name">${p.nama}</td>
         <td style="text-align:center;color:var(--t3)">${p.jantina==='P'?'♀ P':'♂ L'}</td>
+        <td style="text-align:center"><span class="chip ${p.penginapan==='Asrama'?'chip-blue':'chip-purple'}" style="font-size:10px">${p.penginapan||'Harian'}</span></td>
         <td style="text-align:center" class="tc-num">${m.ar1}</td>
         <td style="text-align:center" class="tc-num">${m.ar2}</td>
         <td style="text-align:center" class="tc-num">${m.percubaan}</td>
@@ -1426,6 +1434,33 @@ function renderAnalisisBody(ak) {
         </div>`;
       }).join('')}
     </div>` : ''}
+
+    ${activeVals.length > 0 ? (() => {
+      const isWajibLulus = ['Bahasa Melayu','Sejarah'].includes(ak.subjek);
+      const lulusMurid = activeVals.filter(v=>v>=40).length;
+      const gagalLMS = activeVals.filter(v=>v<40).length;
+      return `<div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:800;color:var(--t1);margin-bottom:8px">📜 Analisis LMS — Layak Mendapat Sijil</div>
+        ${isWajibLulus ? `
+          <div style="font-size:11px;color:var(--t3);margin-bottom:10px"><strong>${ak.subjek}</strong> adalah subjek wajib lulus SPM. Murid mesti mendapat sekurang-kurangnya gred E (markah ≥ 40).</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+            <div style="background:rgba(34,197,94,.1);border-radius:8px;padding:10px 16px;text-align:center;min-width:100px">
+              <div style="font-size:20px;font-weight:800;color:#16a34a">${lulusMurid}</div>
+              <div style="font-size:10px;color:#16a34a;font-weight:700">✓ Lulus Wajib</div>
+              <div style="font-size:10px;color:var(--t3)">Layak LMS (${activeLabel})</div>
+            </div>
+            <div style="background:rgba(239,68,68,.1);border-radius:8px;padding:10px 16px;text-align:center;min-width:100px">
+              <div style="font-size:20px;font-weight:800;color:#ef4444">${gagalLMS}</div>
+              <div style="font-size:10px;color:#ef4444;font-weight:700">✗ Gagal Wajib</div>
+              <div style="font-size:10px;color:var(--t3)">Tidak Layak LMS (${activeLabel})</div>
+            </div>
+          </div>
+          ${gagalLMS > 0 ? `<div style="font-size:11px;color:#dc2626;background:rgba(239,68,68,.06);padding:8px 12px;border-radius:8px">⚠ ${gagalLMS} murid perlu diberi tumpuan segera — gagal subjek wajib lulus akan menyebabkan sijil SPM tidak diperoleh.</div>` : '<div style="font-size:11px;color:#16a34a">✓ Semua murid lulus subjek wajib bagi ujian ini.</div>'}
+        ` : `
+          <div style="font-size:11px;color:var(--t3)">${ak.subjek} bukan subjek wajib lulus. Subjek wajib lulus untuk sijil SPM ialah <strong>Bahasa Melayu</strong> dan <strong>Sejarah</strong>.<br>Pantau pelajar dalam kelas BM dan Sejarah untuk analisis LMS penuh.</div>
+        `}
+      </div>`;
+    })() : ''}
 
     <div class="chart-grid">
       ${trendPointCount >= 2 ? `<div class="chart-card">
@@ -2231,10 +2266,11 @@ function openTambahPelajar() {
   document.getElementById('btn-tambah-simpan').innerHTML    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Pelajar';
   document.getElementById('inp-edit-id').value  = '';
   document.getElementById('inp-nama').value     = '';
-  document.getElementById('inp-jantina').value  = 'L';
-  document.getElementById('inp-ar1').value      = '';
-  document.getElementById('inp-ar2').value      = '';
-  document.getElementById('inp-perc').value     = '';
+  document.getElementById('inp-jantina').value    = 'L';
+  document.getElementById('inp-penginapan').value = 'Harian';
+  document.getElementById('inp-ar1').value        = '';
+  document.getElementById('inp-ar2').value        = '';
+  document.getElementById('inp-perc').value       = '';
   document.getElementById('modal-tambah').hidden = false;
   setTimeout(() => document.getElementById('inp-nama').focus(), 50);
 }
@@ -2249,8 +2285,9 @@ function openEditPelajar(id) {
   document.getElementById('btn-tambah-simpan').innerHTML    = '✓ Simpan Perubahan';
   document.getElementById('inp-edit-id').value  = id;
   document.getElementById('inp-nama').value     = p.nama;
-  document.getElementById('inp-jantina').value  = p.jantina || 'L';
-  document.getElementById('inp-ar1').value      = m.ar1 || '';
+  document.getElementById('inp-jantina').value    = p.jantina || 'L';
+  document.getElementById('inp-penginapan').value = p.penginapan || 'Harian';
+  document.getElementById('inp-ar1').value        = m.ar1 || '';
   document.getElementById('inp-ar2').value      = m.ar2 || '';
   document.getElementById('inp-perc').value     = m.percubaan || '';
   document.getElementById('modal-tambah').hidden = false;
@@ -2260,8 +2297,9 @@ function openEditPelajar(id) {
 function simpanPelajarModal() {
   const nama = document.getElementById('inp-nama').value.trim();
   if (!nama) { document.getElementById('inp-nama').focus(); return; }
-  const editId  = document.getElementById('inp-edit-id').value;
-  const jantina = document.getElementById('inp-jantina').value;
+  const editId     = document.getElementById('inp-edit-id').value;
+  const jantina    = document.getElementById('inp-jantina').value;
+  const penginapan = document.getElementById('inp-penginapan').value;
   const ar1     = Math.max(0, Math.min(100, +document.getElementById('inp-ar1').value || 0));
   const ar2     = Math.max(0, Math.min(100, +document.getElementById('inp-ar2').value || ar1));
   const perc    = Math.max(0, Math.min(100, +document.getElementById('inp-perc').value || ar1));
@@ -2269,13 +2307,13 @@ function simpanPelajarModal() {
   const ak = getActiveKelas();
   if (editId) {
     const p = ak ? ak.pelajar.find(x => x.id === editId) : null;
-    if (p) { p.nama = nama; p.jantina = jantina; }
+    if (p) { p.nama = nama; p.jantina = jantina; p.penginapan = penginapan; }
     markState[editId] = { ar1, ar2, percubaan: perc };
     showToast(`✓ Maklumat ${nama} dikemaskini`);
   } else {
     if (!ak) { alert('Pilih kelas dahulu sebelum tambah murid.'); return; }
     const id = 'p' + (++pelajarNextId);
-    ak.pelajar.push({ id, nama, jantina, ses: '', lokasi: '' });
+    ak.pelajar.push({ id, nama, jantina, penginapan, ses: '', lokasi: '' });
     markState[id] = { ar1, ar2, percubaan: perc };
     showToast(`✓ ${nama} berjaya ditambah`);
   }
@@ -2662,6 +2700,48 @@ function buildPentadbir() {
         <div><div class="sh-title">Pelajar Berisiko</div><div class="sh-sub">Pelajar yang menunjukkan penurunan markah konsisten</div></div>
         <span class="chip chip-red">${PELAJAR_5A.filter(p=>p.alert).length} pelajar</span>
       </div>
+      ${(() => {
+        const wajibSubjek = ['Bahasa Melayu','Sejarah'];
+        const wajibPelajar = PELAJAR_5A.filter(p => wajibSubjek.includes(p.subjek));
+        const getMark = p => p.marks.percubaan ?? p.marks.ar2 ?? p.marks.ar1;
+        const lulusWajib = wajibPelajar.filter(p => getMark(p) >= 40);
+        const gagalWajib = wajibPelajar.filter(p => getMark(p) < 40);
+        return `<div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:800;color:var(--t1);margin-bottom:4px">📜 Analisis LMS — Layak Mendapat Sijil</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Murid mesti lulus (≥ gred E, markah ≥ 40) dalam <strong>Bahasa Melayu</strong> dan <strong>Sejarah</strong> untuk layak mendapat sijil SPM.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="background:rgba(34,197,94,.1);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px">
+              <div style="font-size:20px;font-weight:800;color:#16a34a">${lulusWajib.length}</div>
+              <div style="font-size:10px;color:#16a34a;font-weight:700">✓ Lulus Subjek Wajib</div>
+            </div>
+            <div style="background:rgba(239,68,68,.1);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px">
+              <div style="font-size:20px;font-weight:800;color:#ef4444">${gagalWajib.length}</div>
+              <div style="font-size:10px;color:#ef4444;font-weight:700">✗ Gagal Subjek Wajib</div>
+            </div>
+            <div style="background:rgba(234,179,8,.08);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px">
+              <div style="font-size:20px;font-weight:800;color:var(--yellow)">${wajibPelajar.length}</div>
+              <div style="font-size:10px;color:var(--yellow);font-weight:700">Jumlah Rekod Wajib</div>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Nama Murid</th><th>Kelas</th><th>Subjek Wajib</th><th style="text-align:center">Markah Terkini</th><th style="text-align:center">Gred</th><th style="text-align:center">Status LMS</th></tr></thead>
+            <tbody>${wajibPelajar.map(p => {
+              const m = getMark(p);
+              const g = markToGred(m);
+              const lulus = m >= 40;
+              return `<tr>
+                <td class="tc-name">${p.nama}</td>
+                <td style="color:var(--t3)">${p.kelas}</td>
+                <td>${p.subjek}</td>
+                <td style="text-align:center;font-weight:700">${m}</td>
+                <td style="text-align:center"><span class="chip ${gredClass(g)}">${g}</span></td>
+                <td style="text-align:center"><span class="chip ${lulus?'chip-green':'chip-red'}" style="font-size:10px">${lulus?'✓ Lulus Wajib':'✗ Gagal Wajib'}</span></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table></div>
+          ${gagalWajib.length > 0 ? `<div style="margin-top:10px;font-size:11px;color:#dc2626;background:rgba(239,68,68,.06);padding:8px 12px;border-radius:8px">⚠ ${gagalWajib.length} murid gagal subjek wajib lulus. Intervensi segera diperlukan untuk memastikan mereka layak mendapat sijil SPM.</div>` : ''}
+        </div>`;
+      })()}
       <div class="alert-banner">⚠️ Pelajar berikut perlu intervensi segera — trend markah merosot melebihi 10 markah</div>
       <div class="student-list">${PELAJAR_5A.filter(p=>p.alert).map(p => {
         const initials = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('');
