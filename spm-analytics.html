@@ -1099,6 +1099,11 @@ function renderPelajarView() {
       </div>
     </div>
 
+    ${bil > 0 ? `<div style="padding:0 0 12px">
+      <input type="text" id="carian-murid" placeholder="🔍 Cari nama murid..." oninput="cariglobalMurid(this.value)"
+        style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--t1);font-size:13px;font-family:inherit;outline:none">
+    </div>` : ''}
+
     <div id="guru-pelajar-list-wrap">
       ${bil === 0
         ? `<div class="empty-state" style="padding:32px 0"><div class="empty-icon">👤</div><div class="empty-title">Tiada murid</div><div class="empty-sub">Import dari fail atau tambah secara manual</div></div>`
@@ -1128,6 +1133,27 @@ function renderPelajarListDOM(k) {
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
+}
+
+function cariglobalMurid(q) {
+  const rows = document.querySelectorAll('#guru-pelajar-list-wrap tbody tr');
+  const lc = q.toLowerCase().trim();
+  rows.forEach(tr => {
+    const nameCell = tr.querySelector('td:nth-child(2)');
+    if (!nameCell) return;
+    const nama = nameCell.dataset.nama || nameCell.textContent;
+    nameCell.dataset.nama = nama;
+    if (!lc) {
+      nameCell.innerHTML = nama;
+      tr.style.display = '';
+    } else if (nama.toLowerCase().includes(lc)) {
+      const idx = nama.toLowerCase().indexOf(lc);
+      nameCell.innerHTML = nama.substring(0,idx) + `<mark style="background:rgba(59,130,246,.3);color:var(--t1);border-radius:3px">${nama.substring(idx,idx+lc.length)}</mark>` + nama.substring(idx+lc.length);
+      tr.style.display = '';
+    } else {
+      tr.style.display = 'none';
+    }
+  });
 }
 
 // ── Tab: Rekod Markah ─────────────────────────────────────
@@ -3807,13 +3833,319 @@ function janaLaporan(jenis, skId) {
   }
 }
 
+// ── Penanda Aras ──────────────────────────────────────────
+function initBenchTab() {
+  const sorted = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
+  const top3 = sorted.slice(0,3);
+  const subjects = ['Matematik','BM','BI','Sains','Sejarah'];
+
+  // Radar: get GPS per subject per school (match by label substring)
+  function getSubjGPS(school, subj) {
+    const p = school.panitia.find(p2 => p2.subjek === subj || p2.subjek.includes(subj.slice(0,4)));
+    return p ? p.gpmp || p.gps || 5.5 : 5.5;
+  }
+  // District average per subject
+  const avgPerSubj = subjects.map(s => {
+    const vals = SEKOLAH_DAERAH.map(sc => getSubjGPS(sc,s));
+    return parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
+  });
+
+  const colors = ['rgba(59,130,246,.8)','rgba(34,197,94,.8)','rgba(234,179,8,.8)','rgba(156,163,175,.6)'];
+  const datasets = [
+    ...top3.map((s,i) => ({
+      label: s.nama,
+      data: subjects.map(subj => getSubjGPS(s,subj)),
+      borderColor: colors[i], backgroundColor: colors[i].replace('.8',',.12').replace(',.8',',.12').replace('8)','8,.12)').replace(/\.8\)/,', 0.12)').replace(/rgba\((.+),.8\)/,'rgba($1,.12)'),
+      borderWidth: 2, pointRadius: 4,
+    })),
+    { label:'Purata Daerah', data: avgPerSubj, borderColor:'rgba(156,163,175,.7)', backgroundColor:'rgba(156,163,175,.07)', borderWidth:1.5, borderDash:[4,3], pointRadius:3 },
+  ];
+  // fix bg color
+  top3.forEach((s,i) => {
+    datasets[i].backgroundColor = ['rgba(59,130,246,.1)','rgba(34,197,94,.1)','rgba(234,179,8,.1)'][i];
+  });
+
+  const ctx = document.getElementById('bench-radar-chart')?.getContext('2d');
+  if (ctx) {
+    new Chart(ctx, {
+      type:'radar',
+      data:{ labels:subjects, datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{ r:{ min:3, max:8, ticks:{ stepSize:1, color:'#64748b', font:{size:10} }, grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{color:'#94a3b8',font:{size:11}} }},
+        plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}} },
+      }
+    });
+  }
+
+  // Ranking table — compute prev-year rank
+  const prevSorted = [...SEKOLAH_DAERAH].sort((a,b)=>a.prev-b.prev);
+  const html = `<table class="tbl"><thead><tr><th>Kedudukan Kini</th><th>Sekolah</th><th>GPS 2024</th><th>GPS 2023</th><th>Perubahan Kedudukan</th></tr></thead><tbody>
+    ${sorted.map((s,i) => {
+      const prevRank = prevSorted.findIndex(x=>x.id===s.id)+1;
+      const diff = prevRank - (i+1);
+      const changeHtml = diff > 0 ? `<span style="color:var(--green)">▲ ${diff} tempat</span>` : diff < 0 ? `<span style="color:var(--red)">▼ ${Math.abs(diff)} tempat</span>` : `<span style="color:var(--t3)">— Sama</span>`;
+      return `<tr><td class="rank-num ${i<3?'top':''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</td><td class="tc-name">${s.nama}</td><td class="tc-num ${s.gps<=5.0?'tc-green':s.gps<=5.7?'tc-yellow':'tc-red'}">${s.gps.toFixed(2)}</td><td class="tc-num" style="color:var(--t3)">${s.prev.toFixed(2)}</td><td>${changeHtml}</td></tr>`;
+    }).join('')}</tbody></table>`;
+  const tbl = document.getElementById('bench-rank-tbl');
+  if (tbl) tbl.innerHTML = html;
+
+  // Best practice
+  const best = [...SEKOLAH_DAERAH].sort((a,b)=>(a.prev-a.gps)-(b.prev-b.gps))[0];
+  const improve = (best.prev - best.gps).toFixed(2);
+  const bestPanitia = best.panitia.reduce((a,b) => {
+    const ai = (a.prev||a.gpmp||5) - (a.gpmp||a.gps||5);
+    const bi = (b.prev||b.gpmp||5) - (b.gpmp||b.gps||5);
+    return bi > ai ? b : a;
+  });
+  const bestCard = document.getElementById('bench-best-card');
+  if (bestCard) bestCard.innerHTML = `
+    <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:20px 24px;display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+      <div style="font-size:36px">🌟</div>
+      <div style="flex:1;min-width:220px">
+        <div style="font-size:15px;font-weight:800;color:var(--t1)">${best.nama}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px">Peningkatan GPS keseluruhan: <strong style="color:var(--green)">▼ ${improve}</strong> (${best.prev.toFixed(2)} → ${best.gps.toFixed(2)})</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px">Panitia terbaik: <strong style="color:var(--accent)">${bestPanitia.subjek}</strong> — peningkatan ▼ ${((bestPanitia.prev||bestPanitia.gpmp||5)-(bestPanitia.gpmp||bestPanitia.gps||5)).toFixed(2)} GPS</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--t3)">GPS 2023</div>
+        <div style="font-size:22px;font-weight:800;color:var(--t3)">${best.prev.toFixed(2)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">GPS 2024</div>
+        <div style="font-size:28px;font-weight:800;color:var(--green)">${best.gps.toFixed(2)}</div>
+      </div>
+    </div>`;
+}
+
+// ── Analisis Subjek ───────────────────────────────────────
+function initSubjekTab() {
+  const subjects = ['Matematik','BM','BI','Sains','Sejarah'];
+  function getGPS(school, subj) {
+    const p = school.panitia.find(p2 => p2.subjek === subj || p2.subjek.includes(subj.slice(0,4)));
+    return p ? (p.gpmp || p.gps || null) : null;
+  }
+
+  // Heatmap
+  function gpsColor(g) {
+    if (g === null) return 'var(--surface2)';
+    if (g <= 4.0) return 'rgba(34,197,94,.25)';
+    if (g <= 5.5) return 'rgba(59,130,246,.25)';
+    if (g <= 7.0) return 'rgba(234,179,8,.25)';
+    return 'rgba(239,68,68,.3)';
+  }
+  const schools = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
+  let heatHtml = `<table class="tbl" style="min-width:700px"><thead><tr><th style="position:sticky;left:0;background:var(--surface2)">Subjek</th>${schools.map(s=>`<th style="text-align:center;white-space:normal;max-width:90px;font-size:10px">${s.nama.replace('SMK ','')}</th>`).join('')}</tr></thead><tbody>
+    ${subjects.map(subj => `<tr><td style="font-weight:700;color:var(--t1);position:sticky;left:0;background:var(--surface)">${subj}</td>${schools.map(s => {
+      const g = getGPS(s,subj);
+      return `<td style="text-align:center;background:${gpsColor(g)}"><span style="font-weight:700;font-size:12px">${g !== null ? g.toFixed(2) : '—'}</span></td>`;
+    }).join('')}</tr>`).join('')}
+  </tbody></table>`;
+  const hm = document.getElementById('subjek-heatmap');
+  if (hm) hm.innerHTML = heatHtml;
+
+  // Bar chart — average GPS per subject
+  const avgGPS = subjects.map(subj => {
+    const vals = SEKOLAH_DAERAH.map(s => getGPS(s,subj)).filter(v=>v!==null);
+    return parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
+  });
+  const daerahAvg = parseFloat((SEKOLAH_DAERAH.reduce((a,s)=>a+s.gps,0)/SEKOLAH_DAERAH.length).toFixed(2));
+  // sort worst first (highest GPS first)
+  const paired = subjects.map((s,i)=>({s,g:avgGPS[i]})).sort((a,b)=>b.g-a.g);
+  const ctx = document.getElementById('subjek-bar-chart')?.getContext('2d');
+  if (ctx) {
+    new Chart(ctx, {
+      type:'bar',
+      data:{ labels:paired.map(p=>p.s), datasets:[{ label:'Purata GPS', data:paired.map(p=>p.g),
+        backgroundColor:paired.map(p=>p.g>daerahAvg?'rgba(239,68,68,.75)':'rgba(59,130,246,.75)'),
+        borderRadius:6 }]},
+      options:{ responsive:true,maintainAspectRatio:false,
+        scales:{ y:{min:3,max:8,reverse:false,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,.05)'}}, x:{ticks:{color:'#94a3b8'}} },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ afterLabel:c => c.raw>daerahAvg?'⚠ Melebihi purata daerah':'' } } }
+      }
+    });
+  }
+
+  // Panitia perlu sokongan (GPS > 7.0)
+  const list = document.getElementById('subjek-sokongan-list');
+  if (list) {
+    const items = [];
+    SEKOLAH_DAERAH.forEach(s => s.panitia.forEach(p => {
+      const g = p.gpmp || p.gps;
+      if (g && g > 7.0) items.push({sekolah:s.nama, subjek:p.subjek, gps:g});
+    }));
+    if (items.length === 0) {
+      list.innerHTML = `<div class="info-banner">✓ Tiada panitia dengan GPS melebihi 7.0 pada masa ini.</div>`;
+    } else {
+      list.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:24px">${items.map(it=>`
+        <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center">
+          <div style="font-size:24px">🚩</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--t1)">${it.subjek}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${it.sekolah}</div>
+          </div>
+          <div style="font-size:20px;font-weight:800;color:var(--red)">${it.gps.toFixed(2)}</div>
+        </div>`).join('')}</div>`;
+    }
+  }
+}
+
+// ── Intervensi Tracker ────────────────────────────────────
+function loadIntervensi() {
+  try {
+    const d = localStorage.getItem('skas_intervensi');
+    if (d) return JSON.parse(d);
+  } catch(e) {}
+  // Sample data
+  const today = new Date(); const fmt = d => d.toISOString().slice(0,10);
+  const t1 = new Date(today); t1.setDate(t1.getDate()-30);
+  const t2 = new Date(today); t2.setDate(t2.getDate()-14);
+  const t3 = new Date(today); t3.setDate(t3.getDate()-7);
+  const samples = [
+    { id:'i1', sekolahId:'sk-oya', sekolah:'SMK Oya', subjek:'Matematik', jenis:'Kelas Tambahan', tarikh:fmt(t1), pj:'En. Azman Salleh', sasaran:5.5, catatan:'Kelas hujung minggu setiap Sabtu', gpsSekolah:5.84 },
+    { id:'i2', sekolahId:'sk-tulai', sekolah:'SMK Tulai', subjek:'Bahasa Inggeris', jenis:'Bengkel Subjek', tarikh:fmt(t2), pj:'Pn. Fatimah Daud', sasaran:6.0, catatan:'Bengkel penulisan esei', gpsSekolah:6.12 },
+    { id:'i3', sekolahId:'sk-sgmaong', sekolah:'SMK Sg. Maong', subjek:'Sains', jenis:'Program Motivasi', tarikh:fmt(t3), pj:'En. Razman Hamid', sasaran:6.8, catatan:'Motivasi pelajar berisiko tinggi', gpsSekolah:6.28 },
+  ];
+  saveIntervensiData(samples);
+  return samples;
+}
+function saveIntervensiData(data) {
+  try { localStorage.setItem('skas_intervensi', JSON.stringify(data)); } catch(e) {}
+}
+function initIntervensiTab() {
+  // set today as default date
+  const dtInput = document.getElementById('int-tarikh');
+  if (dtInput) dtInput.value = new Date().toISOString().slice(0,10);
+  renderIntervensiList();
+}
+function renderIntervensiList() {
+  const data = loadIntervensi();
+  const kpi = document.getElementById('intervensi-kpi');
+  if (kpi) {
+    const berjaya = data.filter(d => d.gpsSekolah <= d.sasaran).length;
+    const proses  = data.length - berjaya;
+    const sekolahSet = new Set(data.map(d=>d.sekolahId)).size;
+    kpi.innerHTML = [
+      ['Jumlah Intervensi', data.length, '', ''],
+      ['Berjaya', berjaya, 'green', '✓'],
+      ['Dalam Proses', proses, 'yellow', '●'],
+      ['Sekolah Terlibat', sekolahSet, '', ''],
+    ].map(([l,v,c,ic])=>`<div class="kpi"><div class="kpi-lbl">${l}</div><div class="kpi-val ${c}">${ic?ic+' ':''}${v}</div></div>`).join('');
+  }
+  const tbl = document.getElementById('intervensi-tbl');
+  if (!tbl) return;
+  if (data.length === 0) { tbl.innerHTML = `<div style="padding:32px;text-align:center;color:var(--t3)">Tiada rekod intervensi. Tambah rekod di atas.</div>`; return; }
+  tbl.innerHTML = `<table class="tbl"><thead><tr><th>Tarikh</th><th>Sekolah</th><th>Subjek</th><th>Jenis</th><th>Penanggung Jawab</th><th style="text-align:center">Sasaran GPS</th><th style="text-align:center">Status</th><th></th></tr></thead><tbody>
+    ${data.map(d => {
+      const berjaya = d.gpsSekolah <= d.sasaran;
+      return `<tr>
+        <td style="color:var(--t3);white-space:nowrap">${d.tarikh}</td>
+        <td class="tc-name">${d.sekolah}</td>
+        <td>${d.subjek}</td>
+        <td><span class="chip chip-blue" style="font-size:10px">${d.jenis}</span></td>
+        <td style="color:var(--t2)">${d.pj}</td>
+        <td style="text-align:center;font-weight:700">${d.sasaran.toFixed(2)}</td>
+        <td style="text-align:center">${berjaya?'<span class="chip chip-green">✓ Berjaya</span>':'<span class="chip chip-yellow">Dalam Proses</span>'}</td>
+        <td><button class="btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="padamIntervensi('${d.id}')">Padam</button></td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+function rekodIntervensi() {
+  const sekolahSel = document.getElementById('int-sekolah');
+  const sekolahOpt = sekolahSel?.options[sekolahSel.selectedIndex];
+  const sekolahId  = sekolahSel?.value || '';
+  const sekolahNama= sekolahOpt?.text || '';
+  const gpsSekolah = parseFloat(sekolahOpt?.dataset.gps || '5.5');
+  const subjek     = document.getElementById('int-subjek')?.value.trim();
+  const jenis      = document.getElementById('int-jenis')?.value;
+  const tarikh     = document.getElementById('int-tarikh')?.value;
+  const pj         = document.getElementById('int-pj')?.value.trim();
+  const sasaran    = parseFloat(document.getElementById('int-sasaran')?.value);
+  const catatan    = document.getElementById('int-catatan')?.value.trim();
+  if (!subjek || !tarikh || !pj || isNaN(sasaran)) { showToast('Sila lengkapkan semua medan'); return; }
+  const data = loadIntervensi();
+  data.unshift({ id:'i'+Date.now(), sekolahId, sekolah:sekolahNama, subjek, jenis, tarikh, pj, sasaran, catatan, gpsSekolah });
+  saveIntervensiData(data);
+  renderIntervensiList();
+  document.getElementById('int-subjek').value = '';
+  document.getElementById('int-pj').value = '';
+  document.getElementById('int-sasaran').value = '';
+  document.getElementById('int-catatan').value = '';
+  showToast('Intervensi berjaya direkodkan');
+}
+function padamIntervensi(id) {
+  const data = loadIntervensi().filter(d=>d.id!==id);
+  saveIntervensiData(data);
+  renderIntervensiList();
+}
+
+// ── Ramalan GPS ───────────────────────────────────────────
+function ramalGPS(trend) {
+  // weighted avg: ar1=10%, ar2=20%, perc=30%, spm=40%
+  const wa = trend.ar1*.1 + trend.ar2*.2 + trend.perc*.3 + trend.spm*.4;
+  const delta = (trend.spm - trend.ar1) / 3;
+  // blend weighted avg delta with linear extrapolation
+  const pred = trend.spm + (delta * 0.6) + ((wa - trend.spm) * 0.4);
+  return Math.min(10, Math.max(1, parseFloat(pred.toFixed(2))));
+}
+function initRamalTab() {
+  const sorted = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
+  const predictions = sorted.map(s => ({
+    ...s,
+    ramal: s.trend ? ramalGPS(s.trend) : parseFloat((s.gps + (s.gps - s.prev) * 0.6).toFixed(2))
+  }));
+
+  // KPI
+  const avgGPS2024 = parseFloat((sorted.reduce((a,s)=>a+s.gps,0)/sorted.length).toFixed(2));
+  const avgRamal   = parseFloat((predictions.reduce((a,s)=>a+s.ramal,0)/predictions.length).toFixed(2));
+  const ramalKpi   = document.getElementById('ramal-kpi');
+  if (ramalKpi) {
+    const trend = avgRamal < avgGPS2024;
+    ramalKpi.innerHTML = `
+      <div class="kpi"><div class="kpi-lbl">GPS Daerah 2024</div><div class="kpi-val">${avgGPS2024.toFixed(2)}</div><div class="kpi-note">Aktual SPM</div></div>
+      <div class="kpi"><div class="kpi-lbl">Ramalan GPS 2025</div><div class="kpi-val ${trend?'green':'red-c'}">${avgRamal.toFixed(2)}</div><span class="kpi-delta ${trend?'green':'red-c'}">${trend?'▼ Trend Positif':'▲ Perlu Perhatian'}</span></div>
+      <div class="kpi"><div class="kpi-lbl">Jangkaan Perubahan</div><div class="kpi-val ${trend?'green':'red-c'}">${trend?'▼':''} ${Math.abs(avgRamal-avgGPS2024).toFixed(2)}</div><div class="kpi-note">GPS</div></div>
+      <div class="kpi"><div class="kpi-lbl">Sekolah On Track</div><div class="kpi-val green">${predictions.filter(p=>p.ramal<=p.gps).length}</div><div class="kpi-note">daripada ${predictions.length} sekolah</div></div>`;
+  }
+
+  // Chart
+  const ctx = document.getElementById('ramal-bar-chart')?.getContext('2d');
+  if (ctx) {
+    new Chart(ctx, {
+      type:'bar',
+      data:{ labels:predictions.map(p=>p.nama.replace('SMK ','')),
+        datasets:[
+          { label:'GPS 2024 (Aktual)', data:predictions.map(p=>p.gps), backgroundColor:'rgba(59,130,246,.75)', borderRadius:4 },
+          { label:'Ramalan 2025', data:predictions.map(p=>p.ramal), backgroundColor:'rgba(251,146,60,.75)', borderRadius:4 },
+        ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        scales:{ y:{min:4,max:8,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,.05)'}}, x:{ticks:{color:'#94a3b8',font:{size:10}}} },
+        plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{mode:'index',intersect:false} }
+      }
+    });
+  }
+
+  // Table
+  const tbl = document.getElementById('ramal-tbl');
+  if (tbl) tbl.innerHTML = `<table class="tbl"><thead><tr><th>Sekolah</th><th style="text-align:center">GPS SPM 2024</th><th style="text-align:center">Ramalan GPS 2025</th><th style="text-align:center">Trend</th><th style="text-align:center">Status</th></tr></thead><tbody>
+    ${predictions.map(p => {
+      const ok = p.ramal <= p.gps;
+      const trendHtml = ok ? `<span class="trend-dn">▼ ${(p.gps-p.ramal).toFixed(2)}</span>` : `<span class="trend-up">▲ ${(p.ramal-p.gps).toFixed(2)}</span>`;
+      return `<tr><td class="tc-name">${p.nama}</td><td class="tc-num" style="text-align:center">${p.gps.toFixed(2)}</td><td class="tc-num" style="text-align:center;${ok?'color:var(--green)':'color:var(--red)'}">${p.ramal.toFixed(2)}</td><td style="text-align:center">${trendHtml}</td><td style="text-align:center">${ok?'<span class="chip chip-green">On Track</span>':'<span class="chip chip-red">Perlu Intervensi</span>'}</td></tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
 function buildPPD() {
   const tabs = [
-    { id:'ppd-daerah',  label:'Analitik Daerah' },
-    { id:'ppd-sekolah', label:'Kedudukan Sekolah' },
-    { id:'ppd-jurang',  label:'Analisis Jurang' },
-    { id:'ppd-semak',   label:'Semak Sekolah' },
-    { id:'ppd-laporan', label:'Laporan Daerah' },
+    { id:'ppd-daerah',     label:'Analitik Daerah' },
+    { id:'ppd-sekolah',    label:'Kedudukan Sekolah' },
+    { id:'ppd-jurang',     label:'Analisis Jurang' },
+    { id:'ppd-semak',      label:'Semak Sekolah' },
+    { id:'ppd-bench',      label:'Penanda Aras' },
+    { id:'ppd-subjek',     label:'Analisis Subjek' },
+    { id:'ppd-intervensi', label:'Intervensi' },
+    { id:'ppd-ramal',      label:'Ramalan GPS' },
+    { id:'ppd-laporan',    label:'Laporan Daerah' },
   ];
   renderTabs(tabs);
 
@@ -3914,6 +4246,105 @@ function buildPPD() {
         </div>`).join('')}
     </section>
 
+    <!-- Tab: Penanda Aras -->
+    <section id="ppd-bench">
+      <div class="sh"><div><div class="sh-title">Penanda Aras Sekolah</div><div class="sh-sub">Perbandingan prestasi antara sekolah dalam daerah · GPS lebih rendah = lebih baik</div></div></div>
+      <div class="chart-grid">
+        <div class="chart-card chart-full">
+          <div class="chart-title">Profil GPS Subjek (Radar) — 3 Sekolah Terbaik vs Purata Daerah</div>
+          <div class="chart-sub">GPS per subjek, lebih dekat ke pusat = lebih baik</div>
+          <div class="chart-wrap" style="height:300px"><canvas id="bench-radar-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="sh"><div><div class="sh-title">Ranking Dinamik</div><div class="sh-sub">Perubahan kedudukan berbanding tahun lepas</div></div></div>
+      <div class="tbl-wrap" id="bench-rank-tbl"></div>
+      <div class="sh" style="margin-top:20px"><div><div class="sh-title">🌟 Amalan Terbaik (Best Practice)</div><div class="sh-sub">Sekolah dengan peningkatan GPS paling ketara</div></div></div>
+      <div id="bench-best-card"></div>
+    </section>
+
+    <!-- Tab: Analisis Subjek -->
+    <section id="ppd-subjek">
+      <div class="sh"><div><div class="sh-title">Analisis Subjek Merentas Sekolah</div><div class="sh-sub">GPS per subjek bagi setiap sekolah · merah = perlu perhatian</div></div></div>
+      <div style="overflow-x:auto;margin-bottom:24px;border:1px solid var(--border);border-radius:12px" id="subjek-heatmap"></div>
+      <div class="chart-grid">
+        <div class="chart-card chart-full">
+          <div class="chart-title">Purata GPS Per Subjek (Daerah) — Disusun Terburuk Dahulu</div>
+          <div class="chart-sub">Merah = melebihi purata daerah (memerlukan intervensi)</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="subjek-bar-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="sh"><div><div class="sh-title">⚠️ Panitia Perlu Sokongan Segera</div><div class="sh-sub">GPS melebihi 7.0 (ambang kritikal)</div></div></div>
+      <div id="subjek-sokongan-list"></div>
+    </section>
+
+    <!-- Tab: Intervensi -->
+    <section id="ppd-intervensi">
+      <div class="sh"><div><div class="sh-title">Tracker Intervensi & Tindakan</div><div class="sh-sub">Rekod program intervensi dan pantau keberkesanannya</div></div></div>
+      <div class="kpi-grid" id="intervensi-kpi"></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px">+ Rekod Intervensi Baharu</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="intervensi-form-grid">
+          <div class="form-group">
+            <label class="form-label">Sekolah</label>
+            <select class="form-input" id="int-sekolah">
+              ${SEKOLAH_DAERAH.map(s=>`<option value="${s.id}" data-gps="${s.gps}">${s.nama}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subjek</label>
+            <input class="form-input" id="int-subjek" placeholder="cth: Matematik" type="text">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jenis Intervensi</label>
+            <select class="form-input" id="int-jenis">
+              <option>Kelas Tambahan</option>
+              <option>Program Motivasi</option>
+              <option>Bengkel Subjek</option>
+              <option>Pemantauan GPS</option>
+              <option>Lain-lain</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarikh</label>
+            <input class="form-input" id="int-tarikh" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Penanggung Jawab</label>
+            <input class="form-input" id="int-pj" placeholder="Nama guru / pentadbir" type="text">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sasaran GPS</label>
+            <input class="form-input" id="int-sasaran" type="number" step="0.01" min="1" max="10" placeholder="cth: 5.00">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:8px">
+          <label class="form-label">Catatan</label>
+          <textarea class="form-input" id="int-catatan" rows="2" placeholder="Ringkasan program / matlamat"></textarea>
+        </div>
+        <button class="btn-primary" onclick="rekodIntervensi()" style="margin-top:4px">✓ Rekod Intervensi</button>
+      </div>
+      <div class="sh"><div><div class="sh-title">Senarai Intervensi</div></div></div>
+      <div class="tbl-wrap" id="intervensi-tbl"></div>
+    </section>
+
+    <!-- Tab: Ramalan GPS -->
+    <section id="ppd-ramal">
+      <div class="sh"><div><div class="sh-title">Ramalan GPS 2025</div><div class="sh-sub">Berdasarkan trend AR1 → AR2 → Percubaan → SPM 2024 · Bukan nilai muktamad</div></div></div>
+      <div class="kpi-grid" id="ramal-kpi"></div>
+      <div class="chart-grid">
+        <div class="chart-card chart-full">
+          <div class="chart-title">GPS SPM 2024 vs Ramalan GPS 2025</div>
+          <div class="chart-sub">Biru = 2024 (aktual) · Oren = Ramalan 2025</div>
+          <div class="chart-wrap" style="height:260px"><canvas id="ramal-bar-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="sh"><div><div class="sh-title">Jadual Ramalan Per Sekolah</div></div></div>
+      <div class="tbl-wrap" id="ramal-tbl"></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:-16px;margin-bottom:24px;padding:10px 14px;background:var(--surface2);border-radius:8px">
+        ℹ Ramalan menggunakan kaedah purata wajaran trend GPS (AR1:10%, AR2:20%, Percubaan:30%, SPM:40%). Semakin konsisten trend, semakin tepat ramalan.
+      </div>
+    </section>
+
     <!-- Tab: Laporan Daerah -->
     <section id="ppd-laporan">
       <div class="sh"><div><div class="sh-title">Laporan Daerah</div><div class="sh-sub">Jana laporan intensif PPD Dalat — analisis daerah &amp; semua sekolah dalam satu dokumen</div></div></div>
@@ -3954,6 +4385,11 @@ function buildPPD() {
     renderPPDBar('ppd-jantina-chart',JURANG.jantina.labels, JURANG.jantina.gps, ['rgba(59,130,246,.85)','rgba(244,114,182,.85)']);
     renderPPDBar('ppd-lokasi-chart', JURANG.lokasi.labels,  JURANG.lokasi.gps,  ['rgba(34,197,94,.85)','rgba(234,179,8,.85)']);
     renderGapSummary();
+    // new tabs
+    initBenchTab();
+    initSubjekTab();
+    initIntervensiTab();
+    initRamalTab();
   }, 50);
 }
 
