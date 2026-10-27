@@ -312,7 +312,33 @@ section.active { display: block; }
 .breadcrumb-sep { color:var(--border); }
 .breadcrumb-cur { color:var(--t1); font-weight:700; }
 
-/* ── Rekod markah breadcrumb ── */
+/* ── Ujian selection cards ── */
+.ujian-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:24px; }
+.ujian-card {
+  background:var(--surface); border:2px solid var(--border); border-radius:12px;
+  padding:16px; cursor:pointer; transition:border-color .15s, background .15s;
+  display:flex; flex-direction:column; gap:12px;
+}
+.ujian-card:hover { border-color:var(--accent); background:var(--surface2); }
+.ujian-active { border-color:var(--accent) !important; background:rgba(59,130,246,.07) !important; }
+.ujian-card-top { display:flex; align-items:flex-start; gap:12px; }
+.ujian-icon { font-size:22px; flex-shrink:0; margin-top:2px; }
+.ujian-label { font-size:15px; font-weight:800; }
+.ujian-full { font-size:12px; color:var(--t2); margin-top:2px; }
+.ujian-bulan { font-size:11px; color:var(--t3); margin-top:2px; }
+.ujian-active-badge {
+  font-size:10px; font-weight:700; padding:3px 8px; border-radius:99px;
+  background:rgba(59,130,246,.15); color:var(--accent); white-space:nowrap; flex-shrink:0;
+}
+.ujian-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); }
+.dot-sep { background:rgba(234,179,8,.15); color:var(--yellow); }
+.rekod-ujian-header {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  background:rgba(59,130,246,.06); border:1px solid rgba(59,130,246,.2);
+  border-radius:10px; padding:12px 16px; margin-bottom:16px;
+}
+
+/* ── Rekod markah header ── */
 .rekod-header {
   background:var(--surface); border:1px solid var(--border); border-radius:12px;
   padding:14px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px;
@@ -569,8 +595,9 @@ const DUMMY_MARKS = {
 let kelasList = JSON.parse(JSON.stringify(DUMMY_KELAS)); // deep copy
 let markState  = JSON.parse(JSON.stringify(DUMMY_MARKS));
 let activeKelasId = null;
+let activeUjian   = null;  // null | 'ar1' | 'ar2' | 'percubaan'
 let guruView = 'kelas';    // 'kelas' | 'pelajar'
-let kelasNextId = 3;       // next available id after k1, k2
+let kelasNextId = 3;
 let pelajarNextId = 100;
 
 function getRole() {
@@ -808,6 +835,23 @@ function renderPelajarListDOM(k) {
 }
 
 // ── Tab: Rekod Markah ─────────────────────────────────────
+const UJIAN_LIST = [
+  { key:'ar1',       label:'AR1',       full:'Ujian Pertengahan Tahun', icon:'📋', bulan:'April – Mei' },
+  { key:'ar2',       label:'AR2',       full:'Ujian Akhir Tahun',       icon:'📋', bulan:'Ogos – Sep' },
+  { key:'percubaan', label:'Percubaan', full:'Percubaan SPM',           icon:'📝', bulan:'Oktober' },
+];
+
+function ujianStatus(ak, key) {
+  if (!ak || ak.pelajar.length === 0) return 'tiada';
+  const filled = ak.pelajar.filter(p => {
+    const v = (markState[p.id] || {})[key];
+    return v !== undefined && v !== '' && v !== 0;
+  }).length;
+  if (filled === 0)              return 'belum';
+  if (filled < ak.pelajar.length) return 'separa';
+  return 'lengkap';
+}
+
 function renderRekodView(ak) {
   if (!ak) return `
     <div class="empty-state">
@@ -817,6 +861,37 @@ function renderRekodView(ak) {
     </div>`;
 
   const bil = ak.pelajar.length;
+
+  const ujianCards = UJIAN_LIST.map(u => {
+    const status = ujianStatus(ak, u.key);
+    const isActive = activeUjian === u.key;
+    const statusCfg = {
+      tiada:    { chip:'chip-gray',   label:'Tiada murid',   dot:'' },
+      belum:    { chip:'chip-gray',   label:'Belum diisi',   dot:'dot-miss' },
+      separa:   { chip:'chip-yellow', label:'Sedang diisi',  dot:'dot-sep' },
+      lengkap:  { chip:'chip-green',  label:'Lengkap',       dot:'dot-ok' },
+    }[status];
+
+    return `<div class="ujian-card${isActive?' ujian-active':''}"
+      onclick="${bil > 0 ? `pilihUjian('${u.key}')` : ''}">
+      <div class="ujian-card-top">
+        <div class="ujian-icon">${u.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div class="ujian-label">${u.label}</div>
+          <div class="ujian-full">${u.full}</div>
+          <div class="ujian-bulan">${u.bulan} ${ak.tahun}</div>
+        </div>
+        ${isActive ? `<div class="ujian-active-badge">Sedang diisi</div>` : ''}
+      </div>
+      <div class="ujian-card-footer">
+        <span class="chip ${statusCfg.chip}" style="font-size:11px">${statusCfg.label}</span>
+        ${status !== 'tiada' ? `<span style="font-size:11px;color:var(--t3)">${
+          ak.pelajar.filter(p=>{const v=(markState[p.id]||{})[u.key];return v!==undefined&&v!==''&&v!==0;}).length
+        }/${bil} murid</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
   return `
     <div class="rekod-header">
       <div class="rekod-kelas-badge">${kelasAv(ak.subjek)}</div>
@@ -827,19 +902,26 @@ function renderRekodView(ak) {
       <button class="btn-sm" onclick="bukaUrusPelajar('${ak.id}');switchTab('guru-kelas')">Urus Murid</button>
     </div>
 
-    ${bil === 0 ? `
+    <div class="sh" style="margin-bottom:14px">
+      <div>
+        <div class="sh-title" style="font-size:14px">Pilih Ujian</div>
+        <div class="sh-sub">Pilih ujian yang ingin diisi markah</div>
+      </div>
+    </div>
+    <div class="ujian-grid">${ujianCards}</div>
+
+    ${!activeUjian ? '' : bil === 0 ? `
       <div class="empty-state">
         <div class="empty-icon">👤</div>
         <div class="empty-title">Tiada murid dalam kelas ini</div>
         <div class="empty-sub">Daftar murid dahulu melalui <strong>"Urus Murid"</strong> di atas.</div>
       </div>` : `
-      <div class="filter-bar">
-        <span class="filter-label">Peperiksaan:</span>
-        <select class="sel" id="guru-pep" onchange="refreshMarkTable()">
-          <option value="percubaan">Percubaan ${ak.tahun}</option>
-          <option value="ar2">Ujian Akhir Bulan (AR2)</option>
-          <option value="ar1">Ujian Pertengahan Tahun (AR1)</option>
-        </select>
+      <div class="rekod-ujian-header">
+        <div>
+          <div style="font-size:14px;font-weight:800">${UJIAN_LIST.find(u=>u.key===activeUjian)?.full}</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">${UJIAN_LIST.find(u=>u.key===activeUjian)?.bulan} ${ak.tahun} · Isi markah murid di bawah</div>
+        </div>
+        <button class="btn-sm" onclick="activeUjian=null;pilihUjian(null)" style="font-size:11px">✕ Tutup</button>
       </div>
       <div class="tbl-wrap">
         <table class="tbl">
@@ -847,10 +929,10 @@ function renderRekodView(ak) {
             <th style="width:40px">No.</th>
             <th>Nama Murid</th>
             <th style="width:60px;text-align:center">Jantina</th>
-            <th style="width:90px;text-align:center">Markah</th>
+            <th style="width:110px;text-align:center">Markah (0–100)</th>
             <th style="width:80px;text-align:center">Gred</th>
             <th style="width:90px;text-align:center">Trend</th>
-            <th style="width:100px"></th>
+            <th style="width:80px"></th>
           </tr></thead>
           <tbody id="guru-mark-tbody"></tbody>
         </table>
@@ -858,7 +940,7 @@ function renderRekodView(ak) {
       <div class="btn-row">
         <button class="btn-primary" onclick="saveAllMarks()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Simpan Semua
+          Simpan Markah ${UJIAN_LIST.find(u=>u.key===activeUjian)?.label}
         </button>
         <button class="btn-secondary" onclick="refreshMarkTable()">Muat Semula</button>
       </div>`}
@@ -919,12 +1001,22 @@ function bukaUrusPelajar(kelasId) {
 }
 
 function bukaRekodMarkah(kelasId) {
+  if (activeKelasId !== kelasId) activeUjian = null; // reset ujian bila tukar kelas
   activeKelasId = kelasId;
   guruView = 'kelas';
   renderGuruMain();
   bindTabs();
   switchTab('guru-rekod');
-  refreshMarkTable();
+  if (activeUjian) refreshMarkTable();
+}
+
+function pilihUjian(ujian) {
+  activeUjian = ujian;
+  const rekodSection = document.getElementById('guru-rekod');
+  if (!rekodSection) return;
+  const ak = getActiveKelas();
+  rekodSection.innerHTML = renderRekodView(ak);
+  if (ujian) refreshMarkTable();
 }
 
 function openDaftarKelas(editId) {
@@ -992,8 +1084,8 @@ function refreshMarkTable() {
   const tbody = document.getElementById('guru-mark-tbody');
   if (!tbody) return;
   const ak  = getActiveKelas();
-  if (!ak)  return;
-  const pep = document.getElementById('guru-pep')?.value || 'percubaan';
+  if (!ak || !activeUjian) return;
+  const pep  = activeUjian;
   const prev = { percubaan:'ar2', ar2:'ar1', ar1:null };
 
   tbody.innerHTML = ak.pelajar.map((p, i) => {
