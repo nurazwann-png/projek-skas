@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ── Tokens ── */
 :root {
@@ -313,35 +314,40 @@ section.active { display: block; }
 
 <div class="toast" id="toast"></div>
 
-<!-- Modal: Tambah Pelajar -->
+<!-- Modal: Tambah / Edit Pelajar -->
 <div class="modal-overlay" id="modal-tambah" hidden onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-title">Tambah Pelajar Baru</div>
-    <div class="modal-sub">Maklumat pelajar akan ditambah ke senarai kelas semasa</div>
+    <div class="modal-title" id="modal-tambah-title">Tambah Pelajar</div>
+    <div class="modal-sub" id="modal-tambah-sub">Isi maklumat pelajar untuk ditambah ke senarai kelas</div>
+    <input type="hidden" id="inp-edit-id">
     <div class="form-group">
       <label class="form-label">Nama Penuh Pelajar</label>
       <input class="form-input" id="inp-nama" placeholder="cth: Ahmad Syafiq bin Zulkifli" type="text">
     </div>
+    <div class="form-group">
+      <label class="form-label">Jantina</label>
+      <select class="form-input" id="inp-jantina">
+        <option value="L">Lelaki</option>
+        <option value="P">Perempuan</option>
+      </select>
+    </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">No. Pelajar / IC</label>
-        <input class="form-input" id="inp-no" placeholder="cth: 050312-13-1234" type="text">
+        <label class="form-label">AR1</label>
+        <input class="form-input" id="inp-ar1" placeholder="0–100" type="number" min="0" max="100">
       </div>
       <div class="form-group">
-        <label class="form-label">Jantina</label>
-        <select class="form-input" id="inp-jantina">
-          <option value="L">Lelaki</option>
-          <option value="P">Perempuan</option>
-        </select>
+        <label class="form-label">AR2</label>
+        <input class="form-input" id="inp-ar2" placeholder="0–100" type="number" min="0" max="100">
       </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Markah Awal (AR1) — boleh kosong</label>
-      <input class="form-input" id="inp-ar1" placeholder="0–100" type="number" min="0" max="100">
+      <div class="form-group">
+        <label class="form-label">Percubaan</label>
+        <input class="form-input" id="inp-perc" placeholder="0–100" type="number" min="0" max="100">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Batal</button>
-      <button class="btn-primary" onclick="tambahPelajar()">
+      <button class="btn-primary" id="btn-tambah-simpan" onclick="simpanPelajarModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Tambah Pelajar
       </button>
@@ -389,6 +395,23 @@ section.active { display: block; }
     </div>
   </div>
 </div>
+
+<!-- Modal: Preview Import Fail -->
+<div class="modal-overlay" id="modal-import" hidden onclick="if(event.target===this)closeImportModal()">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title">Semak Data Import</div>
+    <div class="modal-sub" id="import-sub">Sila semak data yang dikesan sebelum import</div>
+    <div id="import-preview" style="max-height:320px;overflow-y:auto;margin-bottom:16px;border-radius:10px;border:1px solid var(--border)"></div>
+    <div id="import-warn" style="font-size:12px;color:var(--yellow);margin-bottom:12px"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeImportModal()">Batal</button>
+      <button class="btn-primary" id="btn-confirm-import" onclick="confirmImport()">Import Pelajar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden onchange="handleFileUpload(this)">
 
 <script>
 // ── Mock data ─────────────────────────────────────────────
@@ -526,13 +549,7 @@ function buildGuru() {
   ];
   renderTabs(tabs);
 
-  // Seed pelajarList from mock on first load
-  if (pelajarList.length === 0) {
-    pelajarList = PELAJAR_5A.map(p => ({ ...p }));
-    pelajarList.forEach(p => {
-      markState[p.id] = { ar1: p.marks.ar1, ar2: p.marks.ar2, percubaan: p.marks.percubaan };
-    });
-  }
+  // pelajarList starts empty — teacher imports via file or adds manually
 
   renderGuruMain();
   bindTabs();
@@ -565,16 +582,33 @@ function renderGuruMain() {
           <option value="ar1">Ujian Pertengahan Tahun (AR1)</option>
         </select>
       </div>
-      ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">Tiada pelajar lagi</div><div class="empty-sub">Tambah pelajar menggunakan butang "Tambah Pelajar" di atas</div></div>` : `
+      ${bil === 0 ? `
+      <div class="upload-zone" onclick="triggerFileUpload()" id="upload-zone-rekod"
+           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+           ondragleave="this.style.borderColor=''"
+           ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Muat naik senarai pelajar</div>
+        <div class="upload-sub">Seret fail ke sini atau klik untuk pilih · Excel (.xlsx) atau CSV (.csv)</div>
+        <div style="margin-top:14px;font-size:11px;color:var(--t3)">Format lajur: <strong>Nama · Jantina · Kelas · AR1 · AR2 · Percubaan</strong></div>
+        <button class="btn-secondary" style="margin-top:16px;pointer-events:none">Pilih Fail</button>
+      </div>
+      <div style="text-align:center;margin-top:4px;margin-bottom:20px">
+        <span style="font-size:12px;color:var(--t3)">atau </span>
+        <button class="btn-sm" style="font-size:12px" onclick="openTambahPelajar()">+ Tambah secara manual</button>
+        &nbsp;
+        <button class="btn-sm" style="font-size:12px" onclick="muat_turun_templat()">⬇ Muat turun templat CSV</button>
+      </div>` : `
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
             <th style="width:40px">No.</th>
             <th>Nama Pelajar</th>
+            <th style="width:60px;text-align:center">Jantina</th>
             <th style="width:90px;text-align:center">Markah</th>
             <th style="width:80px;text-align:center">Gred</th>
             <th style="width:90px;text-align:center">Trend</th>
-            <th style="width:90px"></th>
+            <th style="width:110px"></th>
           </tr></thead>
           <tbody id="guru-mark-tbody"></tbody>
         </table>
@@ -610,20 +644,33 @@ function renderGuruMain() {
         <button class="btn-sm" onclick="openTetapan()">Tukar</button>
       </div>
 
-      <div class="setup-card">
-        <div class="setup-icon">👥</div>
-        <div class="setup-info">
-          <div class="setup-title">Pelajar Berdaftar</div>
-          <div class="setup-sub">${bil} pelajar dalam kelas ini</div>
+      <div class="sh" style="margin-top:20px"><div><div class="sh-title" style="font-size:14px">Import Senarai Pelajar</div><div class="sh-sub">Muat naik fail Excel atau CSV yang mengandungi senarai pelajar kelas ini</div></div></div>
+      <div class="upload-zone" onclick="triggerFileUpload()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+           ondragleave="this.style.borderColor=''"
+           ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)"
+           style="padding:32px 20px;text-align:center;margin-bottom:12px">
+        <div style="font-size:28px;margin-bottom:10px">📤</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">Seret fail ke sini atau klik untuk pilih</div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Sokongan: <strong>Excel (.xlsx, .xls)</strong> dan <strong>CSV (.csv)</strong></div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--t3);display:inline-block;text-align:left;line-height:1.7">
+          Format lajur yang dikenali:<br>
+          <strong style="color:var(--t2)">Nama · Jantina · Kelas · AR1 · AR2 · Percubaan</strong><br>
+          (baris pertama = pengepala / header)
         </div>
-        <button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:7px 14px">+ Tambah</button>
+      </div>
+      <div class="btn-row" style="justify-content:center;gap:8px">
+        <button class="btn-secondary" onclick="muat_turun_templat()">⬇ Muat turun templat CSV</button>
+        <button class="btn-secondary" onclick="openTambahPelajar()">+ Tambah manual</button>
+        ${bil > 0 ? `<button class="btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="if(confirm('Padam semua ${bil} pelajar?')){pelajarList=[];markState={};renderGuruMain();bindTabs();}">🗑 Padam Semua</button>` : ''}
       </div>
 
-      <div class="sh" style="margin-top:8px">
-        <div class="sh-title" style="font-size:14px">Senarai Pelajar</div>
+      <div class="sh" style="margin-top:20px">
+        <div><div class="sh-title" style="font-size:14px">Senarai Pelajar <span style="color:var(--t3);font-weight:400">(${bil})</span></div></div>
+        ${bil > 0 ? `<button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:7px 14px">+ Tambah</button>` : ''}
       </div>
       <div id="guru-tetapan-list">
-        ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">Tiada pelajar</div><div class="empty-sub">Klik "Tambah Pelajar" untuk mulakan</div></div>` : ''}
+        ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">Tiada pelajar</div><div class="empty-sub">Muat naik fail atau tambah secara manual</div></div>` : ''}
       </div>
     </section>
 
@@ -678,15 +725,19 @@ function refreshMarkTable() {
     const trendHtml = prevMark !== null
       ? (mark < prevMark - 3 ? `<span class="trend-up">▲ Turun</span>` : mark > prevMark + 3 ? `<span class="trend-dn">▼ Naik</span>` : `<span class="trend-eq">— Stabil</span>`)
       : `<span class="trend-eq">—</span>`;
+    const jIcon = p.jantina === 'P' ? '♀' : '♂';
     return `<tr>
       <td style="color:var(--t3);text-align:center">${String(i+1).padStart(2,'0')}</td>
       <td class="tc-name">${p.nama}</td>
+      <td style="text-align:center;color:var(--t3);font-size:13px">${jIcon}</td>
       <td style="text-align:center"><input type="number" class="mark-input" value="${mark}" min="0" max="100" data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)"></td>
       <td style="text-align:center"><span class="chip ${gredClass(gred)}">${gred}</span></td>
       <td style="text-align:center">${trendHtml}</td>
-      <td style="text-align:center;display:flex;gap:6px;justify-content:center">
-        <button class="btn-save" onclick="saveSingleMark('${p.id}')">Simpan</button>
-        <button class="btn-sm" title="Padam" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">✕</button>
+      <td style="text-align:center">
+        <div style="display:flex;gap:5px;justify-content:center">
+          <button class="btn-sm" onclick="openEditPelajar('${p.id}')">Edit</button>
+          <button class="btn-sm" title="Padam" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">✕</button>
+        </div>
       </td>
     </tr>`;
   }).join('');
@@ -716,24 +767,65 @@ function closeModal() {
   document.getElementById('modal-tetapan').hidden = true;
 }
 
+function closeImportModal() {
+  document.getElementById('modal-import').hidden = true;
+  document.getElementById('file-input').value = '';
+}
+
 function openTambahPelajar() {
-  document.getElementById('inp-nama').value    = '';
-  document.getElementById('inp-no').value      = '';
-  document.getElementById('inp-ar1').value     = '';
+  document.getElementById('modal-tambah-title').textContent = 'Tambah Pelajar';
+  document.getElementById('modal-tambah-sub').textContent   = 'Isi maklumat pelajar untuk ditambah ke senarai kelas';
+  document.getElementById('btn-tambah-simpan').innerHTML    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Pelajar';
+  document.getElementById('inp-edit-id').value  = '';
+  document.getElementById('inp-nama').value     = '';
+  document.getElementById('inp-jantina').value  = 'L';
+  document.getElementById('inp-ar1').value      = '';
+  document.getElementById('inp-ar2').value      = '';
+  document.getElementById('inp-perc').value     = '';
   document.getElementById('modal-tambah').hidden = false;
   setTimeout(() => document.getElementById('inp-nama').focus(), 50);
 }
 
-function tambahPelajar() {
+function openEditPelajar(id) {
+  const p = pelajarList.find(x => x.id === id);
+  if (!p) return;
+  const m = markState[id] || { ar1:0, ar2:0, percubaan:0 };
+  document.getElementById('modal-tambah-title').textContent = 'Edit Maklumat Pelajar';
+  document.getElementById('modal-tambah-sub').textContent   = p.nama;
+  document.getElementById('btn-tambah-simpan').innerHTML    = '✓ Simpan Perubahan';
+  document.getElementById('inp-edit-id').value  = id;
+  document.getElementById('inp-nama').value     = p.nama;
+  document.getElementById('inp-jantina').value  = p.jantina || 'L';
+  document.getElementById('inp-ar1').value      = m.ar1 || '';
+  document.getElementById('inp-ar2').value      = m.ar2 || '';
+  document.getElementById('inp-perc').value     = m.percubaan || '';
+  document.getElementById('modal-tambah').hidden = false;
+  setTimeout(() => document.getElementById('inp-nama').focus(), 50);
+}
+
+function simpanPelajarModal() {
   const nama = document.getElementById('inp-nama').value.trim();
   if (!nama) { document.getElementById('inp-nama').focus(); return; }
-  const no   = document.getElementById('inp-no').value.trim() || `—`;
-  const ar1  = Math.max(0, Math.min(100, +document.getElementById('inp-ar1').value || 0));
-  const id   = 'p' + (++pelajarNextId);
-  pelajarList.push({ id, nama, no });
-  markState[id] = { ar1, ar2: ar1, percubaan: ar1 };
+  const editId  = document.getElementById('inp-edit-id').value;
+  const jantina = document.getElementById('inp-jantina').value;
+  const ar1     = Math.max(0, Math.min(100, +document.getElementById('inp-ar1').value || 0));
+  const ar2     = Math.max(0, Math.min(100, +document.getElementById('inp-ar2').value || ar1));
+  const perc    = Math.max(0, Math.min(100, +document.getElementById('inp-perc').value || ar1));
+
+  if (editId) {
+    // Edit mode
+    const p = pelajarList.find(x => x.id === editId);
+    if (p) { p.nama = nama; p.jantina = jantina; }
+    markState[editId] = { ar1, ar2, percubaan: perc };
+    showToast(`✓ Maklumat ${nama} dikemaskini`);
+  } else {
+    // Tambah mode
+    const id = 'p' + (++pelajarNextId);
+    pelajarList.push({ id, nama, jantina });
+    markState[id] = { ar1, ar2, percubaan: perc };
+    showToast(`✓ ${nama} berjaya ditambah`);
+  }
   closeModal();
-  showToast(`✓ ${nama} berjaya ditambah`);
   renderGuruMain();
   bindTabs();
 }
@@ -770,21 +862,169 @@ function simpanTetapan() {
 
 function renderTetapanList() {
   const el = document.getElementById('guru-tetapan-list');
-  if (!el) return;
-  if (pelajarList.length === 0) return;
+  if (!el || pelajarList.length === 0) return;
   el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>No.</th><th>Nama Pelajar</th><th>No. IC / Pelajar</th><th>AR1</th><th></th></tr></thead>
+    <thead><tr><th>No.</th><th>Nama Pelajar</th><th style="text-align:center">Jantina</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
     <tbody>${pelajarList.map((p, i) => {
       const m = markState[p.id] || {};
       return `<tr>
         <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
         <td class="tc-name">${p.nama}</td>
-        <td style="color:var(--t3);font-size:12px">${p.no || '—'}</td>
-        <td class="tc-num">${m.ar1 ?? '—'}</td>
-        <td><button class="btn-sm" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">Padam</button></td>
+        <td style="text-align:center;color:var(--t3)">${p.jantina==='P'?'♀':'♂'} ${p.jantina==='P'?'Perempuan':'Lelaki'}</td>
+        <td style="text-align:center" class="tc-num">${m.ar1 ?? '—'}</td>
+        <td style="text-align:center" class="tc-num">${m.ar2 ?? '—'}</td>
+        <td style="text-align:center" class="tc-num">${m.percubaan ?? '—'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm" onclick="openEditPelajar('${p.id}')">Edit</button>
+            <button class="btn-sm" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">Padam</button>
+          </div>
+        </td>
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
+}
+
+// ── File upload & parsing ──────────────────────────────────
+let importBuffer = []; // parsed rows waiting for confirm
+
+function triggerFileUpload() {
+  document.getElementById('file-input').click();
+}
+
+function handleFileDrop(event) {
+  const file = event.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['csv','xlsx','xls'].includes(ext)) {
+    alert('Hanya fail CSV (.csv) atau Excel (.xlsx, .xls) dibenarkan.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let rows = [];
+      if (ext === 'csv') {
+        rows = parseCSV(e.target.result);
+      } else {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+        rows = parseRows(data);
+      }
+      if (rows.length === 0) { alert('Tiada data pelajar yang dikesan dalam fail.'); return; }
+      showImportPreview(rows, file.name);
+    } catch(err) {
+      alert('Ralat membaca fail: ' + err.message);
+    }
+  };
+  if (ext === 'csv') reader.readAsText(file, 'UTF-8');
+  else reader.readAsArrayBuffer(file);
+}
+
+// Map column header names (case-insensitive) to standard keys
+const COL_MAP = {
+  nama:['nama','name','nama pelajar','nama penuh'],
+  jantina:['jantina','gender','jantina pelajar','sex'],
+  kelas:['kelas','class','tingkatan'],
+  ar1:['ar1','ujian 1','ujian pertengahan','mid','markah ar1','ar 1'],
+  ar2:['ar2','ujian 2','ujian akhir','end','markah ar2','ar 2'],
+  percubaan:['percubaan','trial','perc','markah percubaan','percubaan spm'],
+};
+
+function findCol(headers, key) {
+  const aliases = COL_MAP[key] || [];
+  return headers.findIndex(h => aliases.includes(String(h).toLowerCase().trim()));
+}
+
+function parseRows(data) {
+  if (data.length < 2) return [];
+  const headers = data[0].map(h => String(h).toLowerCase().trim());
+  const iNama  = findCol(headers, 'nama');
+  const iJant  = findCol(headers, 'jantina');
+  const iKelas = findCol(headers, 'kelas');
+  const iAr1   = findCol(headers, 'ar1');
+  const iAr2   = findCol(headers, 'ar2');
+  const iPerc  = findCol(headers, 'percubaan');
+
+  return data.slice(1).filter(r => r.some(c => String(c).trim())).map(r => {
+    const nama = iNama >= 0 ? String(r[iNama] || '').trim() : '';
+    const rawJ = iJant >= 0 ? String(r[iJant] || '').trim().toUpperCase() : '';
+    const jantina = rawJ.startsWith('P') ? 'P' : 'L';
+    const kelas  = iKelas >= 0 ? String(r[iKelas] || '').trim() : '';
+    const ar1    = iAr1  >= 0 ? clamp(+r[iAr1]  || 0) : 0;
+    const ar2    = iAr2  >= 0 ? clamp(+r[iAr2]  || 0) : ar1;
+    const perc   = iPerc >= 0 ? clamp(+r[iPerc] || 0) : ar1;
+    return { nama, jantina, kelas, ar1, ar2, percubaan: perc };
+  }).filter(r => r.nama);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+  return parseRows(lines);
+}
+
+function clamp(v) { return Math.max(0, Math.min(100, isNaN(v)?0:v)); }
+
+function showImportPreview(rows, filename) {
+  importBuffer = rows;
+  document.getElementById('import-sub').textContent =
+    `${rows.length} pelajar dikesan dalam "${filename}" — semak sebelum import`;
+  document.getElementById('btn-confirm-import').textContent = `Import ${rows.length} Pelajar`;
+
+  const warn = rows.filter(r => !r.nama).length;
+  document.getElementById('import-warn').textContent =
+    warn > 0 ? `⚠ ${warn} baris diabaikan kerana nama kosong` : '';
+
+  document.getElementById('import-preview').innerHTML = `
+    <table class="tbl" style="font-size:12px">
+      <thead><tr><th>No.</th><th>Nama Pelajar</th><th>Jantina</th><th>Kelas</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th></tr></thead>
+      <tbody>${rows.map((r,i) => `<tr>
+        <td style="color:var(--t3)">${i+1}</td>
+        <td class="tc-name">${r.nama || '<span style="color:var(--red)">—</span>'}</td>
+        <td style="color:var(--t3)">${r.jantina==='P'?'♀ P':'♂ L'}</td>
+        <td style="color:var(--t3);font-size:11px">${r.kelas||'—'}</td>
+        <td style="text-align:center">${r.ar1||'—'}</td>
+        <td style="text-align:center">${r.ar2||'—'}</td>
+        <td style="text-align:center">${r.percubaan||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+
+  document.getElementById('modal-import').hidden = false;
+}
+
+function confirmImport() {
+  let added = 0;
+  importBuffer.forEach(r => {
+    if (!r.nama) return;
+    const id = 'p' + (++pelajarNextId);
+    pelajarList.push({ id, nama: r.nama, jantina: r.jantina });
+    markState[id] = { ar1: r.ar1, ar2: r.ar2, percubaan: r.percubaan };
+    added++;
+  });
+  importBuffer = [];
+  closeImportModal();
+  showToast(`✓ ${added} pelajar berjaya diimport`);
+  renderGuruMain();
+  bindTabs();
+}
+
+function muat_turun_templat() {
+  const csv = 'Nama,Jantina,Kelas,AR1,AR2,Percubaan\nAhmad Syafiq bin Zulkifli,L,5 Amanah,72,68,65\nNurul Farhana binti Azman,P,5 Amanah,85,87,89\n';
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'templat_pelajar_spm.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function markToGred(m) {
