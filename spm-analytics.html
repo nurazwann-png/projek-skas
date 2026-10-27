@@ -684,6 +684,19 @@ const PELAJAR_5A = [
   { id:'p10',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
   { id:'p11',nama:'Hairudin Salleh',       no:'11', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
   { id:'p12',nama:'Farah Nadia Kamal',     no:'12', kelas:'5 Bestari', guru:'En. Johari Taib',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
+  // Entri Sejarah — untuk analisis LMS
+  { id:'p13',nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',   ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:76,ar2:79,percubaan:81}, alert:false },
+  { id:'p14',nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',   ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:68,ar2:65,percubaan:62}, alert:false },
+  { id:'p15',nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:55,ar2:50,percubaan:38}, alert:true  },
+  { id:'p16',nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:42,ar2:39,percubaan:36}, alert:true  },
+  { id:'p17',nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Pedalaman',penginapan:'Asrama', marks:{ar1:48,ar2:45,percubaan:43}, alert:true  },
+  { id:'p18',nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:52,ar2:50,percubaan:48}, alert:false },
+  { id:'p19',nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:60,ar2:62,percubaan:65}, alert:false },
+  { id:'p20',nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:58,ar2:55,percubaan:52}, alert:false },
+  { id:'p21',nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:70,ar2:72,percubaan:75}, alert:false },
+  { id:'p22',nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:65,ar2:68,percubaan:71}, alert:false },
+  { id:'p23',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:80,ar2:82,percubaan:84}, alert:false },
+  { id:'p24',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:75,ar2:77,percubaan:79}, alert:false },
 ];
 
 const PANITIA_SK = [
@@ -3166,7 +3179,6 @@ function renderJurangLMS() {
   window._lmsData = { muridList, gc, passChip };
   window._lmsFilter = 'gagal';
   filterLMSTable();
-}
 }
 
 function setLMSFilter(f) {
