@@ -582,6 +582,17 @@ section.active { display: block; overflow: visible; }
         <div style="position:relative;height:200px"><canvas id="modal-sk-lokasi-chart"></canvas></div>
       </div>
     </div>
+    <!-- SES Analysis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Analisis SES — Komposisi Pelajar</div>
+        <div id="modal-sk-ses-kpi"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">GPS Anggaran Mengikut SES</div>
+        <div style="position:relative;height:130px"><canvas id="modal-sk-ses-chart"></canvas></div>
+      </div>
+    </div>
     <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Prestasi Panitia</div>
     <div id="modal-sk-panitia" class="tbl-wrap" style="margin-bottom:16px;max-height:none"></div>
     <div id="modal-sk-ai" class="ai-card"></div>
@@ -2918,15 +2929,40 @@ function bukaAnalisisSk(id) {
     </tr>`).join('')}</tbody>
   </table>`;
 
+  // SES KPI tiles — % komposisi + GPS anggaran
+  // GPS anggaran per kumpulan SES: scaled dari GPS sekolah menggunakan nisbah daerah
+  const sesRef = { B40: 5.82, M40: 5.21, T20: 4.63 }; // GPS daerah per SES
+  const sesAvgRef = (sesRef.B40 + sesRef.M40 + sesRef.T20) / 3;
+  const sesMeta = [
+    { key:'B40', label:'B40', clr:'#ef4444', bg:'rgba(239,68,68,.08)' },
+    { key:'M40', label:'M40', clr:'#eab308', bg:'rgba(234,179,8,.08)' },
+    { key:'T20', label:'T20', clr:'#22c55e', bg:'rgba(34,197,94,.08)' },
+  ];
+  const totalPelajar = s.ses.B40 + s.ses.M40 + s.ses.T20;
+  document.getElementById('modal-sk-ses-kpi').innerHTML = sesMeta.map(m => {
+    const pct = Math.round(s.ses[m.key] / totalPelajar * 100);
+    const gpsAnggar = parseFloat((s.gps * (sesRef[m.key] / sesAvgRef)).toFixed(2));
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${m.bg};border:1px solid ${m.clr}22;margin-bottom:8px">
+      <div style="width:36px;height:36px;border-radius:8px;background:${m.clr}22;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${m.clr}">${m.label}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--t1)">${s.ses[m.key]} pelajar <span style="font-size:11px;color:var(--t3);font-weight:400">(${pct}%)</span></div>
+        <div style="height:5px;border-radius:3px;background:var(--surface2);margin:5px 0 3px">
+          <div style="height:100%;width:${pct}%;border-radius:3px;background:${m.clr};transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;color:var(--t3)">GPS anggaran <strong style="color:${m.clr}">${gpsAnggar}</strong></div>
+      </div>
+    </div>`;
+  }).join('');
+
   // AI cadangan
   const lemah = s.panitia.filter(p=>p.gpmp>5.5);
   const naik  = s.panitia.filter(p=>p.gpmp>p.prev);
-  const b40Pct = s.ses.B40;
-  const padalPct = s.lokasi.Pedalaman;
+  const b40Pct = Math.round(s.ses.B40 / totalPelajar * 100);
+  const padalPct = Math.round(s.lokasi.Pedalaman / (s.lokasi.Bandar + s.lokasi.LuarBandar + s.lokasi.Pedalaman) * 100);
   let obs = [];
   if (lemah.length) obs.push(`<strong>${lemah.map(p=>p.subjek).join(', ')}</strong> memerlukan perhatian segera (GPMP > 5.5).`);
   if (naik.length)  obs.push(`<strong>${naik.map(p=>p.subjek).join(', ')}</strong> menunjukkan kemerosotan berbanding 2023.`);
-  if (b40Pct > 60)  obs.push(`${b40Pct}% pelajar dari kumpulan B40 — cadangkan program bantuan sosioekonomi.`);
+  if (b40Pct > 60)  obs.push(`${b40Pct}% pelajar dari kumpulan B40 — cadangkan program bantuan sosioekonomi dan tuisyen percuma.`);
   if (padalPct > 40) obs.push(`${padalPct}% pelajar dari kawasan Pedalaman — semak capaian PdPR dan infrastruktur.`);
   if (!obs.length)  obs.push(`Prestasi sekolah ini secara keseluruhan memuaskan. Fokus kekalkan momentum dan bantu pelajar berisiko.`);
   document.getElementById('modal-sk-ai').innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">🤖 Pemerhatian AI — ${s.nama}</div>${obs.map(o=>`<div style="margin-bottom:4px">• ${o}</div>`).join('')}`;
@@ -2944,6 +2980,25 @@ function bukaAnalisisSk(id) {
     if (lCtx) { const ex = Chart.getChart(lCtx); if(ex) ex.destroy(); }
     if (lCtx) {
       new Chart(lCtx, { type:'doughnut', data:{ labels:['Bandar','Luar Bandar','Pedalaman'], datasets:[{ data:[s.lokasi.Bandar, s.lokasi.LuarBandar, s.lokasi.Pedalaman], backgroundColor:['rgba(59,130,246,.8)','rgba(234,179,8,.8)','rgba(239,68,68,.8)'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12 } } } } });
+    }
+    // SES bar chart — GPS anggaran
+    const sCtx = document.getElementById('modal-sk-ses-chart');
+    if (sCtx) { const ex = Chart.getChart(sCtx); if(ex) ex.destroy(); }
+    if (sCtx) {
+      const sesAvgRef2 = (5.82 + 5.21 + 4.63) / 3;
+      const sesGPS = [
+        parseFloat((s.gps * (5.82 / sesAvgRef2)).toFixed(2)),
+        parseFloat((s.gps * (5.21 / sesAvgRef2)).toFixed(2)),
+        parseFloat((s.gps * (4.63 / sesAvgRef2)).toFixed(2)),
+      ];
+      new Chart(sCtx, {
+        type: 'bar',
+        data: { labels:['B40','M40','T20'], datasets:[{ data: sesGPS, backgroundColor:['rgba(239,68,68,.75)','rgba(234,179,8,.75)','rgba(34,197,94,.75)'], borderRadius:6, borderSkipped:false }] },
+        options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` GPS anggaran: ${ctx.raw}` } } },
+          scales:{ x:{ min: Math.min(...sesGPS)-0.5, max: Math.max(...sesGPS)+0.5, grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'#94a3b8',font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:'#cbd5e1',font:{size:12,weight:'600'}} } }
+        }
+      });
     }
   }, 50);
 }
