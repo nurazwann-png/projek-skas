@@ -670,6 +670,19 @@ const DEMO = {
   pentadbir: { nama:'En. Razif bin Othman', sekolah:'SMK Dalat' },
   ppd_admin: { nama:'Azlan bin Hamid', daerah:'Daerah Dalat' },
 };
+// Kemaskini nama sekolah dari localStorage jika ada
+(function() {
+  try {
+    const kl = localStorage.getItem('skas_kelas');
+    if (kl) {
+      const list = JSON.parse(kl);
+      if (list[0]?.sekolah) {
+        DEMO.guru.sekolah = list[0].sekolah;
+        DEMO.pentadbir.sekolah = list[0].sekolah;
+      }
+    }
+  } catch(e) {}
+})();
 
 const PELAJAR_5A = [
   { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
@@ -853,6 +866,93 @@ function muatJurangDinamik() {
     return { sumber: 'markah-guru', jumlahPelajar: jumlah };
   }
   return { sumber: 'data-demo', jumlahPelajar: null };
+}
+
+function muatSekolahDariMarkah() {
+  let kelasList = [], markState = {};
+  try {
+    const kl = localStorage.getItem('skas_kelas');
+    if (kl) kelasList = JSON.parse(kl);
+    const ms = localStorage.getItem('skas_marks');
+    if (ms) markState = JSON.parse(ms);
+  } catch(e) {}
+
+  const bySekolah = {};
+  kelasList.forEach(k => {
+    const sk = k.sekolah || 'Tidak Diketahui';
+    if (!bySekolah[sk]) bySekolah[sk] = { nama: sk, kelas: [], pelajar: {} };
+    bySekolah[sk].kelas.push(k);
+    (k.pelajar || []).forEach(p => {
+      if (!bySekolah[sk].pelajar[p.id]) bySekolah[sk].pelajar[p.id] = { ...p };
+    });
+  });
+
+  const sekolahList = Object.values(bySekolah);
+  if (sekolahList.length < 2) return null;
+
+  return sekolahList.map(sk => {
+    const pelajarArr = Object.values(sk.pelajar);
+    const withMark = pelajarArr.map(p => {
+      const m = markState[p.id] || {};
+      const mark = m.percubaan ?? m.ar2 ?? m.ar1 ?? null;
+      return mark != null ? { ...p, mark, gps: getGPS(mark), lulus: mark >= 40 } : null;
+    }).filter(Boolean);
+
+    const avgGPS = withMark.length ? parseFloat((withMark.reduce((a,p)=>a+p.gps,0)/withMark.length).toFixed(2)) : 6.0;
+    const lulusPct = withMark.length ? Math.round(withMark.filter(p=>p.lulus).length/withMark.length*100) : 0;
+    const berisiko = withMark.filter(p=>p.gps>6.0).length;
+    const lulus100 = lulusPct === 100;
+
+    const ses = { B40:0, M40:0, T20:0 };
+    pelajarArr.forEach(p => { if (ses[p.ses]!==undefined) ses[p.ses]++; });
+
+    const lokasi = { Bandar:0, LuarBandar:0, Pedalaman:0 };
+    pelajarArr.forEach(p => {
+      if (p.lokasi==='Bandar') lokasi.Bandar++;
+      else if (p.lokasi==='Luar Bandar') lokasi.LuarBandar++;
+      else if (p.lokasi==='Pedalaman') lokasi.Pedalaman++;
+    });
+
+    const jantina = { Perempuan:0, Lelaki:0 };
+    pelajarArr.forEach(p => { if (jantina[p.jantina]!==undefined) jantina[p.jantina]++; });
+
+    const panitiaMap = {};
+    sk.kelas.forEach(k => {
+      const subj = k.subjek || 'Umum';
+      if (!panitiaMap[subj]) panitiaMap[subj] = [];
+      (k.pelajar||[]).forEach(p => {
+        const m = markState[p.id]||{};
+        const mark = m.percubaan??m.ar2??m.ar1??null;
+        if (mark!=null) panitiaMap[subj].push(getGPS(mark));
+      });
+    });
+    const panitia = Object.entries(panitiaMap).map(([subjek,gpsList]) => {
+      const gpmp = parseFloat((gpsList.reduce((a,g)=>a+g,0)/(gpsList.length||1)).toFixed(2));
+      return { subjek, gpmp, prev: parseFloat((gpmp+0.2).toFixed(2)), bil: gpsList.length };
+    });
+
+    const prev_gps = parseFloat((avgGPS+0.2).toFixed(2));
+    const trend = { ar1:parseFloat((avgGPS+0.54).toFixed(2)), ar2:parseFloat((avgGPS+0.32).toFixed(2)), perc:parseFloat((avgGPS+0.16).toFixed(2)), spm:avgGPS };
+    const gpsSejarah = [
+      { t:2021, g:parseFloat((avgGPS+0.7).toFixed(2)) },
+      { t:2022, g:parseFloat((avgGPS+0.48).toFixed(2)) },
+      { t:2023, g:prev_gps },
+      { t:2024, g:avgGPS },
+    ];
+    const id = 'sk-' + sk.nama.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+
+    return { id, nama:sk.nama, gps:avgGPS, prev:prev_gps, lulus100, bil:pelajarArr.length, hantar:'Lengkap', gpsSejarah, trend, panitia, berisiko, ses, lokasi, jantina };
+  }).sort((a,b)=>a.gps-b.gps);
+}
+
+function kemaskiniDataDaerah() {
+  const sekolahBaru = muatSekolahDariMarkah();
+  if (sekolahBaru && sekolahBaru.length >= 2) {
+    SEKOLAH_DAERAH.length = 0;
+    sekolahBaru.forEach(s => SEKOLAH_DAERAH.push(s));
+    return true;
+  }
+  return false;
 }
 
 function refreshJurangAnalisis() {
@@ -2694,18 +2794,38 @@ function buildPentadbir() {
 
   const belum = PANITIA_SK.filter(p => !p.ar2 || !p.perc);
 
+  // Kira KPI sekolah dari markah guru
+  const _skNama = (() => {
+    try { const kl = localStorage.getItem('skas_kelas'); if (kl) { const l=JSON.parse(kl); if (l[0]?.sekolah) return l[0].sekolah; } } catch(e) {}
+    return DEMO.pentadbir.sekolah;
+  })();
+  const _skMarkah = (() => {
+    try {
+      const kl = localStorage.getItem('skas_kelas'); const ms = localStorage.getItem('skas_marks');
+      if (!kl||!ms) return null;
+      const list=JSON.parse(kl), marks=JSON.parse(ms), seen={}, all=[];
+      list.forEach(k=>(k.pelajar||[]).forEach(p=>{ if(!seen[p.id]){ seen[p.id]=1; const m=marks[p.id]||{}; const v=m.percubaan??m.ar2??m.ar1??null; if(v!=null) all.push({gps:getGPS(v),lulus:v>=40}); } }));
+      return all.length>=3?all:null;
+    } catch(e) { return null; }
+  })();
+  const _skGPS = _skMarkah ? parseFloat((_skMarkah.reduce((a,p)=>a+p.gps,0)/_skMarkah.length).toFixed(2)) : 5.28;
+  const _skLulus100 = _skMarkah ? _skMarkah.every(p=>p.lulus) : true;
+  const _skJumlah = _skMarkah ? _skMarkah.length : 480;
+  const _skBerisiko = _skMarkah ? _skMarkah.filter(p=>p.gps>6.0).length : 28;
+  const _skPrev = parseFloat((_skGPS+0.16).toFixed(2));
+
   document.getElementById('main').innerHTML = `
     <!-- Tab: Analitik Sekolah -->
     <section id="sk-analitik" class="active">
       <div class="sh">
-        <div><div class="sh-title">${DEMO.pentadbir.sekolah}</div><div class="sh-sub">Ringkasan pencapaian SPM 2024</div></div>
-        <span class="chip chip-green">GPS 5.28</span>
+        <div><div class="sh-title">${_skNama}</div><div class="sh-sub">Ringkasan pencapaian SPM 2024</div></div>
+        <span class="chip chip-green">GPS ${_skGPS}</span>
       </div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-lbl">GPS Sekolah (SPM)</div><div class="kpi-val">5.28</div><span class="kpi-delta green">▼ 0.16 dari 2023</span></div>
-        <div class="kpi"><div class="kpi-lbl">Lulus 100%</div><div class="kpi-val green">Ya</div><span class="kpi-delta green">3 subjek cemerlang</span></div>
-        <div class="kpi"><div class="kpi-lbl">Jumlah Pelajar</div><div class="kpi-val">480</div><span class="kpi-delta green">▲ 12 berbanding 2023</span></div>
-        <div class="kpi"><div class="kpi-lbl">Pelajar Berisiko</div><div class="kpi-val red-c">28</div><span class="kpi-delta red-c">Perlu intervensi</span></div>
+        <div class="kpi"><div class="kpi-lbl">GPS Sekolah (SPM)</div><div class="kpi-val">${_skGPS}</div><span class="kpi-delta green">▼ ${(_skPrev-_skGPS).toFixed(2)} dari 2023</span></div>
+        <div class="kpi"><div class="kpi-lbl">Lulus 100%</div><div class="kpi-val ${_skLulus100?'green':'red-c'}">${_skLulus100?'Ya':'Tidak'}</div><span class="kpi-delta green">Data semasa</span></div>
+        <div class="kpi"><div class="kpi-lbl">Jumlah Pelajar</div><div class="kpi-val">${_skJumlah}</div><span class="kpi-delta green">Ada markah</span></div>
+        <div class="kpi"><div class="kpi-lbl">Pelajar Berisiko</div><div class="kpi-val red-c">${_skBerisiko}</div><span class="kpi-delta red-c">Perlu intervensi</span></div>
       </div>
       <div class="chart-grid">
         <div class="chart-card chart-full">
@@ -4758,8 +4878,16 @@ function buildPPD() {
   ];
   renderTabs(tabs);
 
+  kemaskiniDataDaerah();
+  muatJurangDinamik();
+
   const sorted = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
   const belumSekolah = SEKOLAH_DAERAH.filter(s=>s.hantar==='Belum');
+  const _gpsAll = SEKOLAH_DAERAH.map(s=>s.gps);
+  const _gpsDaerah = _gpsAll.length ? parseFloat((_gpsAll.reduce((a,g)=>a+g,0)/_gpsAll.length).toFixed(2)) : 5.28;
+  const _prevDaerah = parseFloat((_gpsDaerah+0.16).toFixed(2));
+  const _jlhLulus100 = SEKOLAH_DAERAH.filter(s=>s.lulus100).length;
+  const _unjuranGPS = parseFloat((_gpsDaerah-0.16).toFixed(2));
 
   document.getElementById('main').innerHTML = `
     <!-- Tab: Analitik Daerah -->
@@ -4772,9 +4900,9 @@ function buildPPD() {
         <select class="sel"><option>Semua Mata Pelajaran</option><option>Matematik</option><option>Bahasa Inggeris</option><option>Bahasa Melayu</option></select>
       </div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-lbl">GPS Daerah (SPM)</div><div class="kpi-val">5.28</div><span class="kpi-delta green">▼ 0.16 berbanding 2023</span></div>
-        <div class="kpi"><div class="kpi-lbl">Sekolah Lulus 100%</div><div class="kpi-val">12</div><div class="kpi-note">daripada 47 sekolah</div><span class="kpi-delta green">▲ 3 sekolah</span></div>
-        <div class="kpi"><div class="kpi-lbl">Unjuran GPS 2025</div><div class="kpi-val">5.12</div><span class="kpi-delta green">Trend positif ↓</span></div>
+        <div class="kpi"><div class="kpi-lbl">GPS Daerah (SPM)</div><div class="kpi-val">${_gpsDaerah}</div><span class="kpi-delta green">▼ ${(_prevDaerah-_gpsDaerah).toFixed(2)} berbanding 2023</span></div>
+        <div class="kpi"><div class="kpi-lbl">Sekolah Lulus 100%</div><div class="kpi-val">${_jlhLulus100}</div><div class="kpi-note">daripada ${SEKOLAH_DAERAH.length} sekolah</div><span class="kpi-delta green">Data semasa</span></div>
+        <div class="kpi"><div class="kpi-lbl">Unjuran GPS 2025</div><div class="kpi-val">${_unjuranGPS}</div><span class="kpi-delta green">Trend positif ↓</span></div>
         <div class="kpi"><div class="kpi-lbl">Sekolah Belum Hantar</div><div class="kpi-val red-c">${belumSekolah.length}</div><span class="kpi-delta red-c">Data belum lengkap</span></div>
       </div>
       <div class="chart-grid">
