@@ -80,8 +80,8 @@ body { background: var(--bg); color: var(--t1); font-size: 14px; line-height: 1.
 
 /* ── Layout ── */
 .main { padding: 24px max(16px, env(safe-area-inset-left,0px)); max-width: 1200px; margin: 0 auto; }
-section { display: none; }
-section.active { display: block; }
+section { display: none; overflow: hidden; }
+section.active { display: block; overflow: visible; }
 
 /* ── Section headers ── */
 .sh { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
@@ -333,6 +333,7 @@ section.active { display: block; }
 .ujian-card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border); }
 .dot-sep { background:rgba(234,179,8,.15); color:var(--yellow); }
 .mark-input::placeholder { color:var(--t3); }
+@media(max-width:600px){ .col-trend { display:none; } }
 .rekod-ujian-header {
   display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
   background:rgba(59,130,246,.06); border:1px solid rgba(59,130,246,.2);
@@ -990,13 +991,11 @@ function renderRekodView(ak) {
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
-            <th style="width:40px">No.</th>
             <th>Nama Murid</th>
-            <th style="width:60px;text-align:center">Jantina</th>
             <th style="width:110px;text-align:center">Markah (0–100)</th>
-            <th style="width:80px;text-align:center">Gred</th>
-            <th style="width:90px;text-align:center">Trend</th>
-            <th style="width:80px"></th>
+            <th style="width:72px;text-align:center">Gred</th>
+            <th style="width:90px;text-align:center" class="col-trend">Trend</th>
+            <th style="width:70px"></th>
           </tr></thead>
           <tbody id="guru-mark-tbody"></tbody>
         </table>
@@ -1650,9 +1649,11 @@ function refreshMarkTable() {
     const rowStyle = th ? 'opacity:.6' : noData ? 'background:rgba(234,179,8,.04)' : '';
 
     return `<tr style="${rowStyle}">
-      <td style="color:var(--t3);text-align:center">${String(i+1).padStart(2,'0')}</td>
-      <td class="tc-name"><button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button>${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}</td>
-      <td style="text-align:center;color:var(--t3);font-size:13px">${jIcon}</td>
+      <td class="tc-name">
+        <button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button>
+        ${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}
+        ${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}
+      </td>
       <td style="text-align:center">
         ${th
           ? `<span class="chip chip-gray" style="font-size:12px;letter-spacing:.04em">TH</span>`
@@ -1665,15 +1666,13 @@ function refreshMarkTable() {
               : noData ? `<span style="color:var(--yellow);font-size:12px">—</span>`
               : `<span class="chip ${gredClass(gred)}">${gred}</span>`}
       </td>
-      <td style="text-align:center">${trendHtml}</td>
+      <td style="text-align:center" class="col-trend">${trendHtml}</td>
       <td>
-        <div style="display:flex;gap:5px;justify-content:flex-end">
-          <button class="btn-sm${th?' btn-th-active':''}" title="${th?'Batal TH':'Tandakan Tidak Hadir'}"
-            onclick="toggleTH('${p.id}','${pep}')"
-            style="${th?'background:rgba(100,116,139,.2);color:var(--t2);border-color:var(--border)':'color:var(--t3)'}">
-            ${th?'Batal TH':'TH'}
-          </button>
-        </div>
+        <button class="btn-sm${th?' btn-th-active':''}" title="${th?'Batal TH':'Tandakan Tidak Hadir'}"
+          onclick="toggleTH('${p.id}','${pep}')"
+          style="${th?'background:rgba(100,116,139,.2);color:var(--t2);border-color:var(--border)':'color:var(--t3)'}">
+          ${th?'Batal':'TH'}
+        </button>
       </td>
     </tr>`;
   }).join('');
