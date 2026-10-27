@@ -615,8 +615,6 @@ function kelasAv(subjek) {
 
 function renderGuruMain() {
   const ak = getActiveKelas();
-  const totalPelajar = kelasList.reduce((s,k)=>s+k.pelajar.length,0);
-  const totalKelas   = kelasList.length;
 
   document.getElementById('main').innerHTML = `
     <!-- Tab: Kelas Saya -->
@@ -646,6 +644,8 @@ function renderGuruMain() {
 
 // ── Tab: Kelas Saya → Senarai Kelas ──────────────────────
 function renderKelasView() {
+  const totalKelas   = kelasList.length;
+  const totalPelajar = kelasList.reduce((s,k)=>s+k.pelajar.length,0);
   const cards = kelasList.map(k => {
     const bil     = k.pelajar.length;
     const alerts  = k.pelajar.filter(p => isAlert(p.id)).length;
