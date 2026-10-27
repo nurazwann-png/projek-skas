@@ -783,6 +783,10 @@ const JURANG_SK = {
     { label:'Perempuan', bil:241, gps:5.04, lulusPeratus:88, prev_gps:5.29 },
     { label:'Lelaki',    bil:239, gps:5.53, lulusPeratus:77, prev_gps:5.61 },
   ],
+  penginapan: [
+    { label:'Asrama', bil:198, gps:5.12, lulusPeratus:86, prev_gps:5.38 },
+    { label:'Harian',  bil:282, gps:5.41, lulusPeratus:80, prev_gps:5.52 },
+  ],
 };
 
 const SEKOLAH_DAERAH = [
@@ -2671,6 +2675,7 @@ function buildPentadbir() {
         <button class="jurang-tab-btn active" data-dim="ses" onclick="switchJurang('ses')">SES</button>
         <button class="jurang-tab-btn" data-dim="lokasi" onclick="switchJurang('lokasi')">Lokasi</button>
         <button class="jurang-tab-btn" data-dim="jantina" onclick="switchJurang('jantina')">Jantina</button>
+        <button class="jurang-tab-btn" data-dim="penginapan" onclick="switchJurang('penginapan')">Penginapan</button>
         <button class="jurang-tab-btn" data-dim="lms" onclick="switchJurang('lms')">LMS</button>
       </div>
       <div id="jurang-ses" class="jurang-panel">
@@ -2681,6 +2686,9 @@ function buildPentadbir() {
       </div>
       <div id="jurang-jantina" class="jurang-panel" hidden>
         <div id="jurang-jantina-content"></div>
+      </div>
+      <div id="jurang-penginapan" class="jurang-panel" hidden>
+        <div id="jurang-penginapan-content"></div>
       </div>
       <div id="jurang-lms" class="jurang-panel" hidden>
         <div id="jurang-lms-content"></div>
@@ -2972,7 +2980,7 @@ function kemaskiniSasaranGPS(val) {
 
 function switchJurang(dim) {
   document.querySelectorAll('.jurang-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.dim === dim));
-  ['ses','lokasi','jantina','lms'].forEach(d => {
+  ['ses','lokasi','jantina','penginapan','lms'].forEach(d => {
     const panel = document.getElementById('jurang-' + d);
     if (panel) panel.hidden = (d !== dim);
   });
@@ -2980,7 +2988,7 @@ function switchJurang(dim) {
 }
 
 function renderJurang() {
-  ['ses','lokasi','jantina'].forEach(dim => {
+  ['ses','lokasi','jantina','penginapan'].forEach(dim => {
     const rows = JURANG_SK[dim];
     const cont = document.getElementById('jurang-' + dim + '-content');
     if (!cont) return;
@@ -3006,7 +3014,7 @@ function renderJurang() {
     // AI cadangan
     const worstGroup = rows.reduce((a, b) => a.gps > b.gps ? a : b);
     const bestGroup  = rows.reduce((a, b) => a.gps < b.gps ? a : b);
-    const dimLabel = { ses: 'SES', lokasi: 'Lokasi', jantina: 'Jantina' }[dim];
+    const dimLabel = { ses: 'SES', lokasi: 'Lokasi', jantina: 'Jantina', penginapan: 'Penginapan' }[dim];
     let cadangan = '';
     if (dim === 'ses') {
       cadangan = `Jurang GPS antara <strong>B40 (${JURANG_SK.ses[0].gps.toFixed(2)})</strong> dan <strong>T20 (${JURANG_SK.ses[2].gps.toFixed(2)})</strong> adalah <strong>${jurang} mata</strong>.
@@ -3014,6 +3022,12 @@ function renderJurang() {
     } else if (dim === 'lokasi') {
       cadangan = `Pelajar kawasan <strong>Pedalaman (GPS ${JURANG_SK.lokasi[2].gps.toFixed(2)})</strong> ketinggalan berbanding pelajar <strong>Bandar (GPS ${JURANG_SK.lokasi[0].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
       Cadangkan program PdPR hybrid, kelas tambahan hujung minggu, dan kerjasama dengan guru berprestasi tinggi di kawasan bandar.`;
+    } else if (dim === 'penginapan') {
+      const asrama = JURANG_SK.penginapan.find(r => r.label === 'Asrama');
+      const harian = JURANG_SK.penginapan.find(r => r.label === 'Harian');
+      const better = asrama.gps < harian.gps ? 'Asrama' : 'Harian';
+      cadangan = `Pelajar <strong>${better}</strong> mencatatkan GPS lebih baik berbanding kumpulan satu lagi — jurang <strong>${jurang} mata GPS</strong>.
+      ${better === 'Asrama' ? 'Persekitaran asrama yang berstruktur mungkin menyumbang kepada pencapaian lebih baik. Pertimbangkan program mentor rakan sebaya antara pelajar asrama dan harian.' : 'Pelajar harian menunjukkan prestasi lebih baik. Semak faktor sokongan keluarga dan akses kepada sumber pembelajaran luar sekolah.'}`;
     } else {
       cadangan = `Pelajar <strong>Perempuan (GPS ${JURANG_SK.jantina[0].gps.toFixed(2)})</strong> mencatatkan prestasi lebih baik berbanding <strong>Lelaki (GPS ${JURANG_SK.jantina[1].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
       Fokus intervensi khusus untuk pelajar lelaki: mentoring, program motivasi, dan penjejakan kehadiran secara aktif.`;
