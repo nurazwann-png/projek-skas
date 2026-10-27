@@ -566,6 +566,28 @@ section.active { display: block; overflow: visible; }
   </div>
 </div>
 
+<!-- Modal: Analisis Per Sekolah (PPD Admin) -->
+<div class="modal-overlay" id="modal-analisis-sk" hidden onclick="if(event.target===this)this.hidden=true">
+  <div class="modal modal-lg" style="max-width:700px">
+    <div id="modal-sk-header" style="margin-bottom:16px"></div>
+    <div id="modal-sk-kpi" class="kpi-grid" style="margin-bottom:16px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Trend GPS Sejarah</div>
+        <div style="position:relative;height:150px"><canvas id="modal-sk-trend-chart"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Komposisi Lokasi</div>
+        <div style="position:relative;height:150px"><canvas id="modal-sk-lokasi-chart"></canvas></div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Prestasi Panitia</div>
+    <div id="modal-sk-panitia" class="tbl-wrap" style="margin-bottom:16px"></div>
+    <div id="modal-sk-ai" class="ai-card"></div>
+    <div class="modal-actions"><button onclick="document.getElementById('modal-analisis-sk').hidden=true">Tutup</button></div>
+  </div>
+</div>
+
 <!-- Modal: Isi / Kemaskini GPS Sejarah -->
 <div class="modal-overlay" id="modal-gps-sejarah" hidden onclick="if(event.target===this)tutupModalGPSSejarah()">
   <div class="modal" style="max-width:520px">
@@ -692,14 +714,38 @@ const JURANG_SK = {
 };
 
 const SEKOLAH_DAERAH = [
-  { nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap' },
-  { nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap' },
-  { nama:'SMK Daro',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap' },
-  { nama:'SMK Mukah',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap' },
-  { nama:'SMK Oya',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap' },
-  { nama:'SMK Selangau',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum'   },
-  { nama:'SMK Tulai',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum'   },
-  { nama:'SMK Sg. Maong',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum'   },
+  { id:'sk-dalat',    nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
+    gpsSejarah:[{t:2021,g:5.98},{t:2022,g:5.76},{t:2023,g:5.44},{t:2024,g:5.28}],
+    panitia:[{subjek:'Matematik',gpmp:4.82,prev:5.12,bil:156},{subjek:'BM',gpmp:3.94,prev:4.21,bil:201},{subjek:'BI',gpmp:5.43,prev:5.71,bil:198},{subjek:'Sains',gpmp:5.87,prev:5.63,bil:145},{subjek:'Sejarah',gpmp:4.12,prev:4.48,bil:198}],
+    berisiko:5, ses:{B40:42,M40:37,T20:21}, lokasi:{Bandar:41,LuarBandar:38,Pedalaman:21} },
+  { id:'sk-balingian',nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap',
+    gpsSejarah:[{t:2021,g:6.22},{t:2022,g:5.98},{t:2023,g:5.62},{t:2024,g:5.41}],
+    panitia:[{subjek:'Matematik',gpmp:5.11,prev:5.43,bil:98},{subjek:'BM',gpmp:4.22,prev:4.51,bil:112},{subjek:'BI',gpmp:5.62,prev:5.88,bil:102},{subjek:'Sains',gpmp:6.01,prev:6.24,bil:87},{subjek:'Sejarah',gpmp:4.88,prev:5.11,bil:112}],
+    berisiko:8, ses:{B40:55,M40:31,T20:14}, lokasi:{Bandar:22,LuarBandar:54,Pedalaman:24} },
+  { id:'sk-daro',     nama:'SMK Daro',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap',
+    gpsSejarah:[{t:2021,g:6.41},{t:2022,g:6.12},{t:2023,g:5.71},{t:2024,g:5.63}],
+    panitia:[{subjek:'Matematik',gpmp:5.42,prev:5.68,bil:88},{subjek:'BM',gpmp:4.61,prev:4.72,bil:99},{subjek:'BI',gpmp:5.88,prev:5.94,bil:94},{subjek:'Sains',gpmp:6.22,prev:6.41,bil:78},{subjek:'Sejarah',gpmp:5.11,prev:5.28,bil:99}],
+    berisiko:11, ses:{B40:61,M40:27,T20:12}, lokasi:{Bandar:18,LuarBandar:51,Pedalaman:31} },
+  { id:'sk-mukah',    nama:'SMK Mukah',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap',
+    gpsSejarah:[{t:2021,g:5.88},{t:2022,g:5.74},{t:2023,g:5.58},{t:2024,g:5.71}],
+    panitia:[{subjek:'Matematik',gpmp:5.62,prev:5.41,bil:178},{subjek:'BM',gpmp:4.81,prev:4.62,bil:201},{subjek:'BI',gpmp:5.94,prev:5.71,bil:188},{subjek:'Sains',gpmp:6.41,prev:6.22,bil:156},{subjek:'Sejarah',gpmp:5.28,prev:5.11,bil:201}],
+    berisiko:19, ses:{B40:38,M40:44,T20:18}, lokasi:{Bandar:68,LuarBandar:28,Pedalaman:4} },
+  { id:'sk-oya',      nama:'SMK Oya',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap',
+    gpsSejarah:[{t:2021,g:6.71},{t:2022,g:6.44},{t:2023,g:6.02},{t:2024,g:5.84}],
+    panitia:[{subjek:'Matematik',gpmp:5.81,prev:6.11,bil:62},{subjek:'BM',gpmp:5.12,prev:5.41,bil:68},{subjek:'BI',gpmp:6.12,prev:6.38,bil:65},{subjek:'Sains',gpmp:6.54,prev:6.81,bil:55},{subjek:'Sejarah',gpmp:5.44,prev:5.72,bil:68}],
+    berisiko:14, ses:{B40:72,M40:21,T20:7}, lokasi:{Bandar:8,LuarBandar:44,Pedalaman:48} },
+  { id:'sk-selangau', nama:'SMK Selangau',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum',
+    gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.31},{t:2023,g:5.89},{t:2024,g:5.97}],
+    panitia:[{subjek:'Matematik',gpmp:6.01,prev:5.88,bil:52},{subjek:'BM',gpmp:5.22,prev:5.11,bil:57},{subjek:'BI',gpmp:6.28,prev:6.12,bil:54},{subjek:'Sains',gpmp:6.71,prev:6.54,bil:47},{subjek:'Sejarah',gpmp:5.61,prev:5.44,bil:57}],
+    berisiko:17, ses:{B40:78,M40:18,T20:4}, lokasi:{Bandar:5,LuarBandar:38,Pedalaman:57} },
+  { id:'sk-tulai',    nama:'SMK Tulai',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum',
+    gpsSejarah:[{t:2021,g:6.88},{t:2022,g:6.64},{t:2023,g:6.31},{t:2024,g:6.12}],
+    panitia:[{subjek:'Matematik',gpmp:6.14,prev:6.38,bil:44},{subjek:'BM',gpmp:5.44,prev:5.62,bil:48},{subjek:'BI',gpmp:6.41,prev:6.58,bil:46},{subjek:'Sains',gpmp:6.88,prev:7.11,bil:41},{subjek:'Sejarah',gpmp:5.81,prev:5.94,bil:48}],
+    berisiko:21, ses:{B40:81,M40:16,T20:3}, lokasi:{Bandar:2,LuarBandar:31,Pedalaman:67} },
+  { id:'sk-sgmaong',  nama:'SMK Sg. Maong',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum',
+    gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.38},{t:2023,g:6.14},{t:2024,g:6.28}],
+    panitia:[{subjek:'Matematik',gpmp:6.31,prev:6.18,bil:31},{subjek:'BM',gpmp:5.62,prev:5.44,bil:33},{subjek:'BI',gpmp:6.54,prev:6.41,bil:32},{subjek:'Sains',gpmp:7.01,prev:6.88,bil:28},{subjek:'Sejarah',gpmp:5.98,prev:5.81,bil:33}],
+    berisiko:24, ses:{B40:84,M40:13,T20:3}, lokasi:{Bandar:1,LuarBandar:24,Pedalaman:75} },
 ];
 
 const GPS_TREND = { ar1:5.82, ar2:5.61, percubaan:5.44, spm:5.28 };
@@ -2832,6 +2878,75 @@ function gpmpChip(v) {
 
 // ═══════════════════════════════════════════════════════════
 // ADMIN PPD
+function bukaAnalisisSk(id) {
+  const s = SEKOLAH_DAERAH.find(x => x.id === id);
+  if (!s) return;
+  const modal = document.getElementById('modal-analisis-sk');
+  modal.hidden = false;
+
+  // Header
+  const rankAll = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
+  const rank = rankAll.findIndex(x=>x.id===id) + 1;
+  const rankEmoji = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`;
+  document.getElementById('modal-sk-header').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1)">${s.nama}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">Kedudukan daerah: <strong>${rankEmoji}</strong> daripada ${SEKOLAH_DAERAH.length} sekolah · SPM 2024</div>
+      </div>
+      <span class="chip ${s.gps<=5.4?'chip-green':s.gps<=5.8?'chip-yellow':'chip-red'}" style="font-size:15px;padding:6px 14px">GPS ${s.gps.toFixed(2)}</span>
+    </div>`;
+
+  // KPI
+  const improve = s.prev - s.gps;
+  document.getElementById('modal-sk-kpi').innerHTML = `
+    <div class="kpi"><div class="kpi-lbl">GPS 2024</div><div class="kpi-val ${s.gps<=5.4?'green':s.gps<=5.8?'yellow':'red-c'}">${s.gps.toFixed(2)}</div><span class="kpi-delta ${improve>0?'green':'red-c'}">${improve>0?'↑ Baik':'↓ Lemah'} ${Math.abs(improve).toFixed(2)} vs 2023</span></div>
+    <div class="kpi"><div class="kpi-lbl">Lulus 100%</div><div class="kpi-val ${s.lulus100?'green':'red-c'}">${s.lulus100?'Ya':'Tidak'}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Bil. Pelajar</div><div class="kpi-val">${s.bil}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Pelajar Berisiko</div><div class="kpi-val red-c">${s.berisiko}</div><span class="kpi-delta red-c">${Math.round(s.berisiko/s.bil*100)}% daripada pelajar</span></div>`;
+
+  // Jadual Panitia
+  document.getElementById('modal-sk-panitia').innerHTML = `<table class="tbl">
+    <thead><tr><th>Mata Pelajaran</th><th style="text-align:center">GPMP 2024</th><th style="text-align:center">GPMP 2023</th><th style="text-align:center">Trend Prestasi</th><th style="text-align:center">Bil. Pelajar</th></tr></thead>
+    <tbody>${s.panitia.map(p=>`<tr>
+      <td class="tc-name">${p.subjek}</td>
+      <td class="tc-num ${p.gpmp<=4.5?'tc-green':p.gpmp<=5.5?'tc-yellow':'tc-red'}">${p.gpmp.toFixed(2)}</td>
+      <td class="tc-num" style="color:var(--t3)">${p.prev.toFixed(2)}</td>
+      <td style="text-align:center">${trendCell(p.gpmp, p.prev)}</td>
+      <td style="text-align:center;color:var(--t2)">${p.bil}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+
+  // AI cadangan
+  const lemah = s.panitia.filter(p=>p.gpmp>5.5);
+  const naik  = s.panitia.filter(p=>p.gpmp>p.prev);
+  const b40Pct = s.ses.B40;
+  const padalPct = s.lokasi.Pedalaman;
+  let obs = [];
+  if (lemah.length) obs.push(`<strong>${lemah.map(p=>p.subjek).join(', ')}</strong> memerlukan perhatian segera (GPMP > 5.5).`);
+  if (naik.length)  obs.push(`<strong>${naik.map(p=>p.subjek).join(', ')}</strong> menunjukkan kemerosotan berbanding 2023.`);
+  if (b40Pct > 60)  obs.push(`${b40Pct}% pelajar dari kumpulan B40 — cadangkan program bantuan sosioekonomi.`);
+  if (padalPct > 40) obs.push(`${padalPct}% pelajar dari kawasan Pedalaman — semak capaian PdPR dan infrastruktur.`);
+  if (!obs.length)  obs.push(`Prestasi sekolah ini secara keseluruhan memuaskan. Fokus kekalkan momentum dan bantu pelajar berisiko.`);
+  document.getElementById('modal-sk-ai').innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">🤖 Pemerhatian AI — ${s.nama}</div>${obs.map(o=>`<div style="margin-bottom:4px">• ${o}</div>`).join('')}`;
+
+  // Charts
+  setTimeout(() => {
+    // Trend GPS
+    const tCtx = document.getElementById('modal-sk-trend-chart');
+    if (tCtx) { const ex = Chart.getChart(tCtx); if(ex) ex.destroy(); }
+    if (tCtx && s.gpsSejarah.length >= 2) {
+      new Chart(tCtx, { type:'line', data:{ labels:s.gpsSejarah.map(r=>r.t), datasets:[{ data:s.gpsSejarah.map(r=>r.g), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#3b82f6' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:Math.min(...s.gpsSejarah.map(r=>r.g))-0.3, grid:{color:'rgba(255,255,255,.06)'}, ticks:{font:{size:10}}}, x:{grid:{display:false}, ticks:{font:{size:11}}} } } });
+    }
+    // Lokasi donut
+    const lCtx = document.getElementById('modal-sk-lokasi-chart');
+    if (lCtx) { const ex = Chart.getChart(lCtx); if(ex) ex.destroy(); }
+    if (lCtx) {
+      new Chart(lCtx, { type:'doughnut', data:{ labels:['Bandar','Luar Bandar','Pedalaman'], datasets:[{ data:[s.lokasi.Bandar, s.lokasi.LuarBandar, s.lokasi.Pedalaman], backgroundColor:['rgba(59,130,246,.8)','rgba(234,179,8,.8)','rgba(239,68,68,.8)'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12 } } } } });
+    }
+  }, 50);
+}
+
 // ═══════════════════════════════════════════════════════════
 function buildPPD() {
   const tabs = [
@@ -2878,9 +2993,9 @@ function buildPPD() {
         <table class="tbl">
           <thead><tr><th style="width:50px">No.</th><th>Nama Sekolah</th><th>GPS 2024</th><th>GPS 2023</th><th>Trend</th><th>Lulus 100%</th><th>Bil. Pelajar</th><th>Status Data</th></tr></thead>
           <tbody>${sorted.map((s,i)=>`
-            <tr>
+            <tr style="cursor:pointer" onclick="bukaAnalisisSk('${s.id}')" title="Klik untuk lihat analisis ${s.nama}">
               <td class="rank-num ${i<3?'top':''}">${i<3?['🥇','🥈','🥉'][i]:(i+1)}</td>
-              <td class="tc-name">${s.nama}</td>
+              <td class="tc-name" style="color:var(--accent)">${s.nama} <span style="font-size:10px;color:var(--t3);font-weight:400">↗ lihat analisis</span></td>
               <td class="tc-num ${s.gps<=5.0?'tc-green':s.gps<=5.7?'tc-yellow':'tc-red'}">${s.gps.toFixed(2)}</td>
               <td class="tc-num" style="color:var(--t3)">${s.prev.toFixed(2)}</td>
               <td>${trendCell(s.gps, s.prev)}</td>
