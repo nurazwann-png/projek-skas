@@ -521,14 +521,56 @@ const JURANG = {
 // ── State ─────────────────────────────────────────────────
 let ROLE = 'teacher';
 let charts = {};
-let markState = {}; // markState[pelajarId] = { ar1, ar2, percubaan }
+// ── Dummy data Guru ───────────────────────────────────────
+const DUMMY_KELAS = [
+  {
+    id:'k1', subjek:'Matematik', tingkatan:'5', kelas:'Amanah', tahun:'2025',
+    pelajar:[
+      {id:'p1',  nama:'Ahmad Syafiq bin Zulkifli',     jantina:'L'},
+      {id:'p2',  nama:'Nurul Farhana binti Azman',     jantina:'P'},
+      {id:'p3',  nama:'Muhammad Haziq bin Rosli',      jantina:'L'},
+      {id:'p4',  nama:'Siti Nur Aisyah binti Kamal',   jantina:'P'},
+      {id:'p5',  nama:'Mohamad Aiman bin Saiful',      jantina:'L'},
+      {id:'p6',  nama:'Nur Syafiqah binti Hamdan',     jantina:'P'},
+      {id:'p7',  nama:'Izzatul Hafizah binti Nordin',  jantina:'P'},
+      {id:'p8',  nama:'Khairul Anam bin Rashid',       jantina:'L'},
+      {id:'p9',  nama:'Fatin Nabilah binti Yusof',     jantina:'P'},
+      {id:'p10', nama:'Luqmanul Hakim bin Azhari',     jantina:'L'},
+    ]
+  },
+  {
+    id:'k2', subjek:'Matematik', tingkatan:'5', kelas:'Bestari', tahun:'2025',
+    pelajar:[
+      {id:'p11', nama:'Nur Ain binti Mohd Noor',       jantina:'P'},
+      {id:'p12', nama:'Farhan Hafizi bin Zainudin',    jantina:'L'},
+      {id:'p13', nama:'Aina Maisarah binti Suhaimi',   jantina:'P'},
+      {id:'p14', nama:'Amirul Fitri bin Jamaludin',    jantina:'L'},
+      {id:'p15', nama:'Nurulhuda binti Zakaria',       jantina:'P'},
+      {id:'p16', nama:'Syahmi Irfan bin Othman',       jantina:'L'},
+      {id:'p17', nama:'Qistina Izzah binti Razali',    jantina:'P'},
+      {id:'p18', nama:'Hafiz bin Mokhtar',             jantina:'L'},
+    ]
+  },
+];
+
+const DUMMY_MARKS = {
+  p1:{ar1:72,ar2:68,percubaan:65},  p2:{ar1:85,ar2:87,percubaan:89},
+  p3:{ar1:55,ar2:50,percubaan:44},  p4:{ar1:90,ar2:92,percubaan:95},
+  p5:{ar1:63,ar2:61,percubaan:58},  p6:{ar1:78,ar2:80,percubaan:82},
+  p7:{ar1:88,ar2:85,percubaan:83},  p8:{ar1:47,ar2:43,percubaan:38},
+  p9:{ar1:76,ar2:78,percubaan:79},  p10:{ar1:60,ar2:62,percubaan:65},
+  p11:{ar1:82,ar2:84,percubaan:86}, p12:{ar1:70,ar2:67,percubaan:64},
+  p13:{ar1:91,ar2:93,percubaan:94}, p14:{ar1:53,ar2:55,percubaan:52},
+  p15:{ar1:77,ar2:79,percubaan:81}, p16:{ar1:66,ar2:63,percubaan:60},
+  p17:{ar1:89,ar2:90,percubaan:92}, p18:{ar1:58,ar2:54,percubaan:49},
+};
 
 // Guru class-based model
-// kelasList: [{ id, subjek, tingkatan, kelas, tahun, pelajar:[{id,nama,jantina}] }]
-let kelasList = [];
-let activeKelasId = null;  // which class is open for rekod/pelajar
+let kelasList = JSON.parse(JSON.stringify(DUMMY_KELAS)); // deep copy
+let markState  = JSON.parse(JSON.stringify(DUMMY_MARKS));
+let activeKelasId = null;
 let guruView = 'kelas';    // 'kelas' | 'pelajar'
-let kelasNextId = 1;
+let kelasNextId = 3;       // next available id after k1, k2
 let pelajarNextId = 100;
 
 function getRole() {
