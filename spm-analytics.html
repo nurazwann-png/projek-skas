@@ -1076,9 +1076,40 @@ const DUMMY_MARKS = {
   p17:{ar1:89,ar2:90,percubaan:92}, p18:{ar1:58,ar2:54,percubaan:49},
 };
 
-// Guru class-based model
-let kelasList = JSON.parse(JSON.stringify(DUMMY_KELAS)); // deep copy
-let markState  = JSON.parse(JSON.stringify(DUMMY_MARKS));
+// Guru class-based model — baca dari skas_kelas jika ada, fallback ke DUMMY_KELAS
+let kelasList = (() => {
+  try {
+    const kl = localStorage.getItem('skas_kelas');
+    if (kl) {
+      const list = JSON.parse(kl);
+      if (list && list.length > 0) {
+        // Tukar format skas_kelas → format guru view
+        return list.map(k => ({
+          id: k.id,
+          subjek: k.subjek || 'Umum',
+          tingkatan: '5',
+          kelas: k.kelas || '5 Amanah',
+          tahun: '2025',
+          guru: k.guru || DEMO.guru.nama,
+          sekolah: k.sekolah || DEMO.guru.sekolah,
+          pelajar: (k.pelajar || []).map(p => ({
+            id: p.id, nama: p.nama,
+            jantina: p.jantina === 'Lelaki' ? 'L' : p.jantina === 'Perempuan' ? 'P' : (p.jantina || 'L'),
+            ses: p.ses || 'B40', lokasi: p.lokasi || 'Bandar', penginapan: p.penginapan || 'Harian'
+          }))
+        }));
+      }
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DUMMY_KELAS));
+})();
+let markState = (() => {
+  try {
+    const ms = localStorage.getItem('skas_marks');
+    if (ms) { const parsed = JSON.parse(ms); if (Object.keys(parsed).length > 0) return parsed; }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DUMMY_MARKS));
+})();
 let activeKelasId = null;
 let activeUjian   = null;  // null | 'ar1' | 'ar2' | 'percubaan'
 let guruView = 'kelas';    // 'kelas' | 'pelajar'
