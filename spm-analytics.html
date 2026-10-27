@@ -361,6 +361,44 @@ section.active { display: block; }
 .setup-info { flex:1; min-width:0; }
 .setup-title { font-size:14px; font-weight:700; }
 .setup-sub   { font-size:12px; color:var(--t3); margin-top:2px; }
+
+/* ── Analisis Kelas ── */
+.analisis-kelas-sel {
+  background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+  padding:10px 14px; display:flex; align-items:center; gap:12px; margin-bottom:20px;
+  flex-wrap:wrap;
+}
+.analisis-kelas-sel label { font-size:11px; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+.ai-card {
+  background:rgba(59,130,246,.06); border:1px solid rgba(59,130,246,.2);
+  border-radius:12px; padding:18px 20px; margin-bottom:16px;
+}
+.ai-card-title { font-size:12px; font-weight:700; color:var(--accent); letter-spacing:.05em; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+.ai-item { display:flex; gap:10px; margin-bottom:10px; font-size:13px; line-height:1.55; }
+.ai-item:last-child { margin-bottom:0; }
+.ai-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); flex-shrink:0; margin-top:6px; }
+.ai-dot.warn { background:var(--yellow); }
+.ai-dot.red  { background:var(--red); }
+.ai-dot.green{ background:var(--green); }
+.nama-link { color:var(--accent); cursor:pointer; text-decoration:underline; text-underline-offset:2px; font-weight:700; background:none; border:none; font-family:inherit; font-size:inherit; padding:0; }
+.nama-link:hover { opacity:.8; }
+
+/* ── Modal Pelajar (Individu) ── */
+.modal-lg { max-width:560px !important; }
+.pelajar-modal-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.pelajar-av-lg {
+  width:48px; height:48px; border-radius:12px; background:rgba(59,130,246,.15);
+  color:var(--accent); display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:800; flex-shrink:0;
+}
+.pelajar-modal-info { flex:1; min-width:0; }
+.pelajar-modal-nama { font-size:16px; font-weight:800; }
+.pelajar-modal-meta { font-size:12px; color:var(--t3); margin-top:3px; }
+.mark-trend-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.mark-trend-cell { background:var(--surface2); border-radius:10px; padding:12px; text-align:center; }
+.mark-trend-lbl { font-size:10px; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+.mark-trend-val { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; }
+.mark-trend-gred { font-size:11px; margin-top:3px; }
 </style>
 </head>
 <body>
@@ -485,6 +523,22 @@ section.active { display: block; }
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeImportModal()">Batal</button>
       <button class="btn-primary" id="btn-confirm-import" onclick="confirmImport()">Import Pelajar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Detail Pelajar (AI Cadangan Individu) -->
+<div class="modal-overlay" id="modal-pelajar" hidden onclick="if(event.target===this)closePelajarModal()">
+  <div class="modal modal-lg">
+    <div class="pelajar-modal-header" id="pelajar-modal-header"></div>
+    <div class="mark-trend-row" id="pelajar-modal-marks"></div>
+    <div id="pelajar-modal-sparkwrap" style="margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Trend Markah</div>
+      <canvas id="pelajar-spark-chart" height="80"></canvas>
+    </div>
+    <div class="ai-card" id="pelajar-modal-ai"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closePelajarModal()">Tutup</button>
     </div>
   </div>
 </div>
@@ -666,9 +720,10 @@ function buildApp() {
 // ═══════════════════════════════════════════════════════════
 function buildGuru() {
   const tabs = [
-    { id:'guru-kelas',  label:'Kelas Saya' },
-    { id:'guru-rekod',  label:'Rekod Markah' },
-    { id:'guru-status', label:'Status Pengisian' },
+    { id:'guru-kelas',    label:'Kelas Saya' },
+    { id:'guru-rekod',    label:'Rekod Markah' },
+    { id:'guru-analisis', label:'Analisis Kelas' },
+    { id:'guru-status',   label:'Status Pengisian' },
   ];
   renderTabs(tabs);
   renderGuruMain();
@@ -695,6 +750,11 @@ function renderGuruMain() {
     <!-- Tab: Rekod Markah -->
     <section id="guru-rekod">
       ${renderRekodView(ak)}
+    </section>
+
+    <!-- Tab: Analisis Kelas -->
+    <section id="guru-analisis">
+      ${renderAnalisisKelasView()}
     </section>
 
     <!-- Tab: Status Pengisian -->
@@ -951,6 +1011,432 @@ function renderRekodView(ak) {
   `;
 }
 
+// ── Tab: Analisis Kelas ───────────────────────────────────
+function getGPS(mark) {
+  // SPM GPS: A+(1) A(2) A-(3) B+(4) B(5) C+(6) C(7) D(8) E(9) G(10)
+  if(mark>=90)return 1; if(mark>=80)return 2; if(mark>=75)return 3;
+  if(mark>=70)return 4; if(mark>=65)return 5; if(mark>=60)return 6;
+  if(mark>=55)return 7; if(mark>=50)return 8; if(mark>=45)return 9; return 10;
+}
+
+function avg(arr) {
+  const valid = arr.filter(v => typeof v === 'number' && !isNaN(v));
+  return valid.length ? valid.reduce((s,v)=>s+v,0)/valid.length : null;
+}
+
+function renderAnalisisKelasView() {
+  if (kelasList.length === 0) return `
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Tiada kelas untuk dianalisis</div>
+      <div class="empty-sub">Daftar kelas dahulu melalui tab <strong>Kelas Saya</strong>.</div>
+    </div>`;
+
+  const kelasOpts = kelasList.map(k =>
+    `<option value="${k.id}"${k.id===activeKelasId?' selected':''}>${k.subjek} · T${k.tingkatan} ${k.kelas}</option>`
+  ).join('');
+
+  const ak = getActiveKelas() || kelasList[0];
+  if (!activeKelasId) activeKelasId = ak.id;
+
+  return `
+    <div class="sh"><div><div class="sh-title">Analisis Kelas</div><div class="sh-sub">Prestasi murid & cadangan AI</div></div></div>
+
+    <div class="analisis-kelas-sel">
+      <label>Kelas:</label>
+      <select class="sel" onchange="activeKelasId=this.value;document.getElementById('guru-analisis').innerHTML=renderAnalisisKelasView();initAnalisisChart()">
+        ${kelasOpts}
+      </select>
+      <span style="font-size:12px;color:var(--t3);margin-left:auto">${ak.pelajar.length} murid · ${ak.tahun}</span>
+    </div>
+
+    ${renderAnalisisBody(ak)}
+  `;
+}
+
+function renderAnalisisBody(ak) {
+  if (!ak || ak.pelajar.length === 0) return `
+    <div class="empty-state" style="padding:32px 0">
+      <div class="empty-icon">👤</div>
+      <div class="empty-title">Tiada murid dalam kelas ini</div>
+      <div class="empty-sub">Tambah murid melalui tab <strong>Kelas Saya</strong>.</div>
+    </div>`;
+
+  const pelajarDenganMark = ak.pelajar.filter(p => markState[p.id]);
+  const ar1Vals    = pelajarDenganMark.map(p => markState[p.id].ar1).filter(v=>typeof v==='number');
+  const ar2Vals    = pelajarDenganMark.map(p => markState[p.id].ar2).filter(v=>typeof v==='number');
+  const percVals   = pelajarDenganMark.map(p => markState[p.id].percubaan).filter(v=>typeof v==='number');
+
+  const avgAr1  = avg(ar1Vals);
+  const avgAr2  = avg(ar2Vals);
+  const avgPerc = avg(percVals);
+
+  const gpsAr1  = avgAr1  !== null ? getGPS(avgAr1).toFixed(2)  : '—';
+  const gpsAr2  = avgAr2  !== null ? getGPS(avgAr2).toFixed(2)  : '—';
+  const gpsPerc = avgPerc !== null ? getGPS(avgPerc).toFixed(2) : '—';
+
+  const berisiko = ak.pelajar.filter(p => isAlert(p.id));
+  const lulusAr1 = ar1Vals.filter(v=>v>=50).length;
+  const lulusPerc= percVals.filter(v=>v>=50).length;
+  const perLulus = percVals.length ? Math.round(lulusPerc/percVals.length*100) : 0;
+
+  // Gred distribution (Percubaan)
+  const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
+  percVals.forEach(v => {
+    const g = markToGred(v);
+    if(g.startsWith('A')) gredDist['A']++;
+    else if(g.startsWith('B')) gredDist['B']++;
+    else if(g.startsWith('C')) gredDist['C']++;
+    else if(g==='D'||g==='E') gredDist['D/E']++;
+    else gredDist['G']++;
+  });
+
+  // SES breakdown (Percubaan avg)
+  const sesGroups = ['B40','M40','T20'];
+  const sesData = sesGroups.map(s => {
+    const pp = ak.pelajar.filter(p=>p.ses===s && markState[p.id] && typeof markState[p.id].percubaan==='number');
+    return { label:s, avg: avg(pp.map(p=>markState[p.id].percubaan)), n:pp.length };
+  }).filter(x=>x.n>0);
+
+  const cadanganKelas = generateCadanganKelas(ak, { avgAr1, avgAr2, avgPerc, berisiko, sesData, lulusPerc, percVals });
+
+  const trendDelta = (avgPerc !== null && avgAr1 !== null) ? (avgPerc - avgAr1).toFixed(1) : null;
+  const trendSign  = trendDelta !== null ? (trendDelta >= 0 ? `<span class="green">▲ +${trendDelta}</span>` : `<span class="red-c">▼ ${trendDelta}</span>`) : '—';
+
+  return `
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-lbl">GPS Purata (AR1)</div>
+        <div class="kpi-val">${gpsAr1}</div>
+        <span class="kpi-delta" style="color:var(--t3)">Markah purata: ${avgAr1!==null?avgAr1.toFixed(1):'—'}</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">GPS Purata (AR2)</div>
+        <div class="kpi-val">${gpsAr2}</div>
+        <span class="kpi-delta" style="color:var(--t3)">Markah purata: ${avgAr2!==null?avgAr2.toFixed(1):'—'}</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">GPS Purata (Percubaan)</div>
+        <div class="kpi-val">${gpsPerc}</div>
+        <span class="kpi-delta">${trendSign} dari AR1</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Murid Berisiko</div>
+        <div class="kpi-val ${berisiko.length>0?'red-c':'green'}">${berisiko.length}</div>
+        <span class="kpi-delta ${berisiko.length>0?'red-c':'green'}">${berisiko.length>0?'Perlu intervensi':'Tiada isu merosot'}</span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">% Lulus (Percubaan)</div>
+        <div class="kpi-val ${perLulus>=90?'green':perLulus>=70?'yellow':'red-c'}">${percVals.length?perLulus+'%':'—'}</div>
+        <span class="kpi-delta" style="color:var(--t3)">${lulusPerc}/${percVals.length} murid lulus</span>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Trend Markah Purata Kelas</div>
+        <div class="chart-sub">AR1 → AR2 → Percubaan SPM</div>
+        <div class="chart-wrap"><canvas id="analisis-trend-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Taburan Gred (Percubaan)</div>
+        <div class="chart-sub">Bilangan murid mengikut gred</div>
+        <div class="chart-wrap"><canvas id="analisis-gred-chart"></canvas></div>
+      </div>
+    </div>
+
+    ${sesData.length > 0 ? `
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">Perbandingan Prestasi mengikut SES (Percubaan)</div>
+      <div class="chart-sub">Markah purata mengikut kumpulan sosioekonomi</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+        ${sesData.map(s=>`
+          <div style="flex:1;min-width:100px;background:var(--surface2);border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:11px;color:var(--t3);font-weight:700;margin-bottom:6px">${s.label} (${s.n} murid)</div>
+            <div style="font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:${s.label==='B40'?'var(--yellow)':s.label==='T20'?'var(--green)':'var(--accent)'}">${s.avg!==null?s.avg.toFixed(1):'—'}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">GPS ${s.avg!==null?getGPS(s.avg).toFixed(2):'—'}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="ai-card">
+      <div class="ai-card-title">🤖 Cadangan & Intervensi AI — Kelas ${ak.subjek} T${ak.tingkatan} ${ak.kelas}</div>
+      ${cadanganKelas.map(c=>`
+        <div class="ai-item">
+          <div class="ai-dot ${c.level}"></div>
+          <div>${c.text}</div>
+        </div>`).join('')}
+    </div>
+
+    ${berisiko.length > 0 ? `
+    <div class="sh" style="margin-top:4px"><div><div class="sh-title">Murid Berisiko</div><div class="sh-sub">Trend markah merosot — klik nama untuk lihat cadangan individu</div></div></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Nama Murid</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th style="text-align:center">Perubahan</th><th>Profil</th></tr></thead>
+      <tbody>${berisiko.map(p => {
+        const m = markState[p.id] || {};
+        const delta = typeof m.percubaan==='number' && typeof m.ar1==='number' ? m.percubaan-m.ar1 : null;
+        return `<tr>
+          <td class="tc-name"><button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button></td>
+          <td style="text-align:center" class="tc-num">${typeof m.ar1==='number'?m.ar1:'—'}</td>
+          <td style="text-align:center" class="tc-num">${typeof m.ar2==='number'?m.ar2:'—'}</td>
+          <td style="text-align:center" class="tc-num tc-red">${typeof m.percubaan==='number'?m.percubaan:'—'}</td>
+          <td style="text-align:center" class="tc-red">${delta!==null?`▼ ${Math.abs(delta)} mata`:'—'}</td>
+          <td>${[p.ses,p.lokasi].filter(Boolean).map(x=>`<span class="chip chip-gray" style="font-size:10px;margin-right:3px">${x}</span>`).join('')}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>` : ''}
+  `;
+}
+
+function generateCadanganKelas(ak, { avgAr1, avgAr2, avgPerc, berisiko, sesData, lulusPerc, percVals }) {
+  const cadangan = [];
+  const total = percVals.length;
+
+  if (avgPerc !== null && avgAr1 !== null) {
+    const delta = avgPerc - avgAr1;
+    if (delta < -5) {
+      cadangan.push({ level:'red', text:`Trend kelas menunjukkan <strong>penurunan ketara</strong> sebanyak ${Math.abs(delta).toFixed(1)} markah dari AR1 ke Percubaan. Guru disyorkan mengadakan sesi pemulihan berfokus pada topik-topik kelemahan utama sebelum SPM.` });
+    } else if (delta < 0) {
+      cadangan.push({ level:'warn', text:`Terdapat <strong>penurunan sederhana</strong> (${Math.abs(delta).toFixed(1)} markah) dari AR1 ke Percubaan. Pantau perkembangan murid yang menunjukkan trend turun dan beri sokongan tambahan.` });
+    } else {
+      cadangan.push({ level:'green', text:`Kelas menunjukkan <strong>trend positif</strong> dengan peningkatan ${delta.toFixed(1)} markah dari AR1 ke Percubaan. Teruskan strategi pengajaran semasa dan kekalkan momentum.` });
+    }
+  }
+
+  if (berisiko.length > 0) {
+    const names = berisiko.slice(0,3).map(p=>p.nama.split(' ').slice(0,2).join(' ')).join(', ');
+    cadangan.push({ level:'red', text:`<strong>${berisiko.length} murid berisiko</strong> dikenal pasti (${names}${berisiko.length>3?`, +${berisiko.length-3} lagi`:''}) — markah merosot lebih 5 mata dari AR1 ke Percubaan. Cadangkan sesi bimbingan individu atau kumpulan kecil.` });
+  }
+
+  const b40Data = sesData.find(s=>s.label==='B40');
+  const t20Data = sesData.find(s=>s.label==='T20');
+  if (b40Data && t20Data && b40Data.avg !== null && t20Data.avg !== null) {
+    const gap = t20Data.avg - b40Data.avg;
+    if (gap > 10) {
+      cadangan.push({ level:'warn', text:`<strong>Jurang prestasi SES</strong> sebanyak ${gap.toFixed(1)} markah antara pelajar T20 dan B40 dikesan. Pertimbangkan program sokongan bersasar untuk pelajar B40, termasuk modul latihan tambahan dan bimbingan rakan sebaya.` });
+    }
+  }
+
+  const pedalaman = ak.pelajar.filter(p=>p.lokasi==='Pedalaman' && markState[p.id] && typeof markState[p.id].percubaan==='number');
+  if (pedalaman.length > 0) {
+    const avgPed = avg(pedalaman.map(p=>markState[p.id].percubaan));
+    if (avgPed !== null && avgPerc !== null && avgPed < avgPerc - 5) {
+      cadangan.push({ level:'warn', text:`Pelajar dari kawasan <strong>Pedalaman</strong> (${pedalaman.length} orang) mencatat markah purata ${avgPed.toFixed(1)} berbanding purata kelas ${avgPerc.toFixed(1)}. Pertimbangkan pendekatan pengajaran yang lebih fleksibel dan menyediakan bahan rujukan tambahan.` });
+    }
+  }
+
+  if (total > 0 && lulusPerc/total < 0.7) {
+    cadangan.push({ level:'red', text:`Kadar lulus kelas (${Math.round(lulusPerc/total*100)}%) masih di bawah sasaran 70%. Cadangkan pengukuhan kemahiran asas melalui latihan kendiri berpandukan soalan SPM lepas dan ujian diagnostik mingguan.` });
+  }
+
+  if (cadangan.length === 0) {
+    cadangan.push({ level:'green', text:'Prestasi kelas secara keseluruhan adalah baik. Teruskan pemantauan berkala dan galakkan murid untuk berlatih soalan SPM sebelum peperiksaan sebenar.' });
+  }
+
+  return cadangan;
+}
+
+function generateCadanganIndividu(p, marks) {
+  const cadangan = [];
+  const ar1 = marks.ar1, ar2 = marks.ar2, perc = marks.percubaan;
+  const hasAll = typeof ar1==='number' && typeof ar2==='number' && typeof perc==='number';
+
+  if (!hasAll) {
+    cadangan.push({ level:'', text:'Data markah tidak lengkap. Lengkapkan rekod AR1, AR2 dan Percubaan untuk mendapat cadangan yang lebih tepat.' });
+    return cadangan;
+  }
+
+  const delta1 = ar2 - ar1;
+  const delta2 = perc - ar2;
+  const deltaTotal = perc - ar1;
+
+  if (deltaTotal > 10) {
+    cadangan.push({ level:'green', text:`Trend <strong>peningkatan yang ketara</strong> (+${deltaTotal} mata dari AR1 ke Percubaan). Teruskan usaha dan strategi belajar semasa. Sasarkan gred lebih tinggi dalam SPM.` });
+  } else if (deltaTotal > 3) {
+    cadangan.push({ level:'green', text:`Menunjukkan <strong>peningkatan yang konsisten</strong> (+${deltaTotal} mata). Galakkan pelajar untuk memfokuskan kepada topik yang masih lemah bagi memaksimumkan pencapaian SPM.` });
+  } else if (deltaTotal < -10) {
+    cadangan.push({ level:'red', text:`Trend <strong>penurunan yang serius</strong> (${deltaTotal} mata dari AR1 ke Percubaan). Guru perlu bertemu pelajar secara individu untuk kenal pasti punca dan menyediakan pelan pemulihan segera.` });
+  } else if (deltaTotal < -3) {
+    cadangan.push({ level:'warn', text:`Trend <strong>penurunan sederhana</strong> (${deltaTotal} mata). Pantau lebih rapat dan galakkan pelajar untuk lebih kerap berbincang dengan guru.` });
+  } else {
+    cadangan.push({ level:'', text:`Prestasi <strong>stabil</strong> sepanjang tiga ujian. Fokus kepada topik atau subtopik yang masih menimbulkan kelemahan untuk meningkatkan gred SPM.` });
+  }
+
+  if (delta2 < -5) {
+    cadangan.push({ level:'warn', text:`Prestasi <strong>merosot antara AR2 dan Percubaan</strong> (${delta2} mata). Kemungkinan tekanan peperiksaan atau ketidakbersediaan. Cadangkan teknik pengurusan stres dan latihan soalan berbentuk SPM.` });
+  } else if (delta1 < -5 && delta2 > 0) {
+    cadangan.push({ level:'green', text:`Pelajar menunjukkan <strong>pemulihan positif</strong> selepas penurunan di AR2 — petanda baik untuk SPM. Dorong pelajar untuk kekalkan momentum ini.` });
+  }
+
+  if (p.ses === 'B40') {
+    cadangan.push({ level:'warn', text:`Pelajar dari kumpulan <strong>B40</strong>. Pastikan pelajar mempunyai akses kepada bahan pembelajaran yang mencukupi. Pertimbangkan program biasiswa atau bantuan kewangan yang boleh membantu tumpuan pelajaran.` });
+  }
+
+  if (p.lokasi === 'Pedalaman') {
+    cadangan.push({ level:'warn', text:`Pelajar dari kawasan <strong>Pedalaman</strong>. Pertimbangkan akses kepada sumber digital dan bahan bercetak untuk rujukan di luar waktu sekolah.` });
+  }
+
+  if (perc < 50) {
+    cadangan.push({ level:'red', text:`Markah Percubaan masih <strong>di bawah tahap lulus</strong> (${perc}/100). Guru perlu menyusun pelan intervensi berfokus termasuk sesi ulangkaji intensif bagi topik kritikal.` });
+  } else if (perc >= 80) {
+    cadangan.push({ level:'green', text:`Pencapaian <strong>cemerlang</strong> dalam Percubaan (${perc}/100). Dorong pelajar untuk menyasarkan gred A dalam SPM melalui latihan soalan sukar dan penguasaan topik lanjutan.` });
+  }
+
+  return cadangan;
+}
+
+function initAnalisisChart() {
+  const ak = getActiveKelas();
+  if (!ak) return;
+  const pelajarDenganMark = ak.pelajar.filter(p => markState[p.id]);
+  const ar1Vals  = pelajarDenganMark.map(p => markState[p.id].ar1).filter(v=>typeof v==='number');
+  const ar2Vals  = pelajarDenganMark.map(p => markState[p.id].ar2).filter(v=>typeof v==='number');
+  const percVals = pelajarDenganMark.map(p => markState[p.id].percubaan).filter(v=>typeof v==='number');
+
+  const avgAr1  = avg(ar1Vals);
+  const avgAr2  = avg(ar2Vals);
+  const avgPerc = avg(percVals);
+
+  destroyChart('analisis-trend');
+  const trendCtx = document.getElementById('analisis-trend-chart');
+  if (trendCtx) {
+    charts['analisis-trend'] = new Chart(trendCtx, {
+      type:'line',
+      data:{
+        labels:['AR1','AR2','Percubaan'],
+        datasets:[{
+          label:'Markah Purata',
+          data:[avgAr1, avgAr2, avgPerc],
+          borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.1)',
+          borderWidth:2.5, tension:.35, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:true
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ min:0, max:100, grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b'} },
+          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+        }
+      }
+    });
+  }
+
+  destroyChart('analisis-gred');
+  const gredCtx = document.getElementById('analisis-gred-chart');
+  if (gredCtx) {
+    const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
+    percVals.forEach(v => {
+      const g = markToGred(v);
+      if(g.startsWith('A')) gredDist['A']++;
+      else if(g.startsWith('B')) gredDist['B']++;
+      else if(g.startsWith('C')) gredDist['C']++;
+      else if(g==='D'||g==='E') gredDist['D/E']++;
+      else gredDist['G']++;
+    });
+    charts['analisis-gred'] = new Chart(gredCtx, {
+      type:'bar',
+      data:{
+        labels:Object.keys(gredDist),
+        datasets:[{
+          label:'Bilangan Murid',
+          data:Object.values(gredDist),
+          backgroundColor:['#22c55e','#3b82f6','#eab308','#ef4444','#64748b'],
+          borderRadius:6, borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b', stepSize:1} },
+          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+        }
+      }
+    });
+  }
+}
+
+// ── Modal Pelajar (Individu) ──────────────────────────────
+function bukaPelajarModal(pelajarId) {
+  let p = null, kelasNama = '';
+  for (const k of kelasList) {
+    const found = k.pelajar.find(x=>x.id===pelajarId);
+    if (found) { p = found; kelasNama = `${k.subjek} · T${k.tingkatan} ${k.kelas}`; break; }
+  }
+  if (!p) return;
+  const marks = markState[p.id] || {};
+  const gredMap = { ar1:null, ar2:null, percubaan:null };
+  ['ar1','ar2','percubaan'].forEach(k => {
+    gredMap[k] = typeof marks[k]==='number' ? markToGred(marks[k]) : null;
+  });
+
+  const av = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+  document.getElementById('pelajar-modal-header').innerHTML = `
+    <div class="pelajar-av-lg">${av}</div>
+    <div class="pelajar-modal-info">
+      <div class="pelajar-modal-nama">${p.nama}</div>
+      <div class="pelajar-modal-meta">${kelasNama}${p.ses?' · '+p.ses:''}${p.lokasi?' · '+p.lokasi:''}</div>
+    </div>`;
+
+  document.getElementById('pelajar-modal-marks').innerHTML = ['ar1','ar2','percubaan'].map(k=>{
+    const v = marks[k];
+    const g = gredMap[k];
+    const label = {ar1:'AR1',ar2:'AR2',percubaan:'Percubaan'}[k];
+    const col = v===null?'var(--t3)':typeof v==='number'?(v>=80?'var(--green)':v>=60?'var(--accent)':v>=50?'var(--yellow)':'var(--red)'):'var(--t3)';
+    return `<div class="mark-trend-cell">
+      <div class="mark-trend-lbl">${label}</div>
+      <div class="mark-trend-val" style="color:${col}">${v===null?'TH':typeof v==='number'?v:'—'}</div>
+      <div class="mark-trend-gred">${g?`<span class="chip ${gredClass(g)}">${g}</span>`:''}</div>
+    </div>`;
+  }).join('');
+
+  destroyChart('pelajar-spark');
+  const sparkCtx = document.getElementById('pelajar-spark-chart');
+  if (sparkCtx) {
+    const vals = ['ar1','ar2','percubaan'].map(k=>typeof marks[k]==='number'?marks[k]:null);
+    charts['pelajar-spark'] = new Chart(sparkCtx, {
+      type:'line',
+      data:{
+        labels:['AR1','AR2','Percubaan'],
+        datasets:[{
+          label:'Markah',
+          data:vals,
+          borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.1)',
+          borderWidth:2.5, tension:.35, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:true, spanGaps:true
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ min:0, max:100, grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b'} },
+          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+        }
+      }
+    });
+  }
+
+  const cadangan = generateCadanganIndividu(p, marks);
+  document.getElementById('pelajar-modal-ai').innerHTML = `
+    <div class="ai-card-title">🤖 Cadangan & Intervensi AI — ${p.nama.split(' ').slice(0,2).join(' ')}</div>
+    ${cadangan.map(c=>`
+      <div class="ai-item">
+        <div class="ai-dot ${c.level}"></div>
+        <div>${c.text}</div>
+      </div>`).join('')}
+  `;
+
+  document.getElementById('modal-pelajar').hidden = false;
+}
+
+function closePelajarModal() {
+  destroyChart('pelajar-spark');
+  document.getElementById('modal-pelajar').hidden = true;
+}
+
 // ── Tab: Status Pengisian ─────────────────────────────────
 function renderStatusView() {
   if (kelasList.length === 0) return `
@@ -990,7 +1476,7 @@ function isAlert(id) {
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.target === tabId));
   document.querySelectorAll('#main > section').forEach(s => s.classList.toggle('active', s.id === tabId));
 }
 
@@ -1165,7 +1651,7 @@ function refreshMarkTable() {
 
     return `<tr style="${rowStyle}">
       <td style="color:var(--t3);text-align:center">${String(i+1).padStart(2,'0')}</td>
-      <td class="tc-name">${p.nama}${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}</td>
+      <td class="tc-name"><button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button>${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}</td>
       <td style="text-align:center;color:var(--t3);font-size:13px">${jIcon}</td>
       <td style="text-align:center">
         ${th
@@ -1853,6 +2339,9 @@ function bindTabs() {
       document.querySelectorAll('main > section').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(btn.dataset.target);
       if(target) target.classList.add('active');
+      if (btn.dataset.target === 'guru-analisis') setTimeout(initAnalisisChart, 0);
+      if (btn.dataset.target === 'sk-analitik')   setTimeout(initSkCharts, 0);
+      if (btn.dataset.target === 'ppd-paparan')    setTimeout(initPPDCharts, 0);
     });
   });
 }
