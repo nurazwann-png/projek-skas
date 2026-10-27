@@ -593,6 +593,17 @@ section.active { display: block; overflow: visible; }
         <div style="position:relative;height:130px"><canvas id="modal-sk-ses-chart"></canvas></div>
       </div>
     </div>
+    <!-- Jantina Analysis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Analisis Jantina — Komposisi Pelajar</div>
+        <div id="modal-sk-jantina-kpi"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">GPS Anggaran Mengikut Jantina</div>
+        <div style="position:relative;height:100px"><canvas id="modal-sk-jantina-chart"></canvas></div>
+      </div>
+    </div>
     <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Prestasi Panitia</div>
     <div id="modal-sk-panitia" class="tbl-wrap" style="margin-bottom:16px;max-height:none"></div>
     <div id="modal-sk-ai" class="ai-card"></div>
@@ -729,35 +740,35 @@ const SEKOLAH_DAERAH = [
   { id:'sk-dalat',    nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.98},{t:2022,g:5.76},{t:2023,g:5.44},{t:2024,g:5.28}],
     panitia:[{subjek:'Matematik',gpmp:4.82,prev:5.12,bil:156},{subjek:'BM',gpmp:3.94,prev:4.21,bil:201},{subjek:'BI',gpmp:5.43,prev:5.71,bil:198},{subjek:'Sains',gpmp:5.87,prev:5.63,bil:145},{subjek:'Sejarah',gpmp:4.12,prev:4.48,bil:198}],
-    berisiko:5, ses:{B40:42,M40:37,T20:21}, lokasi:{Bandar:41,LuarBandar:38,Pedalaman:21} },
+    berisiko:5, ses:{B40:42,M40:37,T20:21}, lokasi:{Bandar:41,LuarBandar:38,Pedalaman:21}, jantina:{Perempuan:241,Lelaki:239} },
   { id:'sk-balingian',nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.22},{t:2022,g:5.98},{t:2023,g:5.62},{t:2024,g:5.41}],
     panitia:[{subjek:'Matematik',gpmp:5.11,prev:5.43,bil:98},{subjek:'BM',gpmp:4.22,prev:4.51,bil:112},{subjek:'BI',gpmp:5.62,prev:5.88,bil:102},{subjek:'Sains',gpmp:6.01,prev:6.24,bil:87},{subjek:'Sejarah',gpmp:4.88,prev:5.11,bil:112}],
-    berisiko:8, ses:{B40:55,M40:31,T20:14}, lokasi:{Bandar:22,LuarBandar:54,Pedalaman:24} },
+    berisiko:8, ses:{B40:55,M40:31,T20:14}, lokasi:{Bandar:22,LuarBandar:54,Pedalaman:24}, jantina:{Perempuan:158,Lelaki:154} },
   { id:'sk-daro',     nama:'SMK Daro',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.41},{t:2022,g:6.12},{t:2023,g:5.71},{t:2024,g:5.63}],
     panitia:[{subjek:'Matematik',gpmp:5.42,prev:5.68,bil:88},{subjek:'BM',gpmp:4.61,prev:4.72,bil:99},{subjek:'BI',gpmp:5.88,prev:5.94,bil:94},{subjek:'Sains',gpmp:6.22,prev:6.41,bil:78},{subjek:'Sejarah',gpmp:5.11,prev:5.28,bil:99}],
-    berisiko:11, ses:{B40:61,M40:27,T20:12}, lokasi:{Bandar:18,LuarBandar:51,Pedalaman:31} },
+    berisiko:11, ses:{B40:61,M40:27,T20:12}, lokasi:{Bandar:18,LuarBandar:51,Pedalaman:31}, jantina:{Perempuan:146,Lelaki:141} },
   { id:'sk-mukah',    nama:'SMK Mukah',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.88},{t:2022,g:5.74},{t:2023,g:5.58},{t:2024,g:5.71}],
     panitia:[{subjek:'Matematik',gpmp:5.62,prev:5.41,bil:178},{subjek:'BM',gpmp:4.81,prev:4.62,bil:201},{subjek:'BI',gpmp:5.94,prev:5.71,bil:188},{subjek:'Sains',gpmp:6.41,prev:6.22,bil:156},{subjek:'Sejarah',gpmp:5.28,prev:5.11,bil:201}],
-    berisiko:19, ses:{B40:38,M40:44,T20:18}, lokasi:{Bandar:68,LuarBandar:28,Pedalaman:4} },
+    berisiko:19, ses:{B40:38,M40:44,T20:18}, lokasi:{Bandar:68,LuarBandar:28,Pedalaman:4}, jantina:{Perempuan:268,Lelaki:256} },
   { id:'sk-oya',      nama:'SMK Oya',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.71},{t:2022,g:6.44},{t:2023,g:6.02},{t:2024,g:5.84}],
     panitia:[{subjek:'Matematik',gpmp:5.81,prev:6.11,bil:62},{subjek:'BM',gpmp:5.12,prev:5.41,bil:68},{subjek:'BI',gpmp:6.12,prev:6.38,bil:65},{subjek:'Sains',gpmp:6.54,prev:6.81,bil:55},{subjek:'Sejarah',gpmp:5.44,prev:5.72,bil:68}],
-    berisiko:14, ses:{B40:72,M40:21,T20:7}, lokasi:{Bandar:8,LuarBandar:44,Pedalaman:48} },
+    berisiko:14, ses:{B40:72,M40:21,T20:7}, lokasi:{Bandar:8,LuarBandar:44,Pedalaman:48}, jantina:{Perempuan:102,Lelaki:96} },
   { id:'sk-selangau', nama:'SMK Selangau',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.31},{t:2023,g:5.89},{t:2024,g:5.97}],
     panitia:[{subjek:'Matematik',gpmp:6.01,prev:5.88,bil:52},{subjek:'BM',gpmp:5.22,prev:5.11,bil:57},{subjek:'BI',gpmp:6.28,prev:6.12,bil:54},{subjek:'Sains',gpmp:6.71,prev:6.54,bil:47},{subjek:'Sejarah',gpmp:5.61,prev:5.44,bil:57}],
-    berisiko:17, ses:{B40:78,M40:18,T20:4}, lokasi:{Bandar:5,LuarBandar:38,Pedalaman:57} },
+    berisiko:17, ses:{B40:78,M40:18,T20:4}, lokasi:{Bandar:5,LuarBandar:38,Pedalaman:57}, jantina:{Perempuan:86,Lelaki:81} },
   { id:'sk-tulai',    nama:'SMK Tulai',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.88},{t:2022,g:6.64},{t:2023,g:6.31},{t:2024,g:6.12}],
     panitia:[{subjek:'Matematik',gpmp:6.14,prev:6.38,bil:44},{subjek:'BM',gpmp:5.44,prev:5.62,bil:48},{subjek:'BI',gpmp:6.41,prev:6.58,bil:46},{subjek:'Sains',gpmp:6.88,prev:7.11,bil:41},{subjek:'Sejarah',gpmp:5.81,prev:5.94,bil:48}],
-    berisiko:21, ses:{B40:81,M40:16,T20:3}, lokasi:{Bandar:2,LuarBandar:31,Pedalaman:67} },
+    berisiko:21, ses:{B40:81,M40:16,T20:3}, lokasi:{Bandar:2,LuarBandar:31,Pedalaman:67}, jantina:{Perempuan:74,Lelaki:69} },
   { id:'sk-sgmaong',  nama:'SMK Sg. Maong',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.38},{t:2023,g:6.14},{t:2024,g:6.28}],
     panitia:[{subjek:'Matematik',gpmp:6.31,prev:6.18,bil:31},{subjek:'BM',gpmp:5.62,prev:5.44,bil:33},{subjek:'BI',gpmp:6.54,prev:6.41,bil:32},{subjek:'Sains',gpmp:7.01,prev:6.88,bil:28},{subjek:'Sejarah',gpmp:5.98,prev:5.81,bil:33}],
-    berisiko:24, ses:{B40:84,M40:13,T20:3}, lokasi:{Bandar:1,LuarBandar:24,Pedalaman:75} },
+    berisiko:24, ses:{B40:84,M40:13,T20:3}, lokasi:{Bandar:1,LuarBandar:24,Pedalaman:75}, jantina:{Perempuan:51,Lelaki:47} },
 ];
 
 const GPS_TREND = { ar1:5.82, ar2:5.61, percubaan:5.44, spm:5.28 };
@@ -2954,6 +2965,29 @@ function bukaAnalisisSk(id) {
     </div>`;
   }).join('');
 
+  // Jantina KPI tiles
+  const jantinaRef = { Perempuan: 5.04, Lelaki: 5.53 };
+  const jantinaAvgRef = (5.04 + 5.53) / 2;
+  const jantinaMeta = [
+    { key:'Perempuan', label:'Perempuan', icon:'♀', clr:'#a855f7', bg:'rgba(168,85,247,.08)' },
+    { key:'Lelaki',    label:'Lelaki',    icon:'♂', clr:'#3b82f6', bg:'rgba(59,130,246,.08)' },
+  ];
+  const totalJantina = s.jantina.Perempuan + s.jantina.Lelaki;
+  document.getElementById('modal-sk-jantina-kpi').innerHTML = jantinaMeta.map(m => {
+    const pct = Math.round(s.jantina[m.key] / totalJantina * 100);
+    const gpsAnggar = parseFloat((s.gps * (jantinaRef[m.key] / jantinaAvgRef)).toFixed(2));
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:${m.bg};border:1px solid ${m.clr}22;margin-bottom:8px">
+      <div style="width:36px;height:36px;border-radius:8px;background:${m.clr}22;display:flex;align-items:center;justify-content:center;font-size:18px;color:${m.clr}">${m.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--t1)">${m.label} <span style="font-size:11px;color:var(--t3);font-weight:400">${s.jantina[m.key]} pelajar (${pct}%)</span></div>
+        <div style="height:5px;border-radius:3px;background:var(--surface2);margin:5px 0 3px">
+          <div style="height:100%;width:${pct}%;border-radius:3px;background:${m.clr};transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;color:var(--t3)">GPS anggaran <strong style="color:${m.clr}">${gpsAnggar}</strong></div>
+      </div>
+    </div>`;
+  }).join('');
+
   // AI cadangan
   const lemah = s.panitia.filter(p=>p.gpmp>5.5);
   const naik  = s.panitia.filter(p=>p.gpmp>p.prev);
@@ -2964,6 +2998,8 @@ function bukaAnalisisSk(id) {
   if (naik.length)  obs.push(`<strong>${naik.map(p=>p.subjek).join(', ')}</strong> menunjukkan kemerosotan berbanding 2023.`);
   if (b40Pct > 60)  obs.push(`${b40Pct}% pelajar dari kumpulan B40 — cadangkan program bantuan sosioekonomi dan tuisyen percuma.`);
   if (padalPct > 40) obs.push(`${padalPct}% pelajar dari kawasan Pedalaman — semak capaian PdPR dan infrastruktur.`);
+  const lelakirPct = Math.round(s.jantina.Lelaki / totalJantina * 100);
+  if (lelakirPct > 55) obs.push(`Majoriti pelajar lelaki (${lelakirPct}%) — fokus program motivasi dan penjejakan kehadiran khusus pelajar lelaki.`);
   if (!obs.length)  obs.push(`Prestasi sekolah ini secara keseluruhan memuaskan. Fokus kekalkan momentum dan bantu pelajar berisiko.`);
   document.getElementById('modal-sk-ai').innerHTML = `<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">🤖 Pemerhatian AI — ${s.nama}</div>${obs.map(o=>`<div style="margin-bottom:4px">• ${o}</div>`).join('')}`;
 
@@ -2980,6 +3016,24 @@ function bukaAnalisisSk(id) {
     if (lCtx) { const ex = Chart.getChart(lCtx); if(ex) ex.destroy(); }
     if (lCtx) {
       new Chart(lCtx, { type:'doughnut', data:{ labels:['Bandar','Luar Bandar','Pedalaman'], datasets:[{ data:[s.lokasi.Bandar, s.lokasi.LuarBandar, s.lokasi.Pedalaman], backgroundColor:['rgba(59,130,246,.8)','rgba(234,179,8,.8)','rgba(239,68,68,.8)'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12 } } } } });
+    }
+    // Jantina bar chart
+    const jCtx = document.getElementById('modal-sk-jantina-chart');
+    if (jCtx) { const ex = Chart.getChart(jCtx); if(ex) ex.destroy(); }
+    if (jCtx) {
+      const janAvg2 = (5.04 + 5.53) / 2;
+      const janGPS = [
+        parseFloat((s.gps * (5.04 / janAvg2)).toFixed(2)),
+        parseFloat((s.gps * (5.53 / janAvg2)).toFixed(2)),
+      ];
+      new Chart(jCtx, {
+        type:'bar',
+        data:{ labels:['Perempuan','Lelaki'], datasets:[{ data:janGPS, backgroundColor:['rgba(168,85,247,.75)','rgba(59,130,246,.75)'], borderRadius:6, borderSkipped:false }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` GPS anggaran: ${ctx.raw}` } } },
+          scales:{ x:{ min:Math.min(...janGPS)-0.3, max:Math.max(...janGPS)+0.3, grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'#94a3b8',font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:'#cbd5e1',font:{size:12,weight:'600'}} } }
+        }
+      });
     }
     // SES bar chart — GPS anggaran
     const sCtx = document.getElementById('modal-sk-ses-chart');
