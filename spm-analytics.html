@@ -601,6 +601,18 @@ const PANITIA_SK = [
   { subjek:'Geografi',        guru:'En. Azmi Saad',        gpmp:5.21, prev:5.18, bil:87,  ar1:true, ar2:true,  perc:false },
 ];
 
+// GPS sejarah SMK Dalat — digunakan untuk penetapan sasaran
+const GPS_SEJARAH = [
+  { tahun:2020, gps:6.12, lulus100:false, subjekCemerlang:1, bilPelajar:441 },
+  { tahun:2021, gps:5.98, lulus100:false, subjekCemerlang:1, bilPelajar:453 },
+  { tahun:2022, gps:5.76, lulus100:false, subjekCemerlang:2, bilPelajar:461 },
+  { tahun:2023, gps:5.44, lulus100:true,  subjekCemerlang:2, bilPelajar:468 },
+  { tahun:2024, gps:5.28, lulus100:true,  subjekCemerlang:3, bilPelajar:480 },
+];
+// Trend linear projection: sasaran cadangan = gps2024 - avg improvement
+const _gpsImprove = GPS_SEJARAH.slice(-4).reduce((acc,_,i,arr) => i===0?acc:acc+(arr[i-1].gps-arr[i].gps),0) / 3;
+let GPS_SASARAN = parseFloat((GPS_SEJARAH.at(-1).gps - _gpsImprove).toFixed(2));
+
 const SEKOLAH_DAERAH = [
   { nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap' },
   { nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap' },
@@ -2320,6 +2332,79 @@ function buildPentadbir() {
           <div class="chart-wrap"><canvas id="sk-trend-chart"></canvas></div>
         </div>
       </div>
+      <!-- Rekod GPS & Sasaran -->
+      <div class="sh" style="margin-top:8px">
+        <div>
+          <div class="sh-title">Rekod GPS & Penetapan Sasaran 2025</div>
+          <div class="sh-sub">GPS sebenar 5 tahun lepas · Sasaran dicadangkan berdasarkan trend</div>
+        </div>
+      </div>
+
+      <!-- Jadual GPS Sejarah -->
+      <div class="tbl-wrap" style="margin-bottom:20px">
+        <table class="tbl">
+          <thead><tr>
+            <th>Tahun</th>
+            <th style="text-align:center">GPS Sebenar</th>
+            <th style="text-align:center">Perubahan</th>
+            <th style="text-align:center">Lulus 100%</th>
+            <th style="text-align:center">Subj. Cemerlang</th>
+            <th style="text-align:center">Bil. Pelajar</th>
+          </tr></thead>
+          <tbody>${GPS_SEJARAH.map((r,i) => {
+            const prev = GPS_SEJARAH[i-1];
+            const delta = prev ? (prev.gps - r.gps) : null;
+            const isTerkini = r.tahun === 2024;
+            return `<tr style="${isTerkini?'background:rgba(59,130,246,.07);font-weight:600':''}">
+              <td>${r.tahun}${isTerkini?' <span class="chip chip-blue" style="font-size:10px;margin-left:4px">Terkini</span>':''}</td>
+              <td style="text-align:center">
+                <span style="font-size:17px;font-weight:700;color:${r.gps<=5.0?'var(--green)':r.gps<=5.5?'var(--yellow)':'var(--t1)'}">${r.gps.toFixed(2)}</span>
+              </td>
+              <td style="text-align:center">
+                ${delta===null ? '<span style="color:var(--t3)">—</span>'
+                  : delta>0 ? `<span class="green">▼ ${delta.toFixed(2)}</span>`
+                  : `<span class="red-c">▲ ${Math.abs(delta).toFixed(2)}</span>`}
+              </td>
+              <td style="text-align:center">${r.lulus100?'<span class="chip chip-green" style="font-size:11px">Ya</span>':'<span class="chip chip-gray" style="font-size:11px">Tidak</span>'}</td>
+              <td style="text-align:center;color:var(--t2)">${r.subjekCemerlang}</td>
+              <td style="text-align:center;color:var(--t2)">${r.bilPelajar}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+
+      <!-- Penetapan Sasaran -->
+      <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:14px;padding:20px 22px;margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px">🎯 Sasaran GPS SPM 2025</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+          <div style="background:var(--surface2);border-radius:10px;padding:14px 16px">
+            <div style="font-size:11px;color:var(--t3);margin-bottom:4px">GPS Semasa (2024)</div>
+            <div style="font-size:26px;font-weight:800;color:var(--yellow)">5.28</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">GPS lebih rendah = lebih baik</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:14px 16px">
+            <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Cadangan AI (Berdasarkan Trend)</div>
+            <div style="font-size:26px;font-weight:800;color:var(--green)" id="sk-gps-cadangan">${GPS_SASARAN.toFixed(2)}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">Purata penambahbaikan 5 tahun</div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--t2);font-weight:600;margin-bottom:8px">Tetapkan Sasaran GPS 2025 (Sekolah)</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <input type="number" id="input-gps-sasaran" value="${GPS_SASARAN.toFixed(2)}" min="1.00" max="8.00" step="0.01"
+              style="width:100px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--t1);font-size:16px;font-weight:700;text-align:center"
+              oninput="kemaskiniSasaranGPS(this.value)">
+            <div style="font-size:12px;color:var(--t3)">Julat wajar: 4.50 – 5.50</div>
+            <button class="btn-sm" style="background:rgba(59,130,246,.15);color:var(--accent);border-color:rgba(59,130,246,.3)"
+              onclick="kemaskiniSasaranGPS(${GPS_SASARAN.toFixed(2)});document.getElementById('input-gps-sasaran').value='${GPS_SASARAN.toFixed(2)}'">
+              Guna Cadangan AI
+            </button>
+          </div>
+        </div>
+        <div id="sk-sasaran-breakdown" style="font-size:13px;color:var(--t2);line-height:1.7"></div>
+      </div>
+
+      <!-- Jadual Panitia -->
       <div class="sh" style="margin-top:8px"><div><div class="sh-title">Prestasi Mengikut Panitia</div><div class="sh-sub">GPMP semasa berbanding tahun lepas</div></div></div>
       <div class="tbl-wrap">
         <table class="tbl">
@@ -2412,7 +2497,26 @@ function buildPentadbir() {
   `;
 
   bindTabs();
-  setTimeout(() => renderSKTrend(), 50);
+  setTimeout(() => { renderSKTrend(); kemaskiniSasaranGPS(GPS_SASARAN); }, 50);
+}
+
+function kemaskiniSasaranGPS(val) {
+  const v = parseFloat(val);
+  if (isNaN(v) || v < 1 || v > 8) return;
+  GPS_SASARAN = v;
+  const semasa = 5.28;
+  const diff = semasa - v;
+  const el = document.getElementById('sk-sasaran-breakdown');
+  if (!el) return;
+  if (diff > 0) {
+    el.innerHTML = `✅ Sasaran GPS <strong>${v.toFixed(2)}</strong> bermaksud sekolah perlu menambah baik sebanyak <strong>${diff.toFixed(2)} mata GPS</strong> berbanding 2024.
+      Ini setara dengan meningkatkan purata markah setiap pelajar kira-kira <strong>${(diff * 8).toFixed(0)}–${(diff * 12).toFixed(0)} markah</strong> secara keseluruhan.
+      <br><span style="color:var(--t3);font-size:12px">Trend 4 tahun: penambahbaikan purata ${_gpsImprove.toFixed(2)} mata/tahun. Sasaran ini ${diff > _gpsImprove * 1.5 ? '⚠️ agak agresif — perlu program intervensi intensif' : '✓ realistik berdasarkan trend semasa'}.</span>`;
+  } else if (diff < 0) {
+    el.innerHTML = `⚠️ Sasaran GPS <strong>${v.toFixed(2)}</strong> adalah <strong>lebih rendah</strong> (lebih teruk) berbanding 2024. Pertimbangkan semula sasaran ini.`;
+  } else {
+    el.innerHTML = `Sasaran GPS sama dengan pencapaian 2024 (5.28). Tiada penambahbaikan disasarkan.`;
+  }
 }
 
 function renderSKTrend() {
