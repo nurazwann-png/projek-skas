@@ -243,6 +243,45 @@ section.active { display: block; }
   transform:translateY(80px); opacity:0; transition:transform .3s ease, opacity .3s ease;
 }
 .toast.show { transform:translateY(0); opacity:1; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:300;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+}
+.modal-overlay[hidden] { display:none!important; }
+.modal {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:24px; width:100%; max-width:440px; box-shadow:0 24px 64px rgba(0,0,0,.5);
+}
+.modal-title { font-size:16px; font-weight:800; margin-bottom:4px; }
+.modal-sub   { font-size:12px; color:var(--t3); margin-bottom:20px; }
+.form-group  { margin-bottom:14px; }
+.form-label  { display:block; font-size:11px; font-weight:600; color:var(--t3); letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px; }
+.form-input  {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  color:var(--t1); border-radius:8px; padding:10px 12px; font-size:13px;
+  font-family:inherit; outline:none;
+}
+.form-input:focus { border-color:var(--accent); }
+.form-row    { display:flex; gap:10px; }
+.form-row .form-group { flex:1; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+/* ── Tetapan Kelas info card ── */
+.setup-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; display:flex; align-items:center; gap:16px; margin-bottom:12px;
+}
+.setup-icon { font-size:28px; flex-shrink:0; }
+.setup-info { flex:1; min-width:0; }
+.setup-title { font-size:14px; font-weight:700; }
+.setup-sub   { font-size:12px; color:var(--t3); margin-top:2px; }
+.setup-badge { font-size:11px; font-weight:700; color:var(--accent); background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.2); padding:3px 10px; border-radius:99px; flex-shrink:0; }
+.empty-state { text-align:center; padding:40px 16px; color:var(--t3); }
+.empty-state .empty-icon { font-size:40px; margin-bottom:12px; }
+.empty-state .empty-title { font-size:14px; font-weight:700; color:var(--t2); margin-bottom:6px; }
+.empty-state .empty-sub   { font-size:12px; }
 </style>
 </head>
 <body>
@@ -273,6 +312,83 @@ section.active { display: block; }
 <main class="main" id="main"></main>
 
 <div class="toast" id="toast"></div>
+
+<!-- Modal: Tambah Pelajar -->
+<div class="modal-overlay" id="modal-tambah" hidden onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Tambah Pelajar Baru</div>
+    <div class="modal-sub">Maklumat pelajar akan ditambah ke senarai kelas semasa</div>
+    <div class="form-group">
+      <label class="form-label">Nama Penuh Pelajar</label>
+      <input class="form-input" id="inp-nama" placeholder="cth: Ahmad Syafiq bin Zulkifli" type="text">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">No. Pelajar / IC</label>
+        <input class="form-input" id="inp-no" placeholder="cth: 050312-13-1234" type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jantina</label>
+        <select class="form-input" id="inp-jantina">
+          <option value="L">Lelaki</option>
+          <option value="P">Perempuan</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Markah Awal (AR1) — boleh kosong</label>
+      <input class="form-input" id="inp-ar1" placeholder="0–100" type="number" min="0" max="100">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Batal</button>
+      <button class="btn-primary" onclick="tambahPelajar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Tambah Pelajar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tetapan Kelas -->
+<div class="modal-overlay" id="modal-tetapan" hidden onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Tetapan Kelas & Subjek</div>
+    <div class="modal-sub">Pilih kelas dan mata pelajaran yang anda ajar</div>
+    <div class="form-group">
+      <label class="form-label">Mata Pelajaran</label>
+      <select class="form-input" id="tetap-subjek">
+        <option>Matematik</option><option>Matematik Tambahan</option>
+        <option>Bahasa Melayu</option><option>Bahasa Inggeris</option>
+        <option>Sains</option><option>Fizik</option><option>Kimia</option>
+        <option>Biologi</option><option>Sejarah</option><option>Geografi</option>
+        <option>Pendidikan Islam</option><option>Pendidikan Moral</option>
+        <option>Ekonomi</option><option>Perniagaan</option><option>Perakaunan</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Tingkatan</label>
+        <select class="form-input" id="tetap-tingkatan">
+          <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kelas</label>
+        <input class="form-input" id="tetap-kelas" placeholder="cth: Amanah" type="text" value="Amanah">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tahun Peperiksaan</label>
+      <select class="form-input" id="tetap-tahun">
+        <option>2024</option><option>2025</option><option>2023</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Batal</button>
+      <button class="btn-primary" onclick="simpanTetapan()">Simpan Tetapan</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── Mock data ─────────────────────────────────────────────
@@ -331,6 +447,12 @@ const JURANG = {
 let ROLE = 'teacher';
 let charts = {};
 let markState = {}; // live mark edits for guru
+
+// Guru live state (can be edited via Tetapan modal)
+let guruProfile = { subjek:'Matematik', tingkatan:'5', kelas:'Amanah', tahun:'2024' };
+// Live student list (seeded from PELAJAR_5A, can have new entries added)
+let pelajarList = [];
+let pelajarNextId = 100;
 
 function getRole() {
   try {
@@ -397,41 +519,62 @@ function buildApp() {
 // ═══════════════════════════════════════════════════════════
 function buildGuru() {
   const tabs = [
-    { id:'guru-rekod',  label:'Rekod Markah' },
-    { id:'guru-pelajar',label:'Pelajar Saya' },
-    { id:'guru-status', label:'Status Pengisian' },
+    { id:'guru-rekod',   label:'Rekod Markah' },
+    { id:'guru-pelajar', label:'Pelajar Saya' },
+    { id:'guru-tetapan', label:'Tetapan Kelas' },
+    { id:'guru-status',  label:'Status Pengisian' },
   ];
   renderTabs(tabs);
 
-  // Init mark state from mock
-  PELAJAR_5A.forEach(p => {
-    markState[p.id] = { ar1: p.marks.ar1, ar2: p.marks.ar2, percubaan: p.marks.percubaan };
-  });
+  // Seed pelajarList from mock on first load
+  if (pelajarList.length === 0) {
+    pelajarList = PELAJAR_5A.map(p => ({ ...p }));
+    pelajarList.forEach(p => {
+      markState[p.id] = { ar1: p.marks.ar1, ar2: p.marks.ar2, percubaan: p.marks.percubaan };
+    });
+  }
+
+  renderGuruMain();
+  bindTabs();
+}
+
+function renderGuruMain() {
+  const bil = pelajarList.length;
+  const alerts = pelajarList.filter(p => isAlert(p.id)).length;
+  const kelasLabel = `${guruProfile.tingkatan} ${guruProfile.kelas}`;
 
   document.getElementById('main').innerHTML = `
     <!-- Tab: Rekod Markah -->
     <section id="guru-rekod" class="active">
-      <div class="info-banner">ℹ️ Data yang direkod adalah untuk <strong>${DEMO.guru.subjek}</strong> · Kelas <strong>${DEMO.guru.kelas}</strong></div>
-      <div class="sh">
+      <div class="info-banner" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>ℹ️ Merekod markah: <strong>${guruProfile.subjek}</strong> · Kelas <strong>${kelasLabel}</strong> · ${guruProfile.tahun}</span>
+        <button class="btn-sm" onclick="openTetapan()">✏️ Tukar</button>
+      </div>
+      <div class="sh" style="margin-top:16px">
         <div><div class="sh-title">Rekod Markah Pelajar</div><div class="sh-sub">Isi markah dan klik Simpan Semua apabila selesai</div></div>
+        <button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:8px 14px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Pelajar
+        </button>
       </div>
       <div class="filter-bar">
         <span class="filter-label">Peperiksaan:</span>
-        <select class="sel" id="guru-pep">
-          <option value="percubaan">Percubaan 2024</option>
+        <select class="sel" id="guru-pep" onchange="refreshMarkTable()">
+          <option value="percubaan">Percubaan ${guruProfile.tahun}</option>
           <option value="ar2">Ujian Akhir Bulan (AR2)</option>
           <option value="ar1">Ujian Pertengahan Tahun (AR1)</option>
         </select>
       </div>
+      ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">Tiada pelajar lagi</div><div class="empty-sub">Tambah pelajar menggunakan butang "Tambah Pelajar" di atas</div></div>` : `
       <div class="tbl-wrap">
-        <table class="tbl" id="guru-mark-tbl">
+        <table class="tbl">
           <thead><tr>
             <th style="width:40px">No.</th>
             <th>Nama Pelajar</th>
-            <th style="width:90px; text-align:center">Markah</th>
-            <th style="width:80px; text-align:center">Gred</th>
-            <th style="width:90px; text-align:center">Trend</th>
-            <th style="width:80px"></th>
+            <th style="width:90px;text-align:center">Markah</th>
+            <th style="width:80px;text-align:center">Gred</th>
+            <th style="width:90px;text-align:center">Trend</th>
+            <th style="width:90px"></th>
           </tr></thead>
           <tbody id="guru-mark-tbody"></tbody>
         </table>
@@ -442,100 +585,206 @@ function buildGuru() {
           Simpan Semua
         </button>
         <button class="btn-secondary" onclick="refreshMarkTable()">Muat Semula</button>
-      </div>
+      </div>`}
     </section>
 
     <!-- Tab: Pelajar Saya -->
     <section id="guru-pelajar">
       <div class="sh">
         <div><div class="sh-title">Pelajar Saya</div><div class="sh-sub">Trend markah AR1 → AR2 → Percubaan · merah = merosot</div></div>
-        <span id="guru-alert-chip" class="chip chip-red"></span>
+        <span class="chip chip-red" style="${alerts===0?'display:none':''}">${alerts} pelajar berisiko</span>
       </div>
-      <div id="guru-student-list" class="student-list"></div>
+      ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Tiada pelajar didaftarkan</div><div class="empty-sub">Pergi ke tab <strong>Rekod Markah</strong> dan tambah pelajar dahulu</div></div>` : `<div id="guru-student-list" class="student-list"></div>`}
+    </section>
+
+    <!-- Tab: Tetapan Kelas -->
+    <section id="guru-tetapan">
+      <div class="sh"><div><div class="sh-title">Tetapan Kelas</div><div class="sh-sub">Urus kelas, subjek dan senarai pelajar anda</div></div></div>
+
+      <div class="setup-card">
+        <div class="setup-icon">📚</div>
+        <div class="setup-info">
+          <div class="setup-title">${guruProfile.subjek}</div>
+          <div class="setup-sub">Tingkatan ${guruProfile.tingkatan} ${guruProfile.kelas} · ${guruProfile.tahun}</div>
+        </div>
+        <button class="btn-sm" onclick="openTetapan()">Tukar</button>
+      </div>
+
+      <div class="setup-card">
+        <div class="setup-icon">👥</div>
+        <div class="setup-info">
+          <div class="setup-title">Pelajar Berdaftar</div>
+          <div class="setup-sub">${bil} pelajar dalam kelas ini</div>
+        </div>
+        <button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:7px 14px">+ Tambah</button>
+      </div>
+
+      <div class="sh" style="margin-top:8px">
+        <div class="sh-title" style="font-size:14px">Senarai Pelajar</div>
+      </div>
+      <div id="guru-tetapan-list">
+        ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">Tiada pelajar</div><div class="empty-sub">Klik "Tambah Pelajar" untuk mulakan</div></div>` : ''}
+      </div>
     </section>
 
     <!-- Tab: Status Pengisian -->
     <section id="guru-status">
-      <div class="sh">
-        <div><div class="sh-title">Status Pengisian Data</div><div class="sh-sub">Semak keseluruhan pengisian kelas anda</div></div>
-      </div>
+      <div class="sh"><div><div class="sh-title">Status Pengisian Data</div><div class="sh-sub">Semak keseluruhan pengisian kelas anda</div></div></div>
       <div class="kpi-grid">
-        <div class="kpi">
-          <div class="kpi-lbl">Pelajar Direkod</div>
-          <div class="kpi-val">${PELAJAR_5A.length}</div>
-          <span class="kpi-delta green">✓ Lengkap</span>
-        </div>
-        <div class="kpi">
-          <div class="kpi-lbl">Peperiksaan Diisi</div>
-          <div class="kpi-val">3/3</div>
-          <span class="kpi-delta green">AR1, AR2, Percubaan</span>
-        </div>
-        <div class="kpi">
-          <div class="kpi-lbl">Pelajar Berisiko</div>
-          <div class="kpi-val red-c">${PELAJAR_5A.filter(p=>p.alert).length}</div>
-          <span class="kpi-delta red-c">Perlu perhatian</span>
-        </div>
+        <div class="kpi"><div class="kpi-lbl">Pelajar Direkod</div><div class="kpi-val" id="kpi-bil">${bil}</div><span class="kpi-delta green">Dalam sistem</span></div>
+        <div class="kpi"><div class="kpi-lbl">Peperiksaan Diisi</div><div class="kpi-val">3/3</div><span class="kpi-delta green">AR1, AR2, Percubaan</span></div>
+        <div class="kpi"><div class="kpi-lbl">Pelajar Berisiko</div><div class="kpi-val red-c" id="kpi-alert">${alerts}</div><span class="kpi-delta red-c">Perlu perhatian</span></div>
       </div>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr><th>Peperiksaan</th><th>Tarikh Tutup</th><th>Diisi</th><th>Belum</th><th>Status</th></tr></thead>
           <tbody>
-            <tr><td class="tc-name">AR1 2024</td><td>30 Apr 2024</td><td class="tc-green">12</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">AR2 2024</td><td>31 Ogos 2024</td><td class="tc-green">12</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">Percubaan 2024</td><td>18 Okt 2024</td><td class="tc-green">12</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">SPM 2024</td><td>Nov 2024</td><td class="tc-yellow">—</td><td>—</td><td><span class="chip chip-yellow">Belum bermula</span></td></tr>
+            <tr><td class="tc-name">AR1 ${guruProfile.tahun}</td><td>30 Apr ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
+            <tr><td class="tc-name">AR2 ${guruProfile.tahun}</td><td>31 Ogos ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
+            <tr><td class="tc-name">Percubaan ${guruProfile.tahun}</td><td>18 Okt ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
+            <tr><td class="tc-name">SPM ${guruProfile.tahun}</td><td>Nov ${guruProfile.tahun}</td><td class="tc-yellow">—</td><td>—</td><td><span class="chip chip-yellow">Belum bermula</span></td></tr>
           </tbody>
         </table>
       </div>
     </section>
   `;
 
-  refreshMarkTable();
-  renderGuruPelajar();
-  bindTabs();
+  if (bil > 0) {
+    refreshMarkTable();
+    renderGuruPelajar();
+    renderTetapanList();
+  }
+}
+
+function isAlert(id) {
+  const m = markState[id];
+  if (!m) return false;
+  // Berisiko jika trend merosot lebih dari 5 markah dari AR1 ke Percubaan
+  return (m.ar1 - m.percubaan) > 5;
 }
 
 function refreshMarkTable() {
+  const tbody = document.getElementById('guru-mark-tbody');
+  if (!tbody) return;
   const pep = document.getElementById('guru-pep')?.value || 'percubaan';
   const prev = { percubaan:'ar2', ar2:'ar1', ar1:null };
-  const pepLabel = { percubaan:'Percubaan', ar2:'AR2', ar1:'AR1' };
 
-  document.getElementById('guru-mark-tbody').innerHTML = PELAJAR_5A.map(p => {
-    const mark   = markState[p.id][pep];
+  tbody.innerHTML = pelajarList.map((p, i) => {
+    const ms = markState[p.id] || { ar1:0, ar2:0, percubaan:0 };
+    const mark = ms[pep];
     const prevPep = prev[pep];
-    const prevMark = prevPep ? markState[p.id][prevPep] : null;
-    const gred  = markToGred(mark);
+    const prevMark = prevPep ? ms[prevPep] : null;
+    const gred = markToGred(mark);
     const trendHtml = prevMark !== null
       ? (mark < prevMark - 3 ? `<span class="trend-up">▲ Turun</span>` : mark > prevMark + 3 ? `<span class="trend-dn">▼ Naik</span>` : `<span class="trend-eq">— Stabil</span>`)
       : `<span class="trend-eq">—</span>`;
     return `<tr>
-      <td style="color:var(--t3);text-align:center">${p.no}</td>
+      <td style="color:var(--t3);text-align:center">${String(i+1).padStart(2,'0')}</td>
       <td class="tc-name">${p.nama}</td>
       <td style="text-align:center"><input type="number" class="mark-input" value="${mark}" min="0" max="100" data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)"></td>
       <td style="text-align:center"><span class="chip ${gredClass(gred)}">${gred}</span></td>
       <td style="text-align:center">${trendHtml}</td>
-      <td style="text-align:center"><button class="btn-save" onclick="saveSingleMark('${p.id}')">Simpan</button></td>
+      <td style="text-align:center;display:flex;gap:6px;justify-content:center">
+        <button class="btn-save" onclick="saveSingleMark('${p.id}')">Simpan</button>
+        <button class="btn-sm" title="Padam" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">✕</button>
+      </td>
     </tr>`;
   }).join('');
-
-  document.getElementById('guru-pep')?.addEventListener('change', refreshMarkTable);
 }
 
 function updateMark(el) {
   const id  = el.dataset.id;
   const pep = el.dataset.pep;
   const val = Math.max(0, Math.min(100, +el.value || 0));
+  if (!markState[id]) markState[id] = { ar1:0, ar2:0, percubaan:0 };
   markState[id][pep] = val;
   el.value = val;
 }
 
 function saveSingleMark(id) {
-  const p = PELAJAR_5A.find(x => x.id === id);
-  showToast(`✓ Markah ${p.nama} disimpan`);
+  const p = pelajarList.find(x => x.id === id);
+  showToast(`✓ Markah ${p?.nama || id} disimpan`);
 }
 
 function saveAllMarks() {
-  showToast(`✓ Semua markah ${PELAJAR_5A.length} pelajar telah disimpan`);
+  showToast(`✓ Semua markah ${pelajarList.length} pelajar telah disimpan`);
+}
+
+// ── Modal helpers ─────────────────────────────────────────
+function closeModal() {
+  document.getElementById('modal-tambah').hidden  = true;
+  document.getElementById('modal-tetapan').hidden = true;
+}
+
+function openTambahPelajar() {
+  document.getElementById('inp-nama').value    = '';
+  document.getElementById('inp-no').value      = '';
+  document.getElementById('inp-ar1').value     = '';
+  document.getElementById('modal-tambah').hidden = false;
+  setTimeout(() => document.getElementById('inp-nama').focus(), 50);
+}
+
+function tambahPelajar() {
+  const nama = document.getElementById('inp-nama').value.trim();
+  if (!nama) { document.getElementById('inp-nama').focus(); return; }
+  const no   = document.getElementById('inp-no').value.trim() || `—`;
+  const ar1  = Math.max(0, Math.min(100, +document.getElementById('inp-ar1').value || 0));
+  const id   = 'p' + (++pelajarNextId);
+  pelajarList.push({ id, nama, no });
+  markState[id] = { ar1, ar2: ar1, percubaan: ar1 };
+  closeModal();
+  showToast(`✓ ${nama} berjaya ditambah`);
+  renderGuruMain();
+  bindTabs();
+}
+
+function padamPelajar(id) {
+  const p = pelajarList.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`Padam ${p.nama} daripada senarai?`)) return;
+  pelajarList = pelajarList.filter(x => x.id !== id);
+  delete markState[id];
+  showToast(`Pelajar ${p.nama} dipadam`);
+  renderGuruMain();
+  bindTabs();
+}
+
+function openTetapan() {
+  document.getElementById('tetap-subjek').value    = guruProfile.subjek;
+  document.getElementById('tetap-tingkatan').value = guruProfile.tingkatan;
+  document.getElementById('tetap-kelas').value     = guruProfile.kelas;
+  document.getElementById('tetap-tahun').value     = guruProfile.tahun;
+  document.getElementById('modal-tetapan').hidden  = false;
+}
+
+function simpanTetapan() {
+  guruProfile.subjek     = document.getElementById('tetap-subjek').value;
+  guruProfile.tingkatan  = document.getElementById('tetap-tingkatan').value;
+  guruProfile.kelas      = document.getElementById('tetap-kelas').value.trim() || guruProfile.kelas;
+  guruProfile.tahun      = document.getElementById('tetap-tahun').value;
+  closeModal();
+  showToast(`✓ Tetapan disimpan: ${guruProfile.subjek} · T${guruProfile.tingkatan} ${guruProfile.kelas}`);
+  renderGuruMain();
+  bindTabs();
+}
+
+function renderTetapanList() {
+  const el = document.getElementById('guru-tetapan-list');
+  if (!el) return;
+  if (pelajarList.length === 0) return;
+  el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>No.</th><th>Nama Pelajar</th><th>No. IC / Pelajar</th><th>AR1</th><th></th></tr></thead>
+    <tbody>${pelajarList.map((p, i) => {
+      const m = markState[p.id] || {};
+      return `<tr>
+        <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
+        <td class="tc-name">${p.nama}</td>
+        <td style="color:var(--t3);font-size:12px">${p.no || '—'}</td>
+        <td class="tc-num">${m.ar1 ?? '—'}</td>
+        <td><button class="btn-sm" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">Padam</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
 }
 
 function markToGred(m) {
@@ -551,18 +800,20 @@ function gredClass(g) {
 }
 
 function renderGuruPelajar() {
-  const alerts = PELAJAR_5A.filter(p => p.alert).length;
-  document.getElementById('guru-alert-chip').textContent = `${alerts} pelajar berisiko`;
-  document.getElementById('guru-student-list').innerHTML = PELAJAR_5A.map(p => {
-    const latest = p.marks.percubaan;
+  const el = document.getElementById('guru-student-list');
+  if (!el) return;
+  el.innerHTML = pelajarList.map(p => {
+    const m = markState[p.id] || { ar1:0, ar2:0, percubaan:0 };
+    const alert = isAlert(p.id);
+    const latest = m.percubaan;
     const initials = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('');
-    return `<div class="student-row${p.alert?' at-risk':''}">
+    return `<div class="student-row${alert?' at-risk':''}">
       <div class="s-av">${initials}</div>
       <div class="s-info">
         <div class="s-name">${p.nama}</div>
-        <div class="s-meta">AR1: ${p.marks.ar1} &nbsp;·&nbsp; AR2: ${p.marks.ar2} &nbsp;·&nbsp; Percubaan: ${p.marks.percubaan}</div>
+        <div class="s-meta">AR1: ${m.ar1} &nbsp;·&nbsp; AR2: ${m.ar2} &nbsp;·&nbsp; Percubaan: ${m.percubaan}</div>
       </div>
-      <div class="s-spark">${sparkSVG(p.marks, p.alert)}</div>
+      <div class="s-spark">${sparkSVG(m, alert)}</div>
       <div class="s-mark ${latest>=70?'green':latest>=50?'yellow':'red-c'}">${latest}</div>
     </div>`;
   }).join('');
