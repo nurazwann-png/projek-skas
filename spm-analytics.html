@@ -789,6 +789,96 @@ const JURANG_SK = {
   ],
 };
 
+// ── Auto-kira jurang dari markah guru ────────────────────
+function kiraJurangDariMarkah() {
+  let kelasList = [], markState = {};
+  try {
+    const kl = localStorage.getItem('skas_kelas');
+    if (kl) kelasList = JSON.parse(kl);
+    const ms = localStorage.getItem('skas_marks');
+    if (ms) markState = JSON.parse(ms);
+  } catch(e) {}
+
+  const studentMap = {};
+  kelasList.forEach(k => {
+    (k.pelajar || []).forEach(p => {
+      if (!studentMap[p.id]) studentMap[p.id] = { ...p };
+    });
+  });
+  const students = Object.values(studentMap);
+  if (students.length < 3) return null;
+
+  const enriched = students.map(p => {
+    const m = markState[p.id] || {};
+    const latestMark = m.percubaan ?? m.ar2 ?? m.ar1 ?? null;
+    const gps = latestMark != null ? getGPS(latestMark) : null;
+    const lulus = latestMark != null && latestMark >= 40;
+    return { ...p, latestMark, gps, lulus };
+  }).filter(p => p.gps != null);
+  if (enriched.length < 3) return null;
+
+  const groupStats = (field, labels) => labels.map(label => {
+    const group = enriched.filter(p => (p[field] || '') === label);
+    if (group.length === 0) return null;
+    const avgGPS = group.reduce((a, p) => a + p.gps, 0) / group.length;
+    const lulusCount = group.filter(p => p.lulus).length;
+    return {
+      label, bil: group.length,
+      gps: parseFloat(avgGPS.toFixed(2)),
+      lulusPeratus: Math.round(lulusCount / group.length * 100),
+      prev_gps: (JURANG_SK[field]?.find(r => r.label === label)?.prev_gps) ?? parseFloat((avgGPS + 0.2).toFixed(2))
+    };
+  }).filter(Boolean);
+
+  const ses        = groupStats('ses', ['B40','M40','T20']);
+  const lokasi     = groupStats('lokasi', ['Bandar','Luar Bandar','Pedalaman']);
+  const jantina    = groupStats('jantina', ['Perempuan','Lelaki']);
+  const penginapan = groupStats('penginapan', ['Asrama','Harian']);
+  if (!ses.length || !lokasi.length || !jantina.length) return null;
+  return { ses, lokasi, jantina, penginapan: penginapan.length ? penginapan : JURANG_SK.penginapan };
+}
+
+function muatJurangDinamik() {
+  const dikira = kiraJurangDariMarkah();
+  if (dikira) {
+    Object.assign(JURANG_SK, dikira);
+    // Kemaskini JURANG (PPD) serentak
+    ['ses','lokasi','jantina'].forEach(dim => {
+      if (JURANG_SK[dim] && JURANG[dim]) {
+        JURANG[dim].labels = JURANG_SK[dim].map(r => r.label);
+        JURANG[dim].gps    = JURANG_SK[dim].map(r => r.gps);
+      }
+    });
+    const jumlah = dikira.ses.reduce((a, r) => a + r.bil, 0);
+    return { sumber: 'markah-guru', jumlahPelajar: jumlah };
+  }
+  return { sumber: 'data-demo', jumlahPelajar: null };
+}
+
+function refreshJurangAnalisis() {
+  const info = muatJurangDinamik();
+  renderJurang();
+  const badge = document.getElementById('jurang-sumber-badge');
+  if (badge) {
+    badge.innerHTML = info.sumber === 'markah-guru'
+      ? `<span style="color:#22c55e">● Dikemas kini — data daripada markah guru (${info.jumlahPelajar} pelajar)</span>`
+      : `<span style="color:#f59e0b">● Data demo — markah guru belum mencukupi</span>`;
+  }
+  const active = document.querySelector('#jurang-tabs .jurang-tab-btn.active');
+  switchJurang(active?.dataset.dim || 'ses');
+}
+
+function refreshJurangPPD() {
+  muatJurangDinamik();
+  renderPPDBar('ppd-ses-chart',    JURANG.ses.labels,     JURANG.ses.gps,     ['rgba(96,165,250,.85)','rgba(99,102,241,.85)','rgba(139,92,246,.85)']);
+  renderPPDBar('ppd-jantina-chart',JURANG.jantina.labels, JURANG.jantina.gps, ['rgba(59,130,246,.85)','rgba(244,114,182,.85)']);
+  renderPPDBar('ppd-lokasi-chart', JURANG.lokasi.labels,  JURANG.lokasi.gps,  ['rgba(34,197,94,.85)','rgba(234,179,8,.85)']);
+  renderPPDBar('ppd-penginapan-chart', ['Asrama','Harian'], [JURANG_SK.penginapan[0].gps, JURANG_SK.penginapan[1].gps], ['rgba(59,130,246,.85)','rgba(139,92,246,.85)']);
+  renderPPDJurangKPI();
+  showToast('Analisis jurang daerah telah dikemas kini');
+}
+// ──────────────────────────────────────────────────────────
+
 const SEKOLAH_DAERAH = [
   { id:'sk-dalat',    nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.98},{t:2022,g:5.76},{t:2023,g:5.44},{t:2024,g:5.28}],
@@ -2669,7 +2759,12 @@ function buildPentadbir() {
 
       <!-- Analisis Jurang -->
       <div class="sh" style="margin-top:8px">
-        <div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi, Jantina dan Analisis LMS</div></div>
+        <div>
+          <div class="sh-title">Analisis Jurang Pencapaian</div>
+          <div class="sh-sub">GPS mengikut SES, Lokasi, Jantina dan Analisis LMS</div>
+          <div id="jurang-sumber-badge" style="font-size:10px;margin-top:4px;color:var(--t3)"></div>
+        </div>
+        <button onclick="refreshJurangAnalisis()" style="padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--t2);font-size:11px;cursor:pointer">🔄 Kemaskini</button>
       </div>
       <div id="jurang-tabs" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
         <button class="jurang-tab-btn active" data-dim="ses" onclick="switchJurang('ses')">SES</button>
@@ -2988,6 +3083,13 @@ function switchJurang(dim) {
 }
 
 function renderJurang() {
+  const _jurangInfo = muatJurangDinamik();
+  const _badge = document.getElementById('jurang-sumber-badge');
+  if (_badge) {
+    _badge.innerHTML = _jurangInfo.sumber === 'markah-guru'
+      ? `<span style="color:#22c55e">● Data dikira daripada markah guru (${_jurangInfo.jumlahPelajar} pelajar)</span>`
+      : `<span style="color:#f59e0b">● Data demo — markah guru belum mencukupi untuk pengiraan automatik</span>`;
+  }
   ['ses','lokasi','jantina','penginapan'].forEach(dim => {
     const rows = JURANG_SK[dim];
     const cont = document.getElementById('jurang-' + dim + '-content');
@@ -4472,7 +4574,7 @@ function buildPPD() {
 
     <!-- Tab: Analisis Jurang -->
     <section id="ppd-jurang">
-      <div class="sh"><div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi, Jantina, Penginapan dan LMS · daerah keseluruhan</div></div></div>
+      <div class="sh"><div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi, Jantina, Penginapan dan LMS · daerah keseluruhan</div></div><button onclick="refreshJurangPPD()" style="padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--t2);font-size:11px;cursor:pointer">🔄 Kemaskini</button></div>
       <!-- Tab navigasi jurang PPD -->
       <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap" id="ppd-jurang-tabs">
         <button class="jurang-tab-btn active" data-pdim="ses"        onclick="switchPPDJurang('ses')">SES</button>
@@ -4710,6 +4812,7 @@ function buildPPD() {
 
   bindTabs();
   setTimeout(() => {
+    muatJurangDinamik();
     refreshPPDTrend();
     renderPPDBar('ppd-ses-chart',    JURANG.ses.labels,     JURANG.ses.gps,     ['rgba(96,165,250,.85)','rgba(99,102,241,.85)','rgba(139,92,246,.85)']);
     renderPPDBar('ppd-jantina-chart',JURANG.jantina.labels, JURANG.jantina.gps, ['rgba(59,130,246,.85)','rgba(244,114,182,.85)']);
