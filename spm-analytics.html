@@ -3132,6 +3132,451 @@ function bukaAnalisisSk(id) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// JANA LAPORAN — buka tetingkap baru dengan laporan HTML
+// ═══════════════════════════════════════════════════════════
+function janaLaporan(jenis, skId) {
+  const tarikh = new Date().toLocaleDateString('ms-MY', { day:'2-digit', month:'long', year:'numeric' });
+  const sorted = [...SEKOLAH_DAERAH].sort((a,b)=>a.gps-b.gps);
+
+  function gpsChip(g) {
+    const c = g<=4.5?'#16a34a':g<=5.5?'#ca8a04':'#dc2626';
+    return `<span style="background:${c}22;color:${c};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700">${g.toFixed(2)}</span>`;
+  }
+  function trendStr(curr,prev) {
+    const d = curr-prev;
+    if(Math.abs(d)<0.05) return '<span style="color:#64748b">— Stabil</span>';
+    return d<0
+      ? `<span style="color:#16a34a">↑ Baik (−${Math.abs(d).toFixed(2)})</span>`
+      : `<span style="color:#dc2626">↓ Lemah (+${d.toFixed(2)})</span>`;
+  }
+
+  function headerHTML(tajuk, sub) {
+    return `<div style="background:linear-gradient(135deg,#1e3a5f,#1e40af);color:#fff;padding:28px 32px;border-radius:12px 12px 0 0;margin-bottom:0">
+      <div style="font-size:11px;letter-spacing:.12em;opacity:.7;text-transform:uppercase;margin-bottom:6px">PPD Dalat · ${tarikh}</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:4px">${tajuk}</div>
+      <div style="font-size:13px;opacity:.8">${sub}</div>
+    </div>`;
+  }
+
+  function kpiRow(items) {
+    return `<div style="display:grid;grid-template-columns:repeat(${items.length},1fr);gap:12px;margin:16px 0">
+      ${items.map(([lbl,val,note,clr])=>`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px">
+        <div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${lbl}</div>
+        <div style="font-size:24px;font-weight:800;color:${clr||'#1e293b'}">${val}</div>
+        ${note?`<div style="font-size:11px;color:#64748b;margin-top:2px">${note}</div>`:''}
+      </div>`).join('')}
+    </div>`;
+  }
+
+  function sekolahBlockHTML(s, rank) {
+    const totalLokasi = s.lokasi.Bandar + s.lokasi.LuarBandar + s.lokasi.Pedalaman;
+    const totalSes = s.ses.B40 + s.ses.M40 + s.ses.T20;
+    const totalJantina = s.jantina.Perempuan + s.jantina.Lelaki;
+    const tr = s.trend || { ar1:s.gps+0.54, ar2:s.gps+0.32, perc:s.gps+0.16, spm:s.gps };
+    const lemah = s.panitia.filter(p=>p.gpmp>5.5);
+    const b40Pct = Math.round(s.ses.B40/totalSes*100);
+    const pedPct = Math.round(s.lokasi.Pedalaman/totalLokasi*100);
+
+    return `<div style="border:1px solid #e2e8f0;border-radius:10px;margin-bottom:20px;overflow:hidden;page-break-inside:avoid">
+      <div style="background:#1e3a5f;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px">
+        <div style="background:#fff2;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">#${rank}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800">${s.nama}</div>
+          <div style="font-size:11px;opacity:.75">${s.bil} pelajar · ${s.hantar==='Belum'?'⚠ Belum hantar data':'✓ Data lengkap'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:900">${s.gps.toFixed(2)}</div>
+          <div style="font-size:10px;opacity:.7">GPS 2024</div>
+        </div>
+      </div>
+      <div style="padding:14px 16px">
+        <!-- KPI -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+          <div style="text-align:center;padding:8px;background:#f8fafc;border-radius:8px">
+            <div style="font-size:10px;color:#64748b;font-weight:700">GPS 2024</div>
+            <div style="font-size:18px;font-weight:800;color:#1e3a5f">${s.gps.toFixed(2)}</div>
+            <div style="font-size:10px">${trendStr(s.gps,s.prev)}</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:#f8fafc;border-radius:8px">
+            <div style="font-size:10px;color:#64748b;font-weight:700">Bil. Pelajar</div>
+            <div style="font-size:18px;font-weight:800;color:#1e3a5f">${s.bil}</div>
+            <div style="font-size:10px;color:#64748b">SPM 2024</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:#f8fafc;border-radius:8px">
+            <div style="font-size:10px;color:#64748b;font-weight:700">Pelajar Berisiko</div>
+            <div style="font-size:18px;font-weight:800;color:${s.berisiko>10?'#dc2626':'#16a34a'}">${s.berisiko}</div>
+            <div style="font-size:10px;color:#64748b">orang</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:#f8fafc;border-radius:8px">
+            <div style="font-size:10px;color:#64748b;font-weight:700">Lulus 100%</div>
+            <div style="font-size:18px;font-weight:800;color:${s.lulus100?'#16a34a':'#dc2626'}">${s.lulus100?'Ya':'Tidak'}</div>
+            <div style="font-size:10px;color:#64748b">Mata pelajaran</div>
+          </div>
+        </div>
+        <!-- Trend AR -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Trend GPS: AR1 → AR2 → Percubaan → SPM</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+            ${[['AR1',tr.ar1,'#94a3b8'],['AR2',tr.ar2,'#60a5fa'],['Percubaan',tr.perc,'#f59e0b'],['SPM',tr.spm,'#22c55e']].map(([lbl,val,clr],i,arr)=>{
+              const prev2 = i>0?arr[i-1][1]:null;
+              const diff = prev2!==null?(val-prev2).toFixed(2):null;
+              return `<div style="text-align:center;padding:8px;background:${clr}15;border:1px solid ${clr}40;border-radius:8px">
+                <div style="font-size:10px;font-weight:700;color:#475569">${lbl}</div>
+                <div style="font-size:17px;font-weight:800;color:${clr}">${val.toFixed(2)}</div>
+                ${diff!==null?`<div style="font-size:9px;color:${parseFloat(diff)<0?'#16a34a':'#dc2626'}">${parseFloat(diff)<0?'↑ Baik':'↓ Lemah'} ${Math.abs(diff)}</div>`:'<div style="font-size:9px;color:#94a3b8">Asas</div>'}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <!-- Grid 3 kolum: Panitia | SES | Jantina/Lokasi -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px">
+          <!-- Panitia -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Prestasi Panitia</div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="background:#f1f5f9">
+                <th style="padding:4px 8px;text-align:left;color:#475569">Subjek</th>
+                <th style="padding:4px 8px;text-align:center;color:#475569">GPMP</th>
+                <th style="padding:4px 8px;text-align:center;color:#475569">Trend</th>
+              </tr></thead>
+              <tbody>${s.panitia.map(p=>`<tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:4px 8px;color:#1e293b">${p.subjek}</td>
+                <td style="padding:4px 8px;text-align:center">${gpsChip(p.gpmp)}</td>
+                <td style="padding:4px 8px;text-align:center;font-size:10px">${trendStr(p.gpmp,p.prev)}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+          <!-- SES -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Analisis SES</div>
+            ${[['B40',s.ses.B40,'#ef4444'],['M40',s.ses.M40,'#eab308'],['T20',s.ses.T20,'#22c55e']].map(([k,v,c])=>{
+              const pct=Math.round(v/totalSes*100);
+              return `<div style="margin-bottom:6px">
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-bottom:2px"><span style="font-weight:700;color:${c}">${k}</span><span>${v} (${pct}%)</span></div>
+                <div style="height:6px;border-radius:3px;background:#e2e8f0"><div style="height:100%;width:${pct}%;border-radius:3px;background:${c}"></div></div>
+              </div>`;
+            }).join('')}
+            ${b40Pct>60?`<div style="font-size:10px;color:#dc2626;margin-top:6px">⚠ B40 tinggi (${b40Pct}%) — cadang bantuan tambahan</div>`:''}
+          </div>
+          <!-- Lokasi & Jantina -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Lokasi &amp; Jantina</div>
+            ${[['Bandar',s.lokasi.Bandar,'#3b82f6'],['Luar Bandar',s.lokasi.LuarBandar,'#eab308'],['Pedalaman',s.lokasi.Pedalaman,'#ef4444']].map(([k,v,c])=>{
+              const pct=Math.round(v/totalLokasi*100);
+              return `<div style="margin-bottom:6px">
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-bottom:2px"><span style="font-weight:700;color:${c}">${k}</span><span>${v} (${pct}%)</span></div>
+                <div style="height:6px;border-radius:3px;background:#e2e8f0"><div style="height:100%;width:${pct}%;border-radius:3px;background:${c}"></div></div>
+              </div>`;
+            }).join('')}
+            <div style="margin-top:8px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:4px">Jantina</div>
+            ${[['♀ Perempuan',s.jantina.Perempuan,'#a855f7'],['♂ Lelaki',s.jantina.Lelaki,'#3b82f6']].map(([k,v,c])=>{
+              const pct=Math.round(v/totalJantina*100);
+              return `<div style="margin-bottom:4px;display:flex;align-items:center;gap:6px;font-size:10px">
+                <span style="color:${c};font-weight:700;min-width:70px">${k}</span>
+                <div style="flex:1;height:6px;border-radius:3px;background:#e2e8f0"><div style="height:100%;width:${pct}%;border-radius:3px;background:${c}"></div></div>
+                <span style="color:#475569;min-width:28px">${pct}%</span>
+              </div>`;
+            }).join('')}
+            ${pedPct>40?`<div style="font-size:10px;color:#dc2626;margin-top:6px">⚠ ${pedPct}% Pedalaman — semak capaian PdPR</div>`:''}
+          </div>
+        </div>
+        ${lemah.length?`<div style="margin-top:10px;padding:8px 12px;background:#fef2f2;border-left:3px solid #ef4444;border-radius:0 6px 6px 0;font-size:11px;color:#7f1d1d">⚠ Panitia memerlukan perhatian: <strong>${lemah.map(p=>p.subjek).join(', ')}</strong> (GPMP > 5.50)</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  function bukaWin(html) {
+    const full = `<!DOCTYPE html><html lang="ms"><head>
+      <meta charset="UTF-8"><meta name="viewport" content="width=device-width">
+      <title>Laporan PPD Dalat</title>
+      <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;padding:24px}
+        @media print{body{background:#fff;padding:0} .no-print{display:none} .page-break{page-break-before:always}}
+        .wrap{max-width:960px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+        .body-pad{padding:24px 28px}
+        table{border-collapse:collapse}
+      </style>
+    </head><body>
+      <div style="text-align:right;margin-bottom:16px" class="no-print">
+        <button onclick="window.print()" style="background:#1e40af;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">🖨 Cetak / Simpan PDF</button>
+      </div>
+      <div class="wrap">${html}</div>
+    </body></html>`;
+    const blob = new Blob([full], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }
+
+  // ── JANA mengikut jenis ──────────────────────────────────
+
+  if (jenis === 'lap-sekolah') {
+    const s = SEKOLAH_DAERAH.find(x=>x.id===skId);
+    if (!s) return;
+    const rank = sorted.findIndex(x=>x.id===skId)+1;
+    bukaWin(`
+      ${headerHTML(`Laporan Sekolah — ${s.nama}`, `Analisis Prestasi SPM 2024 · GPS ${s.gps.toFixed(2)}`)}
+      <div class="body-pad">${sekolahBlockHTML(s, rank)}</div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-semua-sekolah') {
+    const blocks = sorted.map((s,i)=>sekolahBlockHTML(s,i+1)).join('');
+    bukaWin(`
+      ${headerHTML('Laporan Intensif Per Sekolah — PPD Dalat', `Analisis komprehensif semua ${sorted.length} sekolah · SPM 2024`)}
+      <div class="body-pad">
+        <div style="margin-bottom:16px;padding:12px;background:#eff6ff;border-radius:8px;font-size:12px;color:#1e40af">
+          Dokumen ini mengandungi laporan individu bagi <strong>${sorted.length} sekolah</strong> dalam daerah Dalat, disusun mengikut GPS terbaik. Jana pada ${tarikh}.
+        </div>
+        ${blocks}
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-gps-daerah') {
+    const gpsAvg = (SEKOLAH_DAERAH.reduce((a,s)=>a+s.gps,0)/SEKOLAH_DAERAH.length).toFixed(2);
+    const lulus = SEKOLAH_DAERAH.filter(s=>s.lulus100).length;
+    bukaWin(`
+      ${headerHTML('Laporan GPS Daerah 2024', 'Ringkasan Pencapaian Akademik SPM · PPD Dalat')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['GPS Daerah (SPM)','5.28','▼ 0.16 berbanding 2023','#1e40af'],
+          ['Sekolah Lulus 100%',`${lulus}`,'daripada '+SEKOLAH_DAERAH.length+' sekolah','#16a34a'],
+          ['Unjuran GPS 2025','5.12','Trend positif','#7c3aed'],
+          ['Jumlah Pelajar',SEKOLAH_DAERAH.reduce((a,s)=>a+s.bil,0),'SPM 2024','#0f766e'],
+        ])}
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin:16px 0 8px;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Trend GPS Daerah — AR1 → SPM</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:8px 12px;text-align:left;color:#475569">Peperiksaan</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">2022</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">2023</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">2024</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Trend</th>
+          </tr></thead>
+          <tbody>${[['AR1',6.43,6.14,5.82],['AR2',6.21,5.93,5.61],['Percubaan',5.97,5.71,5.44],['SPM',5.63,5.44,5.28]].map(([p,y22,y23,y24])=>`
+            <tr style="border-bottom:1px solid #f1f5f9">
+              <td style="padding:8px 12px;font-weight:700;color:#1e293b">${p}</td>
+              <td style="padding:8px 12px;text-align:center;color:#94a3b8">${y22.toFixed(2)}</td>
+              <td style="padding:8px 12px;text-align:center;color:#475569">${y23.toFixed(2)}</td>
+              <td style="padding:8px 12px;text-align:center;font-weight:700">${gpsChip(y24)}</td>
+              <td style="padding:8px 12px;text-align:center;font-size:11px">${trendStr(y24,y23)}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin:16px 0 8px;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Kedudukan Sekolah</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:8px 12px;text-align:center;color:#475569">#</th>
+            <th style="padding:8px 12px;text-align:left;color:#475569">Sekolah</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2024</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2023</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Trend</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Lulus 100%</th>
+          </tr></thead>
+          <tbody>${sorted.map((s,i)=>`<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:#64748b">${i+1}</td>
+            <td style="padding:8px 12px;color:#1e293b;font-weight:600">${s.nama}</td>
+            <td style="padding:8px 12px;text-align:center">${gpsChip(s.gps)}</td>
+            <td style="padding:8px 12px;text-align:center;color:#94a3b8">${s.prev.toFixed(2)}</td>
+            <td style="padding:8px 12px;text-align:center;font-size:11px">${trendStr(s.gps,s.prev)}</td>
+            <td style="padding:8px 12px;text-align:center">${s.lulus100?'✅':'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-jurang') {
+    bukaWin(`
+      ${headerHTML('Laporan Analisis Jurang', 'Jurang SES, Jantina dan Lokasi · PPD Dalat SPM 2024')}
+      <div class="body-pad">
+        ${['ses','lokasi','jantina'].map(dim => {
+          const d = JURANG_SK[dim];
+          return `<div style="margin-bottom:20px">
+            <div style="font-size:13px;font-weight:700;color:#1e293b;border-bottom:2px solid #e2e8f0;padding-bottom:6px;margin-bottom:10px">
+              ${dim==='ses'?'Analisis Jurang SES (Sosioekonomi)':dim==='lokasi'?'Analisis Jurang Lokasi':'Analisis Jurang Jantina'}
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead><tr style="background:#f1f5f9">
+                <th style="padding:8px 12px;text-align:left;color:#475569">Kumpulan</th>
+                <th style="padding:8px 12px;text-align:center;color:#475569">Bil. Pelajar</th>
+                <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2024</th>
+                <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2023</th>
+                <th style="padding:8px 12px;text-align:center;color:#475569">Trend</th>
+                <th style="padding:8px 12px;text-align:center;color:#475569">% Lulus</th>
+              </tr></thead>
+              <tbody>${d.map(r=>`<tr style="border-bottom:1px solid #f1f5f9">
+                <td style="padding:8px 12px;font-weight:700;color:#1e293b">${r.label}</td>
+                <td style="padding:8px 12px;text-align:center;color:#475569">${r.bil}</td>
+                <td style="padding:8px 12px;text-align:center">${gpsChip(r.gps)}</td>
+                <td style="padding:8px 12px;text-align:center;color:#94a3b8">${r.prev_gps.toFixed(2)}</td>
+                <td style="padding:8px 12px;text-align:center;font-size:11px">${trendStr(r.gps,r.prev_gps)}</td>
+                <td style="padding:8px 12px;text-align:center;color:#475569">${r.lulusPeratus}%</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>`;
+        }).join('')}
+        <div style="margin-top:16px;padding:12px 16px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;font-size:12px;color:#78350f">
+          <strong>Cadangan Intervensi:</strong> Tumpukan program sokongan khas untuk pelajar B40 dan kawasan Pedalaman. Pertimbangkan program bimbingan pelajar lelaki memandangkan jurang jantina yang ketara.
+        </div>
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-ranking') {
+    bukaWin(`
+      ${headerHTML('Laporan Kedudukan Sekolah', 'Ranking Prestasi GPS Semua Sekolah · PPD Dalat SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Sekolah Terbaik',sorted[0].nama,`GPS ${sorted[0].gps.toFixed(2)}`,'#16a34a'],
+          ['GPS Terbaik',sorted[0].gps.toFixed(2),'Kedudukan #1','#16a34a'],
+          ['GPS Terlemah',sorted[sorted.length-1].gps.toFixed(2),'Perlukan sokongan','#dc2626'],
+          ['Purata GPS Daerah',(sorted.reduce((a,s)=>a+s.gps,0)/sorted.length).toFixed(2),'Semua sekolah','#1e40af'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:10px 12px;text-align:center;color:#475569">Kedudukan</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569">Sekolah</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">GPS 2024</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">GPS 2023</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">Trend</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">Bil. Pelajar</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">Berisiko</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569">Status</th>
+          </tr></thead>
+          <tbody>${sorted.map((s,i)=>`<tr style="border-bottom:1px solid #f1f5f9;${i<3?'background:#f0fdf4':''}">
+            <td style="padding:10px 12px;text-align:center;font-weight:800;font-size:16px;color:${i===0?'#16a34a':i===1?'#ca8a04':i===2?'#b45309':'#64748b'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+            <td style="padding:10px 12px;font-weight:700;color:#1e293b">${s.nama}</td>
+            <td style="padding:10px 12px;text-align:center">${gpsChip(s.gps)}</td>
+            <td style="padding:10px 12px;text-align:center;color:#94a3b8">${s.prev.toFixed(2)}</td>
+            <td style="padding:10px 12px;text-align:center;font-size:11px">${trendStr(s.gps,s.prev)}</td>
+            <td style="padding:10px 12px;text-align:center;color:#475569">${s.bil}</td>
+            <td style="padding:10px 12px;text-align:center;color:${s.berisiko>10?'#dc2626':'#16a34a'}">${s.berisiko}</td>
+            <td style="padding:10px 12px;text-align:center;font-size:11px">${s.hantar==='Belum'?'<span style=color:#dc2626>⚠ Belum</span>':'<span style=color:#16a34a>✓ Lengkap</span>'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-berisiko') {
+    bukaWin(`
+      ${headerHTML('Laporan Pelajar Berisiko Daerah', 'Senarai Komprehensif Pelajar Memerlukan Sokongan · SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Jumlah Pelajar Berisiko', SEKOLAH_DAERAH.reduce((a,s)=>a+s.berisiko,0), 'Semua sekolah', '#dc2626'],
+          ['Sekolah Tertinggi Berisiko', sorted[sorted.length-1].nama, `${sorted[sorted.length-1].berisiko} pelajar`, '#f97316'],
+          ['% Pelajar Berisiko', (SEKOLAH_DAERAH.reduce((a,s)=>a+s.berisiko,0)/SEKOLAH_DAERAH.reduce((a,s)=>a+s.bil,0)*100).toFixed(1)+'%', 'Dari jumlah keseluruhan', '#7c3aed'],
+          ['Sekolah Lulus 100%', SEKOLAH_DAERAH.filter(s=>s.lulus100).length, 'Tiada pelajar gagal', '#16a34a'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px">
+          <thead><tr style="background:#fef2f2">
+            <th style="padding:8px 12px;text-align:left;color:#7f1d1d">Sekolah</th>
+            <th style="padding:8px 12px;text-align:center;color:#7f1d1d">Bil. Berisiko</th>
+            <th style="padding:8px 12px;text-align:center;color:#7f1d1d">GPS Sekolah</th>
+            <th style="padding:8px 12px;text-align:center;color:#7f1d1d">% Berisiko</th>
+            <th style="padding:8px 12px;text-align:center;color:#7f1d1d">Lulus 100%</th>
+            <th style="padding:8px 12px;text-align:left;color:#7f1d1d">Cadangan Tindakan</th>
+          </tr></thead>
+          <tbody>${[...SEKOLAH_DAERAH].sort((a,b)=>b.berisiko-a.berisiko).map(s=>{
+            const pct = (s.berisiko/s.bil*100).toFixed(1);
+            return `<tr style="border-bottom:1px solid #fee2e2">
+              <td style="padding:8px 12px;font-weight:700;color:#1e293b">${s.nama}</td>
+              <td style="padding:8px 12px;text-align:center;font-weight:800;color:#dc2626;font-size:16px">${s.berisiko}</td>
+              <td style="padding:8px 12px;text-align:center">${gpsChip(s.gps)}</td>
+              <td style="padding:8px 12px;text-align:center;color:${parseFloat(pct)>5?'#dc2626':'#475569'}">${pct}%</td>
+              <td style="padding:8px 12px;text-align:center">${s.lulus100?'✅':'—'}</td>
+              <td style="padding:8px 12px;font-size:11px;color:#475569">${s.berisiko>15?'Bimbingan intensif + kelas tambahan segera':s.berisiko>8?'Program pemantauan & sokongan ibu bapa':'Pantau melalui guru panitia'}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-pematuhan') {
+    const lengkap = SEKOLAH_DAERAH.filter(s=>s.hantar==='Lengkap');
+    const belum = SEKOLAH_DAERAH.filter(s=>s.hantar==='Belum');
+    bukaWin(`
+      ${headerHTML('Laporan Pematuhan Pengisian Data', 'Status Pengisian Data Semua Sekolah Daerah · PPD Dalat')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Sekolah Lengkap', lengkap.length, 'Data telah dihantar', '#16a34a'],
+          ['Sekolah Belum Hantar', belum.length, 'Perlu tindakan segera', '#dc2626'],
+          ['Kadar Pematuhan', Math.round(lengkap.length/SEKOLAH_DAERAH.length*100)+'%', 'Dari jumlah sekolah', '#1e40af'],
+          ['Jumlah Sekolah', SEKOLAH_DAERAH.length, 'Dalam daerah Dalat', '#475569'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:8px 12px;text-align:left;color:#475569">Sekolah</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Status</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2024</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Bil. Pelajar</th>
+            <th style="padding:8px 12px;text-align:left;color:#475569">Tindakan</th>
+          </tr></thead>
+          <tbody>${SEKOLAH_DAERAH.map(s=>`<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:8px 12px;font-weight:700;color:#1e293b">${s.nama}</td>
+            <td style="padding:8px 12px;text-align:center">
+              ${s.hantar==='Lengkap'
+                ? '<span style="background:#dcfce7;color:#16a34a;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">✓ Lengkap</span>'
+                : '<span style="background:#fef2f2;color:#dc2626;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700">⚠ Belum</span>'}
+            </td>
+            <td style="padding:8px 12px;text-align:center">${gpsChip(s.gps)}</td>
+            <td style="padding:8px 12px;text-align:center;color:#475569">${s.bil}</td>
+            <td style="padding:8px 12px;font-size:11px;color:#475569">${s.hantar==='Belum'?'Hubungi pengetua segera — data diperlukan sebelum laporan daerah dikemukakan':'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    `);
+    return;
+  }
+
+  if (jenis === 'lap-intensif') {
+    const blocks = sorted.map((s,i)=>sekolahBlockHTML(s,i+1)).join('<div class="page-break"></div>');
+    const gpsAvg = (sorted.reduce((a,s)=>a+s.gps,0)/sorted.length).toFixed(2);
+    const lulus = sorted.filter(s=>s.lulus100).length;
+    bukaWin(`
+      ${headerHTML('Laporan Intensif Daerah', 'Analisis Komprehensif Daerah + Per Sekolah · PPD Dalat SPM 2024')}
+      <div class="body-pad">
+        <div style="font-size:14px;font-weight:800;color:#1e293b;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:14px">A. Ringkasan Keseluruhan Daerah</div>
+        ${kpiRow([
+          ['GPS Daerah (SPM)','5.28','▼ 0.16 berbanding 2023','#1e40af'],
+          ['Sekolah Lulus 100%',`${lulus}`,'daripada '+sorted.length+' sekolah','#16a34a'],
+          ['Pelajar Berisiko', sorted.reduce((a,s)=>a+s.berisiko,0), 'Memerlukan sokongan', '#dc2626'],
+          ['Jumlah Pelajar', sorted.reduce((a,s)=>a+s.bil,0), 'SPM 2024', '#0f766e'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:8px 12px;text-align:center;color:#475569">#</th>
+            <th style="padding:8px 12px;text-align:left;color:#475569">Sekolah</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">GPS 2024</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Trend</th>
+            <th style="padding:8px 12px;text-align:center;color:#475569">Berisiko</th>
+          </tr></thead>
+          <tbody>${sorted.map((s,i)=>`<tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:6px 12px;text-align:center;font-weight:700;color:#64748b">${i+1}</td>
+            <td style="padding:6px 12px;font-weight:700;color:#1e293b">${s.nama}</td>
+            <td style="padding:6px 12px;text-align:center">${gpsChip(s.gps)}</td>
+            <td style="padding:6px 12px;text-align:center;font-size:11px">${trendStr(s.gps,s.prev)}</td>
+            <td style="padding:6px 12px;text-align:center;color:${s.berisiko>10?'#dc2626':'#16a34a'}">${s.berisiko}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+        <div class="page-break"></div>
+        <div style="font-size:14px;font-weight:800;color:#1e293b;border-bottom:2px solid #1e40af;padding-bottom:8px;margin-bottom:14px">B. Analisis Per Sekolah</div>
+        ${blocks}
+      </div>
+    `);
+    return;
+  }
+}
+
 function buildPPD() {
   const tabs = [
     { id:'ppd-daerah',  label:'Analitik Daerah' },
@@ -3241,20 +3686,51 @@ function buildPPD() {
 
     <!-- Tab: Laporan Daerah -->
     <section id="ppd-laporan">
-      <div class="sh"><div><div class="sh-title">Laporan Daerah</div><div class="sh-sub">Eksport dan jana laporan rasmi PPD Dalat</div></div></div>
-      <div style="display:grid; gap:12px; max-width:600px">
-        ${[
-          ['📊','Laporan GPS Daerah 2024','Ringkasan GPS semua sekolah, trend dan perbandingan daerah'],
-          ['🔍','Laporan Analisis Jurang','Jurang SES, jantina dan lokasi dengan cadangan intervensi'],
-          ['🏆','Laporan Kedudukan Sekolah','Ranking sekolah mengikut GPS dengan analisis prestasi'],
-          ['⚠️','Laporan Pelajar Berisiko Daerah','Senarai komprehensif pelajar memerlukan sokongan segera'],
-          ['📤','Laporan Pematuhan Pengisian Data','Status pengisian data semua sekolah daerah'],
-        ].map(([ic,title,sub])=>`
-          <div class="prog-row" style="cursor:pointer">
-            <div class="prog-icon">${ic}</div>
-            <div class="prog-info"><div class="prog-name">${title}</div><div class="prog-sub">${sub}</div></div>
-            <button class="btn-sm" onclick="showToast('Laporan sedang dijana untuk ${title}')">Jana PDF</button>
-          </div>`).join('')}
+      <div class="sh"><div><div class="sh-title">Laporan Daerah</div><div class="sh-sub">Jana laporan rasmi PPD Dalat — analisis daerah &amp; per sekolah</div></div></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+        <!-- Laporan Keseluruhan Daerah -->
+        <div style="background:var(--surface2);border-radius:14px;padding:18px;border:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">📊 Laporan Keseluruhan Daerah</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Analisis komprehensif prestasi daerah merangkumi GPS, trend, jurang SES/jantina/lokasi dan kedudukan sekolah.</div>
+          <div style="display:grid;gap:8px">
+            ${[
+              ['lap-gps-daerah',  '📈', 'Laporan GPS Daerah 2024',       'Ringkasan GPS, trend AR1→SPM, unjuran'],
+              ['lap-jurang',      '🔍', 'Laporan Analisis Jurang',        'Jurang SES, jantina, lokasi + cadangan'],
+              ['lap-ranking',     '🏆', 'Laporan Kedudukan Sekolah',      'Ranking penuh semua sekolah daerah'],
+              ['lap-berisiko',    '⚠️', 'Laporan Pelajar Berisiko',       'Senarai komprehensif semua sekolah'],
+              ['lap-pematuhan',   '📤', 'Laporan Pematuhan Pengisian',    'Status pengisian data semua sekolah'],
+              ['lap-intensif',    '📋', 'Laporan Intensif Daerah',        'Laporan penuh gabungan semua bahagian'],
+            ].map(([id,ic,title,sub])=>`
+            <div class="prog-row" style="cursor:pointer;padding:10px 12px" onclick="janaLaporan('${id}')">
+              <div class="prog-icon" style="font-size:16px">${ic}</div>
+              <div class="prog-info"><div class="prog-name" style="font-size:12px">${title}</div><div class="prog-sub" style="font-size:10px">${sub}</div></div>
+              <button class="btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();janaLaporan('${id}')">Jana</button>
+            </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- Laporan Per Sekolah -->
+        <div style="background:var(--surface2);border-radius:14px;padding:18px;border:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px">🏫 Laporan Per Sekolah</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Jana laporan individu untuk setiap sekolah merangkumi GPS, panitia, trend AR1→SPM, dan analisis pelajar.</div>
+          <div style="display:grid;gap:8px">
+            ${sorted.map(s=>`
+            <div class="prog-row" style="cursor:pointer;padding:10px 12px" onclick="janaLaporan('lap-sekolah',${JSON.stringify(s.id)})">
+              <div class="prog-icon" style="font-size:16px">🏫</div>
+              <div class="prog-info">
+                <div class="prog-name" style="font-size:12px">${s.nama}</div>
+                <div class="prog-sub" style="font-size:10px">GPS ${s.gps.toFixed(2)} · ${s.bil} pelajar · ${s.hantar==='Belum'?'<span style=color:#ef4444>Belum hantar</span>':'Lengkap'}</div>
+              </div>
+              <button class="btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();janaLaporan('lap-sekolah',${JSON.stringify(s.id)})">Jana</button>
+            </div>`).join('')}
+            <div class="prog-row" style="cursor:pointer;padding:10px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)" onclick="janaLaporan('lap-semua-sekolah')">
+              <div class="prog-icon" style="font-size:16px">📦</div>
+              <div class="prog-info"><div class="prog-name" style="font-size:12px">Semua Sekolah (Gabungan)</div><div class="prog-sub" style="font-size:10px">Laporan intensif per sekolah dalam satu dokumen</div></div>
+              <button class="btn-sm" style="white-space:nowrap;background:var(--accent);color:#fff;border:none" onclick="event.stopPropagation();janaLaporan('lap-semua-sekolah')">Jana Semua</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   `;
