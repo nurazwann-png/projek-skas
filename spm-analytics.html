@@ -269,7 +269,63 @@ section.active { display: block; }
 .form-row .form-group { flex:1; }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
 
-/* ── Tetapan Kelas info card ── */
+/* ── Empty state ── */
+.empty-state { text-align:center; padding:48px 16px; color:var(--t3); }
+.empty-state .empty-icon { font-size:44px; margin-bottom:14px; }
+.empty-state .empty-title { font-size:15px; font-weight:700; color:var(--t2); margin-bottom:6px; }
+.empty-state .empty-sub   { font-size:13px; line-height:1.6; }
+
+/* ── Kelas cards ── */
+.kelas-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-bottom:24px; }
+.kelas-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:18px 20px; display:flex; flex-direction:column; gap:14px;
+  transition:border-color .15s;
+}
+.kelas-card:hover { border-color:var(--accent); }
+.kelas-card-top { display:flex; align-items:flex-start; gap:12px; }
+.kelas-av {
+  width:44px; height:44px; border-radius:10px; background:rgba(59,130,246,.15);
+  color:var(--accent); display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; flex-shrink:0; letter-spacing:-.5px;
+}
+.kelas-info { flex:1; min-width:0; }
+.kelas-subj { font-size:14px; font-weight:800; }
+.kelas-meta { font-size:12px; color:var(--t3); margin-top:3px; }
+.kelas-stats { display:flex; gap:16px; padding:12px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.kelas-stat { display:flex; flex-direction:column; gap:2px; }
+.kelas-stat-val { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+.kelas-stat-lbl { font-size:10px; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+.kelas-btns { display:flex; gap:8px; }
+
+/* ── Sub-view breadcrumb ── */
+.breadcrumb {
+  display:flex; align-items:center; gap:8px; margin-bottom:20px;
+  font-size:13px; color:var(--t3);
+}
+.breadcrumb-back {
+  display:flex; align-items:center; gap:4px; color:var(--accent);
+  background:none; border:none; cursor:pointer; font-family:inherit;
+  font-size:13px; font-weight:600; padding:0;
+}
+.breadcrumb-back:hover { opacity:.8; }
+.breadcrumb-sep { color:var(--border); }
+.breadcrumb-cur { color:var(--t1); font-weight:700; }
+
+/* ── Rekod markah breadcrumb ── */
+.rekod-header {
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:14px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px;
+}
+.rekod-kelas-badge {
+  background:rgba(59,130,246,.12); color:var(--accent); border:1px solid rgba(59,130,246,.2);
+  border-radius:8px; padding:6px 12px; font-size:12px; font-weight:700; flex-shrink:0;
+}
+.rekod-kelas-info { flex:1; min-width:0; }
+.rekod-kelas-name { font-size:13px; font-weight:700; }
+.rekod-kelas-meta { font-size:11px; color:var(--t3); margin-top:2px; }
+
+/* ── Tetapan info card (kept for Tetapan modal trigger) ── */
 .setup-card {
   background:var(--surface); border:1px solid var(--border); border-radius:12px;
   padding:18px 20px; display:flex; align-items:center; gap:16px; margin-bottom:12px;
@@ -278,11 +334,6 @@ section.active { display: block; }
 .setup-info { flex:1; min-width:0; }
 .setup-title { font-size:14px; font-weight:700; }
 .setup-sub   { font-size:12px; color:var(--t3); margin-top:2px; }
-.setup-badge { font-size:11px; font-weight:700; color:var(--accent); background:rgba(59,130,246,.1); border:1px solid rgba(59,130,246,.2); padding:3px 10px; border-radius:99px; flex-shrink:0; }
-.empty-state { text-align:center; padding:40px 16px; color:var(--t3); }
-.empty-state .empty-icon { font-size:40px; margin-bottom:12px; }
-.empty-state .empty-title { font-size:14px; font-weight:700; color:var(--t2); margin-bottom:6px; }
-.empty-state .empty-sub   { font-size:12px; }
 </style>
 </head>
 <body>
@@ -355,14 +406,15 @@ section.active { display: block; }
   </div>
 </div>
 
-<!-- Modal: Tetapan Kelas -->
-<div class="modal-overlay" id="modal-tetapan" hidden onclick="if(event.target===this)closeModal()">
+<!-- Modal: Daftar / Edit Kelas -->
+<div class="modal-overlay" id="modal-kelas" hidden onclick="if(event.target===this)closeDaftarKelasModal()">
   <div class="modal">
-    <div class="modal-title">Tetapan Kelas & Subjek</div>
-    <div class="modal-sub">Pilih kelas dan mata pelajaran yang anda ajar</div>
+    <div class="modal-title" id="modal-kelas-title">Daftar Kelas Baru</div>
+    <div class="modal-sub">Isi maklumat kelas yang anda ajar</div>
+    <input type="hidden" id="kelas-edit-id">
     <div class="form-group">
       <label class="form-label">Mata Pelajaran</label>
-      <select class="form-input" id="tetap-subjek">
+      <select class="form-input" id="kelas-subjek">
         <option>Matematik</option><option>Matematik Tambahan</option>
         <option>Bahasa Melayu</option><option>Bahasa Inggeris</option>
         <option>Sains</option><option>Fizik</option><option>Kimia</option>
@@ -374,24 +426,24 @@ section.active { display: block; }
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Tingkatan</label>
-        <select class="form-input" id="tetap-tingkatan">
+        <select class="form-input" id="kelas-tingkatan">
           <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Kelas</label>
-        <input class="form-input" id="tetap-kelas" placeholder="cth: Amanah" type="text" value="Amanah">
+        <label class="form-label">Nama Kelas</label>
+        <input class="form-input" id="kelas-nama" placeholder="cth: Amanah" type="text">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tahun</label>
+        <select class="form-input" id="kelas-tahun">
+          <option>2024</option><option>2025</option><option>2023</option>
+        </select>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Tahun Peperiksaan</label>
-      <select class="form-input" id="tetap-tahun">
-        <option>2024</option><option>2025</option><option>2023</option>
-      </select>
-    </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeModal()">Batal</button>
-      <button class="btn-primary" onclick="simpanTetapan()">Simpan Tetapan</button>
+      <button class="btn-secondary" onclick="closeDaftarKelasModal()">Batal</button>
+      <button class="btn-primary" id="btn-kelas-simpan" onclick="simpanKelas()">Daftar Kelas</button>
     </div>
   </div>
 </div>
@@ -469,12 +521,14 @@ const JURANG = {
 // ── State ─────────────────────────────────────────────────
 let ROLE = 'teacher';
 let charts = {};
-let markState = {}; // live mark edits for guru
+let markState = {}; // markState[pelajarId] = { ar1, ar2, percubaan }
 
-// Guru live state (can be edited via Tetapan modal)
-let guruProfile = { subjek:'Matematik', tingkatan:'5', kelas:'Amanah', tahun:'2024' };
-// Live student list (seeded from PELAJAR_5A, can have new entries added)
-let pelajarList = [];
+// Guru class-based model
+// kelasList: [{ id, subjek, tingkatan, kelas, tahun, pelajar:[{id,nama,jantina}] }]
+let kelasList = [];
+let activeKelasId = null;  // which class is open for rekod/pelajar
+let guruView = 'kelas';    // 'kelas' | 'pelajar'
+let kelasNextId = 1;
 let pelajarNextId = 100;
 
 function getRole() {
@@ -538,77 +592,223 @@ function buildApp() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// GURU – Rekod & Semak Markah
+// GURU – Kelas → Murid → Rekod Markah
 // ═══════════════════════════════════════════════════════════
 function buildGuru() {
   const tabs = [
-    { id:'guru-rekod',   label:'Rekod Markah' },
-    { id:'guru-pelajar', label:'Pelajar Saya' },
-    { id:'guru-tetapan', label:'Tetapan Kelas' },
-    { id:'guru-status',  label:'Status Pengisian' },
+    { id:'guru-kelas',  label:'Kelas Saya' },
+    { id:'guru-rekod',  label:'Rekod Markah' },
+    { id:'guru-status', label:'Status Pengisian' },
   ];
   renderTabs(tabs);
-
-  // pelajarList starts empty — teacher imports via file or adds manually
-
   renderGuruMain();
   bindTabs();
 }
 
+function getActiveKelas() {
+  return kelasList.find(k => k.id === activeKelasId) || null;
+}
+
+function kelasAv(subjek) {
+  return subjek.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase().slice(0,3);
+}
+
 function renderGuruMain() {
-  const bil = pelajarList.length;
-  const alerts = pelajarList.filter(p => isAlert(p.id)).length;
-  const kelasLabel = `${guruProfile.tingkatan} ${guruProfile.kelas}`;
+  const ak = getActiveKelas();
+  const totalPelajar = kelasList.reduce((s,k)=>s+k.pelajar.length,0);
+  const totalKelas   = kelasList.length;
 
   document.getElementById('main').innerHTML = `
+    <!-- Tab: Kelas Saya -->
+    <section id="guru-kelas" class="active">
+      ${guruView === 'kelas' ? renderKelasView() : renderPelajarView()}
+    </section>
+
     <!-- Tab: Rekod Markah -->
-    <section id="guru-rekod" class="active">
-      <div class="info-banner" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span>ℹ️ Merekod markah: <strong>${guruProfile.subjek}</strong> · Kelas <strong>${kelasLabel}</strong> · ${guruProfile.tahun}</span>
-        <button class="btn-sm" onclick="openTetapan()">✏️ Tukar</button>
+    <section id="guru-rekod">
+      ${renderRekodView(ak)}
+    </section>
+
+    <!-- Tab: Status Pengisian -->
+    <section id="guru-status">
+      ${renderStatusView()}
+    </section>
+  `;
+
+  if (ak && guruView === 'kelas') {
+    refreshMarkTable();
+  }
+  if (ak && guruView !== 'kelas') {
+    renderPelajarListDOM(ak);
+  }
+  if (ak) refreshMarkTable();
+}
+
+// ── Tab: Kelas Saya → Senarai Kelas ──────────────────────
+function renderKelasView() {
+  const cards = kelasList.map(k => {
+    const bil     = k.pelajar.length;
+    const alerts  = k.pelajar.filter(p => isAlert(p.id)).length;
+    const av      = kelasAv(k.subjek);
+    return `<div class="kelas-card">
+      <div class="kelas-card-top">
+        <div class="kelas-av">${av}</div>
+        <div class="kelas-info">
+          <div class="kelas-subj">${k.subjek}</div>
+          <div class="kelas-meta">Tingkatan ${k.tingkatan} ${k.kelas} &nbsp;·&nbsp; ${k.tahun}</div>
+        </div>
+        <button class="btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.25);flex-shrink:0"
+          onclick="event.stopPropagation();padamKelas('${k.id}')">✕</button>
       </div>
-      <div class="sh" style="margin-top:16px">
-        <div><div class="sh-title">Rekod Markah Pelajar</div><div class="sh-sub">Isi markah dan klik Simpan Semua apabila selesai</div></div>
-        <button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:8px 14px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Tambah Pelajar
-        </button>
+      <div class="kelas-stats">
+        <div class="kelas-stat">
+          <div class="kelas-stat-val">${bil}</div>
+          <div class="kelas-stat-lbl">Murid</div>
+        </div>
+        <div class="kelas-stat">
+          <div class="kelas-stat-val ${alerts>0?'red-c':'green'}">${alerts}</div>
+          <div class="kelas-stat-lbl">Berisiko</div>
+        </div>
+        <div class="kelas-stat">
+          <div class="kelas-stat-val">${bil>0?'3/3':'—'}</div>
+          <div class="kelas-stat-lbl">Peperiksaan</div>
+        </div>
       </div>
+      <div class="kelas-btns">
+        <button class="btn-secondary" style="flex:1;justify-content:center;font-size:12px"
+          onclick="bukaUrusPelajar('${k.id}')">👥 Urus Murid</button>
+        <button class="btn-primary" style="flex:1;justify-content:center;font-size:12px"
+          onclick="bukaRekodMarkah('${k.id}')">📝 Rekod Markah</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="sh">
+      <div><div class="sh-title">Kelas Saya</div><div class="sh-sub">${totalKelas} kelas · ${totalPelajar} murid berdaftar</div></div>
+      <button class="btn-primary" onclick="openDaftarKelas()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Daftar Kelas
+      </button>
+    </div>
+    ${kelasList.length === 0
+      ? `<div class="empty-state">
+           <div class="empty-icon">📚</div>
+           <div class="empty-title">Tiada kelas didaftarkan</div>
+           <div class="empty-sub">Klik <strong>"Daftar Kelas"</strong> untuk mendaftarkan kelas anda.<br>Setiap kelas boleh mempunyai senarai murid tersendiri.</div>
+         </div>`
+      : `<div class="kelas-grid">${cards}</div>`
+    }`;
+}
+
+// ── Tab: Kelas Saya → Urus Murid (sub-view) ──────────────
+function renderPelajarView() {
+  const k = getActiveKelas();
+  if (!k) return renderKelasView();
+  const bil = k.pelajar.length;
+  return `
+    <div class="breadcrumb">
+      <button class="breadcrumb-back" onclick="guruView='kelas';renderGuruMain();bindTabs()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Kelas Saya
+      </button>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-cur">${k.subjek} · ${k.tingkatan} ${k.kelas}</span>
+    </div>
+
+    <div class="sh">
+      <div><div class="sh-title">Senarai Murid <span style="color:var(--t3);font-weight:400">(${bil})</span></div><div class="sh-sub">Daftar murid dalam kelas ini</div></div>
+      <button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:8px 14px">+ Tambah Murid</button>
+    </div>
+
+    <div class="upload-zone" onclick="triggerFileUpload()"
+         ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+         ondragleave="this.style.borderColor=''"
+         ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)"
+         style="padding:24px;text-align:center;margin-bottom:16px">
+      <div style="font-size:24px;margin-bottom:8px">📤</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Import murid dari fail Excel atau CSV</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">Lajur: <strong>Nama · Jantina · AR1 · AR2 · Percubaan</strong></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-secondary" style="font-size:12px;pointer-events:none">Pilih Fail</button>
+        <button class="btn-sm" onclick="event.stopPropagation();muat_turun_templat()">⬇ Templat CSV</button>
+      </div>
+    </div>
+
+    <div id="guru-pelajar-list-wrap">
+      ${bil === 0
+        ? `<div class="empty-state" style="padding:32px 0"><div class="empty-icon">👤</div><div class="empty-title">Tiada murid</div><div class="empty-sub">Import dari fail atau tambah secara manual</div></div>`
+        : ''}
+    </div>`;
+}
+
+function renderPelajarListDOM(k) {
+  const el = document.getElementById('guru-pelajar-list-wrap');
+  if (!el || k.pelajar.length === 0) return;
+  el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>No.</th><th>Nama Murid</th><th style="text-align:center">Jantina</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
+    <tbody>${k.pelajar.map((p,i) => {
+      const m = markState[p.id] || { ar1:'—', ar2:'—', percubaan:'—' };
+      return `<tr>
+        <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
+        <td class="tc-name">${p.nama}</td>
+        <td style="text-align:center;color:var(--t3)">${p.jantina==='P'?'♀ P':'♂ L'}</td>
+        <td style="text-align:center" class="tc-num">${m.ar1}</td>
+        <td style="text-align:center" class="tc-num">${m.ar2}</td>
+        <td style="text-align:center" class="tc-num">${m.percubaan}</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn-sm" onclick="openEditPelajar('${p.id}')">Edit</button>
+          <button class="btn-sm" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">Padam</button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Tab: Rekod Markah ─────────────────────────────────────
+function renderRekodView(ak) {
+  if (!ak) return `
+    <div class="empty-state">
+      <div class="empty-icon">📝</div>
+      <div class="empty-title">Pilih kelas dahulu</div>
+      <div class="empty-sub">Pergi ke tab <strong>Kelas Saya</strong>, pilih kelas dan klik <strong>"Rekod Markah"</strong>.</div>
+    </div>`;
+
+  const bil = ak.pelajar.length;
+  return `
+    <div class="rekod-header">
+      <div class="rekod-kelas-badge">${kelasAv(ak.subjek)}</div>
+      <div class="rekod-kelas-info">
+        <div class="rekod-kelas-name">${ak.subjek} · Tingkatan ${ak.tingkatan} ${ak.kelas}</div>
+        <div class="rekod-kelas-meta">${ak.tahun} · ${bil} murid</div>
+      </div>
+      <button class="btn-sm" onclick="bukaUrusPelajar('${ak.id}');switchTab('guru-kelas')">Urus Murid</button>
+    </div>
+
+    ${bil === 0 ? `
+      <div class="empty-state">
+        <div class="empty-icon">👤</div>
+        <div class="empty-title">Tiada murid dalam kelas ini</div>
+        <div class="empty-sub">Daftar murid dahulu melalui <strong>"Urus Murid"</strong> di atas.</div>
+      </div>` : `
       <div class="filter-bar">
         <span class="filter-label">Peperiksaan:</span>
         <select class="sel" id="guru-pep" onchange="refreshMarkTable()">
-          <option value="percubaan">Percubaan ${guruProfile.tahun}</option>
+          <option value="percubaan">Percubaan ${ak.tahun}</option>
           <option value="ar2">Ujian Akhir Bulan (AR2)</option>
           <option value="ar1">Ujian Pertengahan Tahun (AR1)</option>
         </select>
       </div>
-      ${bil === 0 ? `
-      <div class="upload-zone" onclick="triggerFileUpload()" id="upload-zone-rekod"
-           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-           ondragleave="this.style.borderColor=''"
-           ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)">
-        <div class="upload-icon">📂</div>
-        <div class="upload-title">Muat naik senarai pelajar</div>
-        <div class="upload-sub">Seret fail ke sini atau klik untuk pilih · Excel (.xlsx) atau CSV (.csv)</div>
-        <div style="margin-top:14px;font-size:11px;color:var(--t3)">Format lajur: <strong>Nama · Jantina · Kelas · AR1 · AR2 · Percubaan</strong></div>
-        <button class="btn-secondary" style="margin-top:16px;pointer-events:none">Pilih Fail</button>
-      </div>
-      <div style="text-align:center;margin-top:4px;margin-bottom:20px">
-        <span style="font-size:12px;color:var(--t3)">atau </span>
-        <button class="btn-sm" style="font-size:12px" onclick="openTambahPelajar()">+ Tambah secara manual</button>
-        &nbsp;
-        <button class="btn-sm" style="font-size:12px" onclick="muat_turun_templat()">⬇ Muat turun templat CSV</button>
-      </div>` : `
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
             <th style="width:40px">No.</th>
-            <th>Nama Pelajar</th>
+            <th>Nama Murid</th>
             <th style="width:60px;text-align:center">Jantina</th>
             <th style="width:90px;text-align:center">Markah</th>
             <th style="width:80px;text-align:center">Gred</th>
             <th style="width:90px;text-align:center">Trend</th>
-            <th style="width:110px"></th>
+            <th style="width:100px"></th>
           </tr></thead>
           <tbody id="guru-mark-tbody"></tbody>
         </table>
@@ -620,87 +820,38 @@ function renderGuruMain() {
         </button>
         <button class="btn-secondary" onclick="refreshMarkTable()">Muat Semula</button>
       </div>`}
-    </section>
-
-    <!-- Tab: Pelajar Saya -->
-    <section id="guru-pelajar">
-      <div class="sh">
-        <div><div class="sh-title">Pelajar Saya</div><div class="sh-sub">Trend markah AR1 → AR2 → Percubaan · merah = merosot</div></div>
-        <span class="chip chip-red" style="${alerts===0?'display:none':''}">${alerts} pelajar berisiko</span>
-      </div>
-      ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Tiada pelajar didaftarkan</div><div class="empty-sub">Pergi ke tab <strong>Rekod Markah</strong> dan tambah pelajar dahulu</div></div>` : `<div id="guru-student-list" class="student-list"></div>`}
-    </section>
-
-    <!-- Tab: Tetapan Kelas -->
-    <section id="guru-tetapan">
-      <div class="sh"><div><div class="sh-title">Tetapan Kelas</div><div class="sh-sub">Urus kelas, subjek dan senarai pelajar anda</div></div></div>
-
-      <div class="setup-card">
-        <div class="setup-icon">📚</div>
-        <div class="setup-info">
-          <div class="setup-title">${guruProfile.subjek}</div>
-          <div class="setup-sub">Tingkatan ${guruProfile.tingkatan} ${guruProfile.kelas} · ${guruProfile.tahun}</div>
-        </div>
-        <button class="btn-sm" onclick="openTetapan()">Tukar</button>
-      </div>
-
-      <div class="sh" style="margin-top:20px"><div><div class="sh-title" style="font-size:14px">Import Senarai Pelajar</div><div class="sh-sub">Muat naik fail Excel atau CSV yang mengandungi senarai pelajar kelas ini</div></div></div>
-      <div class="upload-zone" onclick="triggerFileUpload()"
-           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-           ondragleave="this.style.borderColor=''"
-           ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)"
-           style="padding:32px 20px;text-align:center;margin-bottom:12px">
-        <div style="font-size:28px;margin-bottom:10px">📤</div>
-        <div style="font-size:14px;font-weight:700;margin-bottom:6px">Seret fail ke sini atau klik untuk pilih</div>
-        <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Sokongan: <strong>Excel (.xlsx, .xls)</strong> dan <strong>CSV (.csv)</strong></div>
-        <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--t3);display:inline-block;text-align:left;line-height:1.7">
-          Format lajur yang dikenali:<br>
-          <strong style="color:var(--t2)">Nama · Jantina · Kelas · AR1 · AR2 · Percubaan</strong><br>
-          (baris pertama = pengepala / header)
-        </div>
-      </div>
-      <div class="btn-row" style="justify-content:center;gap:8px">
-        <button class="btn-secondary" onclick="muat_turun_templat()">⬇ Muat turun templat CSV</button>
-        <button class="btn-secondary" onclick="openTambahPelajar()">+ Tambah manual</button>
-        ${bil > 0 ? `<button class="btn-sm" style="color:var(--red);border-color:rgba(239,68,68,.3)" onclick="if(confirm('Padam semua ${bil} pelajar?')){pelajarList=[];markState={};renderGuruMain();bindTabs();}">🗑 Padam Semua</button>` : ''}
-      </div>
-
-      <div class="sh" style="margin-top:20px">
-        <div><div class="sh-title" style="font-size:14px">Senarai Pelajar <span style="color:var(--t3);font-weight:400">(${bil})</span></div></div>
-        ${bil > 0 ? `<button class="btn-primary" onclick="openTambahPelajar()" style="font-size:12px;padding:7px 14px">+ Tambah</button>` : ''}
-      </div>
-      <div id="guru-tetapan-list">
-        ${bil === 0 ? `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">Tiada pelajar</div><div class="empty-sub">Muat naik fail atau tambah secara manual</div></div>` : ''}
-      </div>
-    </section>
-
-    <!-- Tab: Status Pengisian -->
-    <section id="guru-status">
-      <div class="sh"><div><div class="sh-title">Status Pengisian Data</div><div class="sh-sub">Semak keseluruhan pengisian kelas anda</div></div></div>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-lbl">Pelajar Direkod</div><div class="kpi-val" id="kpi-bil">${bil}</div><span class="kpi-delta green">Dalam sistem</span></div>
-        <div class="kpi"><div class="kpi-lbl">Peperiksaan Diisi</div><div class="kpi-val">3/3</div><span class="kpi-delta green">AR1, AR2, Percubaan</span></div>
-        <div class="kpi"><div class="kpi-lbl">Pelajar Berisiko</div><div class="kpi-val red-c" id="kpi-alert">${alerts}</div><span class="kpi-delta red-c">Perlu perhatian</span></div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead><tr><th>Peperiksaan</th><th>Tarikh Tutup</th><th>Diisi</th><th>Belum</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td class="tc-name">AR1 ${guruProfile.tahun}</td><td>30 Apr ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">AR2 ${guruProfile.tahun}</td><td>31 Ogos ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">Percubaan ${guruProfile.tahun}</td><td>18 Okt ${guruProfile.tahun}</td><td class="tc-green">${bil}</td><td>0</td><td><span class="chip chip-green">✓ Lengkap</span></td></tr>
-            <tr><td class="tc-name">SPM ${guruProfile.tahun}</td><td>Nov ${guruProfile.tahun}</td><td class="tc-yellow">—</td><td>—</td><td><span class="chip chip-yellow">Belum bermula</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
   `;
+}
 
-  if (bil > 0) {
-    refreshMarkTable();
-    renderGuruPelajar();
-    renderTetapanList();
-  }
+// ── Tab: Status Pengisian ─────────────────────────────────
+function renderStatusView() {
+  if (kelasList.length === 0) return `
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Tiada kelas berdaftar</div>
+      <div class="empty-sub">Daftar kelas dahulu untuk melihat status pengisian.</div>
+    </div>`;
+
+  return `
+    <div class="sh"><div><div class="sh-title">Status Pengisian Data</div><div class="sh-sub">Status rekod markah mengikut kelas</div></div></div>
+    ${kelasList.map(k => {
+      const bil = k.pelajar.length;
+      const hasData = bil > 0;
+      return `<div class="prog-row">
+        <div class="prog-icon">📚</div>
+        <div class="prog-info">
+          <div class="prog-name">${k.subjek} · Tingkatan ${k.tingkatan} ${k.kelas}</div>
+          <div class="prog-sub">${bil} murid · ${k.tahun}</div>
+        </div>
+        <div class="prog-dots">
+          <span class="dot-lbl">AR1</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
+          <span class="dot-lbl">AR2</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
+          <span class="dot-lbl">Perc</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
+          <span class="chip ${hasData?'chip-green':'chip-gray'}" style="margin-left:8px">${hasData?'Lengkap':'Tiada data'}</span>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
 }
 
 function isAlert(id) {
@@ -710,13 +861,100 @@ function isAlert(id) {
   return (m.ar1 - m.percubaan) > 5;
 }
 
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('#main > section').forEach(s => s.classList.toggle('active', s.id === tabId));
+}
+
+function bukaUrusPelajar(kelasId) {
+  activeKelasId = kelasId;
+  guruView = 'pelajar';
+  renderGuruMain();
+  bindTabs();
+  switchTab('guru-kelas');
+  const ak = getActiveKelas();
+  if (ak) renderPelajarListDOM(ak);
+}
+
+function bukaRekodMarkah(kelasId) {
+  activeKelasId = kelasId;
+  guruView = 'kelas';
+  renderGuruMain();
+  bindTabs();
+  switchTab('guru-rekod');
+  refreshMarkTable();
+}
+
+function openDaftarKelas(editId) {
+  const m = document.getElementById('modal-kelas');
+  if (editId) {
+    const k = kelasList.find(x => x.id === editId);
+    if (!k) return;
+    document.getElementById('modal-kelas-title').textContent = 'Edit Kelas';
+    document.getElementById('kelas-edit-id').value = editId;
+    document.getElementById('kelas-subjek').value = k.subjek;
+    document.getElementById('kelas-tingkatan').value = k.tingkatan;
+    document.getElementById('kelas-nama').value = k.kelas;
+    document.getElementById('kelas-tahun').value = k.tahun;
+  } else {
+    document.getElementById('modal-kelas-title').textContent = 'Daftar Kelas Baru';
+    document.getElementById('kelas-edit-id').value = '';
+    document.getElementById('kelas-subjek').value = '';
+    document.getElementById('kelas-tingkatan').value = '5';
+    document.getElementById('kelas-nama').value = '';
+    document.getElementById('kelas-tahun').value = new Date().getFullYear();
+  }
+  m.hidden = false;
+  setTimeout(() => document.getElementById('kelas-subjek').focus(), 50);
+}
+
+function closeDaftarKelasModal() {
+  document.getElementById('modal-kelas').hidden = true;
+}
+
+function simpanKelas() {
+  const subjek    = document.getElementById('kelas-subjek').value.trim();
+  const tingkatan = document.getElementById('kelas-tingkatan').value;
+  const kelasNama = document.getElementById('kelas-nama').value.trim();
+  const tahun     = document.getElementById('kelas-tahun').value;
+  if (!subjek || !kelasNama) { alert('Sila isi Mata Pelajaran dan Nama Kelas.'); return; }
+
+  const editId = document.getElementById('kelas-edit-id').value;
+  if (editId) {
+    const k = kelasList.find(x => x.id === editId);
+    if (k) { k.subjek = subjek; k.tingkatan = tingkatan; k.kelas = kelasNama; k.tahun = tahun; }
+    showToast(`✓ Kelas dikemaskini: ${subjek} · T${tingkatan} ${kelasNama}`);
+  } else {
+    const id = 'k' + (kelasNextId++);
+    kelasList.push({ id, subjek, tingkatan, kelas: kelasNama, tahun, pelajar: [] });
+    showToast(`✓ Kelas baru didaftar: ${subjek} · T${tingkatan} ${kelasNama}`);
+  }
+  closeDaftarKelasModal();
+  renderGuruMain();
+  bindTabs();
+}
+
+function padamKelas(kelasId) {
+  const k = kelasList.find(x => x.id === kelasId);
+  if (!k) return;
+  if (!confirm(`Padam kelas "${k.subjek} · T${k.tingkatan} ${k.kelas}"?\nSemua ${k.pelajar.length} murid dalam kelas ini akan turut dipadam.`)) return;
+  k.pelajar.forEach(p => delete markState[p.id]);
+  kelasList = kelasList.filter(x => x.id !== kelasId);
+  if (activeKelasId === kelasId) { activeKelasId = null; guruView = 'kelas'; }
+  showToast(`Kelas ${k.subjek} dipadam`);
+  renderGuruMain();
+  bindTabs();
+}
+
 function refreshMarkTable() {
   const tbody = document.getElementById('guru-mark-tbody');
   if (!tbody) return;
+  const ak  = getActiveKelas();
+  if (!ak)  return;
   const pep = document.getElementById('guru-pep')?.value || 'percubaan';
   const prev = { percubaan:'ar2', ar2:'ar1', ar1:null };
 
-  tbody.innerHTML = pelajarList.map((p, i) => {
+  tbody.innerHTML = ak.pelajar.map((p, i) => {
     const ms = markState[p.id] || { ar1:0, ar2:0, percubaan:0 };
     const mark = ms[pep];
     const prevPep = prev[pep];
@@ -758,13 +996,13 @@ function saveSingleMark(id) {
 }
 
 function saveAllMarks() {
-  showToast(`✓ Semua markah ${pelajarList.length} pelajar telah disimpan`);
+  const ak = getActiveKelas();
+  showToast(`✓ Semua markah ${ak ? ak.pelajar.length : 0} murid telah disimpan`);
 }
 
 // ── Modal helpers ─────────────────────────────────────────
 function closeModal() {
-  document.getElementById('modal-tambah').hidden  = true;
-  document.getElementById('modal-tetapan').hidden = true;
+  document.getElementById('modal-tambah').hidden = true;
 }
 
 function closeImportModal() {
@@ -787,7 +1025,8 @@ function openTambahPelajar() {
 }
 
 function openEditPelajar(id) {
-  const p = pelajarList.find(x => x.id === id);
+  const ak = getActiveKelas();
+  const p = ak ? ak.pelajar.find(x => x.id === id) : null;
   if (!p) return;
   const m = markState[id] || { ar1:0, ar2:0, percubaan:0 };
   document.getElementById('modal-tambah-title').textContent = 'Edit Maklumat Pelajar';
@@ -812,16 +1051,16 @@ function simpanPelajarModal() {
   const ar2     = Math.max(0, Math.min(100, +document.getElementById('inp-ar2').value || ar1));
   const perc    = Math.max(0, Math.min(100, +document.getElementById('inp-perc').value || ar1));
 
+  const ak = getActiveKelas();
   if (editId) {
-    // Edit mode
-    const p = pelajarList.find(x => x.id === editId);
+    const p = ak ? ak.pelajar.find(x => x.id === editId) : null;
     if (p) { p.nama = nama; p.jantina = jantina; }
     markState[editId] = { ar1, ar2, percubaan: perc };
     showToast(`✓ Maklumat ${nama} dikemaskini`);
   } else {
-    // Tambah mode
+    if (!ak) { alert('Pilih kelas dahulu sebelum tambah murid.'); return; }
     const id = 'p' + (++pelajarNextId);
-    pelajarList.push({ id, nama, jantina });
+    ak.pelajar.push({ id, nama, jantina });
     markState[id] = { ar1, ar2, percubaan: perc };
     showToast(`✓ ${nama} berjaya ditambah`);
   }
@@ -831,58 +1070,16 @@ function simpanPelajarModal() {
 }
 
 function padamPelajar(id) {
-  const p = pelajarList.find(x => x.id === id);
+  const ak = getActiveKelas();
+  if (!ak) return;
+  const p = ak.pelajar.find(x => x.id === id);
   if (!p) return;
-  if (!confirm(`Padam ${p.nama} daripada senarai?`)) return;
-  pelajarList = pelajarList.filter(x => x.id !== id);
+  if (!confirm(`Padam ${p.nama} daripada kelas ini?`)) return;
+  ak.pelajar = ak.pelajar.filter(x => x.id !== id);
   delete markState[id];
-  showToast(`Pelajar ${p.nama} dipadam`);
+  showToast(`Murid ${p.nama} dipadam`);
   renderGuruMain();
   bindTabs();
-}
-
-function openTetapan() {
-  document.getElementById('tetap-subjek').value    = guruProfile.subjek;
-  document.getElementById('tetap-tingkatan').value = guruProfile.tingkatan;
-  document.getElementById('tetap-kelas').value     = guruProfile.kelas;
-  document.getElementById('tetap-tahun').value     = guruProfile.tahun;
-  document.getElementById('modal-tetapan').hidden  = false;
-}
-
-function simpanTetapan() {
-  guruProfile.subjek     = document.getElementById('tetap-subjek').value;
-  guruProfile.tingkatan  = document.getElementById('tetap-tingkatan').value;
-  guruProfile.kelas      = document.getElementById('tetap-kelas').value.trim() || guruProfile.kelas;
-  guruProfile.tahun      = document.getElementById('tetap-tahun').value;
-  closeModal();
-  showToast(`✓ Tetapan disimpan: ${guruProfile.subjek} · T${guruProfile.tingkatan} ${guruProfile.kelas}`);
-  renderGuruMain();
-  bindTabs();
-}
-
-function renderTetapanList() {
-  const el = document.getElementById('guru-tetapan-list');
-  if (!el || pelajarList.length === 0) return;
-  el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>No.</th><th>Nama Pelajar</th><th style="text-align:center">Jantina</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
-    <tbody>${pelajarList.map((p, i) => {
-      const m = markState[p.id] || {};
-      return `<tr>
-        <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
-        <td class="tc-name">${p.nama}</td>
-        <td style="text-align:center;color:var(--t3)">${p.jantina==='P'?'♀':'♂'} ${p.jantina==='P'?'Perempuan':'Lelaki'}</td>
-        <td style="text-align:center" class="tc-num">${m.ar1 ?? '—'}</td>
-        <td style="text-align:center" class="tc-num">${m.ar2 ?? '—'}</td>
-        <td style="text-align:center" class="tc-num">${m.percubaan ?? '—'}</td>
-        <td>
-          <div style="display:flex;gap:6px">
-            <button class="btn-sm" onclick="openEditPelajar('${p.id}')">Edit</button>
-            <button class="btn-sm" onclick="padamPelajar('${p.id}')" style="color:var(--red);border-color:rgba(239,68,68,.3)">Padam</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table></div>`;
 }
 
 // ── File upload & parsing ──────────────────────────────────
@@ -1002,11 +1199,13 @@ function showImportPreview(rows, filename) {
 }
 
 function confirmImport() {
+  const ak = getActiveKelas();
+  if (!ak) { alert('Pilih kelas dahulu sebelum import murid.'); return; }
   let added = 0;
   importBuffer.forEach(r => {
     if (!r.nama) return;
     const id = 'p' + (++pelajarNextId);
-    pelajarList.push({ id, nama: r.nama, jantina: r.jantina });
+    ak.pelajar.push({ id, nama: r.nama, jantina: r.jantina });
     markState[id] = { ar1: r.ar1, ar2: r.ar2, percubaan: r.percubaan };
     added++;
   });
@@ -1039,25 +1238,7 @@ function gredClass(g) {
   return 'chip-red';
 }
 
-function renderGuruPelajar() {
-  const el = document.getElementById('guru-student-list');
-  if (!el) return;
-  el.innerHTML = pelajarList.map(p => {
-    const m = markState[p.id] || { ar1:0, ar2:0, percubaan:0 };
-    const alert = isAlert(p.id);
-    const latest = m.percubaan;
-    const initials = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('');
-    return `<div class="student-row${alert?' at-risk':''}">
-      <div class="s-av">${initials}</div>
-      <div class="s-info">
-        <div class="s-name">${p.nama}</div>
-        <div class="s-meta">AR1: ${m.ar1} &nbsp;·&nbsp; AR2: ${m.ar2} &nbsp;·&nbsp; Percubaan: ${m.percubaan}</div>
-      </div>
-      <div class="s-spark">${sparkSVG(m, alert)}</div>
-      <div class="s-mark ${latest>=70?'green':latest>=50?'yellow':'red-c'}">${latest}</div>
-    </div>`;
-  }).join('');
-}
+// renderGuruPelajar removed — replaced by renderPelajarListDOM(ak)
 
 // ═══════════════════════════════════════════════════════════
 // PENTADBIR SEKOLAH
