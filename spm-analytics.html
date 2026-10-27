@@ -134,6 +134,26 @@ section.active { display: block; overflow: visible; }
 .chip-blue { background:rgba(59,130,246,.1); color:var(--accent); }
 .chip-gray { background:var(--surface2); color:var(--t3); }
 
+/* ── Jurang tabs ── */
+.jurang-tab-btn {
+  padding:6px 14px; border-radius:20px; border:1px solid var(--border);
+  background:transparent; color:var(--t2); font-size:12px; font-weight:600;
+  cursor:pointer; transition:all .15s;
+}
+.jurang-tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.jurang-kpi-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.jurang-kpi { flex:1; min-width:120px; background:var(--surface2); border-radius:10px;
+  padding:12px 14px; border:1px solid var(--border); }
+.jurang-kpi-lbl { font-size:11px; color:var(--t3); font-weight:600; margin-bottom:4px; }
+.jurang-kpi-val { font-size:20px; font-weight:700; color:var(--t1); }
+.jurang-kpi-sub { font-size:11px; color:var(--t2); margin-top:3px; }
+.jurang-gap-bar { height:8px; border-radius:4px; background:var(--surface2); margin:4px 0 2px; overflow:hidden; }
+.jurang-gap-fill { height:100%; border-radius:4px; transition:width .4s; }
+.jurang-chart-wrap { position:relative; height:180px; margin:10px 0 16px; }
+.jurang-ai { background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.15);
+  border-radius:10px; padding:12px 14px; font-size:12px; color:var(--t2); line-height:1.6; margin-bottom:4px; }
+.jurang-ai strong { color:var(--accent); }
+
 /* ── Alert banner ── */
 .alert-banner {
   background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2);
@@ -612,6 +632,24 @@ const GPS_SEJARAH = [
 // Trend linear projection: sasaran cadangan = gps2024 - avg improvement
 const _gpsImprove = GPS_SEJARAH.slice(-4).reduce((acc,_,i,arr) => i===0?acc:acc+(arr[i-1].gps-arr[i].gps),0) / 3;
 let GPS_SASARAN = parseFloat((GPS_SEJARAH.at(-1).gps - _gpsImprove).toFixed(2));
+
+// Data agregat jurang sekolah — GPS & % lulus mengikut SES, Lokasi, Jantina
+const JURANG_SK = {
+  ses: [
+    { label:'B40', bil:201, gps:5.82, lulusPeratus:71, prev_gps:6.14 },
+    { label:'M40', bil:178, gps:5.21, lulusPeratus:84, prev_gps:5.47 },
+    { label:'T20', bil:101, gps:4.63, lulusPeratus:94, prev_gps:4.89 },
+  ],
+  lokasi: [
+    { label:'Bandar',      bil:198, gps:4.91, lulusPeratus:92, prev_gps:5.18 },
+    { label:'Luar Bandar', bil:184, gps:5.44, lulusPeratus:80, prev_gps:5.71 },
+    { label:'Pedalaman',   bil:98,  gps:6.12, lulusPeratus:63, prev_gps:6.38 },
+  ],
+  jantina: [
+    { label:'Perempuan', bil:241, gps:5.04, lulusPeratus:88, prev_gps:5.29 },
+    { label:'Lelaki',    bil:239, gps:5.53, lulusPeratus:77, prev_gps:5.61 },
+  ],
+};
 
 const SEKOLAH_DAERAH = [
   { nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap' },
@@ -2404,8 +2442,27 @@ function buildPentadbir() {
         <div id="sk-sasaran-breakdown" style="font-size:13px;color:var(--t2);line-height:1.7"></div>
       </div>
 
+      <!-- Analisis Jurang -->
+      <div class="sh" style="margin-top:8px">
+        <div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi dan Jantina</div></div>
+      </div>
+      <div id="jurang-tabs" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="jurang-tab-btn active" data-dim="ses" onclick="switchJurang('ses')">SES</button>
+        <button class="jurang-tab-btn" data-dim="lokasi" onclick="switchJurang('lokasi')">Lokasi</button>
+        <button class="jurang-tab-btn" data-dim="jantina" onclick="switchJurang('jantina')">Jantina</button>
+      </div>
+      <div id="jurang-ses" class="jurang-panel">
+        <div id="jurang-ses-content"></div>
+      </div>
+      <div id="jurang-lokasi" class="jurang-panel" hidden>
+        <div id="jurang-lokasi-content"></div>
+      </div>
+      <div id="jurang-jantina" class="jurang-panel" hidden>
+        <div id="jurang-jantina-content"></div>
+      </div>
+
       <!-- Jadual Panitia -->
-      <div class="sh" style="margin-top:8px"><div><div class="sh-title">Prestasi Mengikut Panitia</div><div class="sh-sub">GPMP semasa berbanding tahun lepas</div></div></div>
+      <div class="sh" style="margin-top:16px"><div><div class="sh-title">Prestasi Mengikut Panitia</div><div class="sh-sub">GPMP semasa berbanding tahun lepas</div></div></div>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr><th>Mata Pelajaran</th><th>Guru Panitia</th><th>GPMP Semasa</th><th>GPMP Sebelum</th><th>Trend</th><th>Bil. Pelajar</th><th>Status</th></tr></thead>
@@ -2497,7 +2554,7 @@ function buildPentadbir() {
   `;
 
   bindTabs();
-  setTimeout(() => { renderSKTrend(); kemaskiniSasaranGPS(GPS_SASARAN); }, 50);
+  setTimeout(() => { renderSKTrend(); kemaskiniSasaranGPS(GPS_SASARAN); renderJurang(); }, 50);
 }
 
 function kemaskiniSasaranGPS(val) {
@@ -2517,6 +2574,89 @@ function kemaskiniSasaranGPS(val) {
   } else {
     el.innerHTML = `Sasaran GPS sama dengan pencapaian 2024 (5.28). Tiada penambahbaikan disasarkan.`;
   }
+}
+
+function switchJurang(dim) {
+  document.querySelectorAll('.jurang-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.dim === dim));
+  ['ses','lokasi','jantina'].forEach(d => {
+    const panel = document.getElementById('jurang-' + d);
+    if (panel) panel.hidden = (d !== dim);
+  });
+}
+
+function renderJurang() {
+  ['ses','lokasi','jantina'].forEach(dim => {
+    const rows = JURANG_SK[dim];
+    const cont = document.getElementById('jurang-' + dim + '-content');
+    if (!cont) return;
+
+    // GPS range
+    const gpsList = rows.map(r => r.gps);
+    const gpsMin = Math.min(...gpsList), gpsMax = Math.max(...gpsList);
+    const jurang = (gpsMax - gpsMin).toFixed(2);
+
+    // KPI tiles
+    const kpiHTML = `<div class="jurang-kpi-row">` + rows.map(r => {
+      const improved = r.prev_gps - r.gps;
+      const pct = Math.min(100, Math.round((r.gps - gpsMin) / (gpsMax - gpsMin + 0.001) * 100));
+      const clr = r.gps <= 5.0 ? '#22c55e' : r.gps <= 5.6 ? '#eab308' : '#ef4444';
+      return `<div class="jurang-kpi">
+        <div class="jurang-kpi-lbl">${r.label} <span style="color:var(--t3);font-weight:400">(${r.bil} pelajar)</span></div>
+        <div class="jurang-kpi-val" style="color:${clr}">${r.gps.toFixed(2)}</div>
+        <div class="jurang-gap-bar"><div class="jurang-gap-fill" style="width:${pct}%;background:${clr}"></div></div>
+        <div class="jurang-kpi-sub">Lulus ${r.lulusPeratus}% &nbsp;·&nbsp; ${improved > 0 ? '▼' : '▲'} ${Math.abs(improved).toFixed(2)} gps vs 2023</div>
+      </div>`;
+    }).join('') + `</div>`;
+
+    // AI cadangan
+    const worstGroup = rows.reduce((a, b) => a.gps > b.gps ? a : b);
+    const bestGroup  = rows.reduce((a, b) => a.gps < b.gps ? a : b);
+    const dimLabel = { ses: 'SES', lokasi: 'Lokasi', jantina: 'Jantina' }[dim];
+    let cadangan = '';
+    if (dim === 'ses') {
+      cadangan = `Jurang GPS antara <strong>B40 (${JURANG_SK.ses[0].gps.toFixed(2)})</strong> dan <strong>T20 (${JURANG_SK.ses[2].gps.toFixed(2)})</strong> adalah <strong>${jurang} mata</strong>.
+      Pelajar B40 memerlukan sokongan tambahan — pertimbangkan program tuisyen, skim buku teks tambahan, dan mentor sebaya dari kumpulan T20.`;
+    } else if (dim === 'lokasi') {
+      cadangan = `Pelajar kawasan <strong>Pedalaman (GPS ${JURANG_SK.lokasi[2].gps.toFixed(2)})</strong> ketinggalan berbanding pelajar <strong>Bandar (GPS ${JURANG_SK.lokasi[0].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
+      Cadangkan program PdPR hybrid, kelas tambahan hujung minggu, dan kerjasama dengan guru berprestasi tinggi di kawasan bandar.`;
+    } else {
+      cadangan = `Pelajar <strong>Perempuan (GPS ${JURANG_SK.jantina[0].gps.toFixed(2)})</strong> mencatatkan prestasi lebih baik berbanding <strong>Lelaki (GPS ${JURANG_SK.jantina[1].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
+      Fokus intervensi khusus untuk pelajar lelaki: mentoring, program motivasi, dan penjejakan kehadiran secara aktif.`;
+    }
+    const aiHTML = `<div class="jurang-ai">🤖 <strong>Pemerhatian AI:</strong> ${cadangan}</div>`;
+
+    // Chart
+    const chartId = 'jurang-chart-' + dim;
+    destroyChart(chartId);
+    const chartHTML = `<div class="jurang-chart-wrap"><canvas id="${chartId}"></canvas></div>`;
+
+    cont.innerHTML = kpiHTML + chartHTML + aiHTML;
+
+    // render chart
+    setTimeout(() => {
+      const ctx2 = document.getElementById(chartId)?.getContext('2d');
+      if (!ctx2) return;
+      const clrs = rows.map(r => r.gps <= 5.0 ? 'rgba(34,197,94,.75)' : r.gps <= 5.6 ? 'rgba(234,179,8,.75)' : 'rgba(239,68,68,.75)');
+      charts[chartId] = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: rows.map(r => r.label),
+          datasets: [
+            { label: 'GPS 2024', data: rows.map(r => r.gps), backgroundColor: clrs, borderRadius: 6, borderSkipped: false },
+            { label: 'GPS 2023', data: rows.map(r => r.prev_gps), backgroundColor: clrs.map(c => c.replace('.75','.25')), borderRadius: 6, borderSkipped: false, borderWidth: 1, borderColor: clrs },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+          scales: {
+            x: { min: 3.5, max: 7.5, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+            y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12, weight: '600' } } }
+          }
+        }
+      });
+    }, 50);
+  });
 }
 
 function renderSKTrend() {
