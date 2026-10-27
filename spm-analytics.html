@@ -2652,12 +2652,13 @@ function buildPentadbir() {
 
       <!-- Analisis Jurang -->
       <div class="sh" style="margin-top:8px">
-        <div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi dan Jantina</div></div>
+        <div><div class="sh-title">Analisis Jurang Pencapaian</div><div class="sh-sub">GPS mengikut SES, Lokasi, Jantina dan Analisis LMS</div></div>
       </div>
       <div id="jurang-tabs" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
         <button class="jurang-tab-btn active" data-dim="ses" onclick="switchJurang('ses')">SES</button>
         <button class="jurang-tab-btn" data-dim="lokasi" onclick="switchJurang('lokasi')">Lokasi</button>
         <button class="jurang-tab-btn" data-dim="jantina" onclick="switchJurang('jantina')">Jantina</button>
+        <button class="jurang-tab-btn" data-dim="lms" onclick="switchJurang('lms')">LMS</button>
       </div>
       <div id="jurang-ses" class="jurang-panel">
         <div id="jurang-ses-content"></div>
@@ -2667,6 +2668,9 @@ function buildPentadbir() {
       </div>
       <div id="jurang-jantina" class="jurang-panel" hidden>
         <div id="jurang-jantina-content"></div>
+      </div>
+      <div id="jurang-lms" class="jurang-panel" hidden>
+        <div id="jurang-lms-content"></div>
       </div>
 
       <!-- Jadual Panitia -->
@@ -2955,10 +2959,11 @@ function kemaskiniSasaranGPS(val) {
 
 function switchJurang(dim) {
   document.querySelectorAll('.jurang-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.dim === dim));
-  ['ses','lokasi','jantina'].forEach(d => {
+  ['ses','lokasi','jantina','lms'].forEach(d => {
     const panel = document.getElementById('jurang-' + d);
     if (panel) panel.hidden = (d !== dim);
   });
+  if (dim === 'lms') renderJurangLMS();
 }
 
 function renderJurang() {
@@ -3034,6 +3039,139 @@ function renderJurang() {
       });
     }, 50);
   });
+}
+
+function renderJurangLMS() {
+  const cont = document.getElementById('jurang-lms-content');
+  if (!cont) return;
+
+  // Kumpul data LMS dari PELAJAR_5A
+  const wajib = ['Bahasa Melayu','Sejarah'];
+  const getMark = p => p.marks?.percubaan ?? p.marks?.ar2 ?? p.marks?.ar1;
+  const getLabel = p => p.marks?.percubaan != null ? 'Percubaan' : p.marks?.ar2 != null ? 'AR2' : 'AR1';
+
+  // Kelompok ikut nama murid — setiap murid boleh ada berbilang subjek
+  const muridMap = {};
+  PELAJAR_5A.forEach(p => {
+    if (!muridMap[p.nama]) muridMap[p.nama] = { nama: p.nama, kelas: p.kelas, penginapan: p.penginapan || 'Harian', bm: null, sej: null };
+    if (p.subjek === 'Bahasa Melayu') muridMap[p.nama].bm = { mark: getMark(p), label: getLabel(p) };
+    if (p.subjek === 'Sejarah')       muridMap[p.nama].sej = { mark: getMark(p), label: getLabel(p) };
+  });
+  const muridList = Object.values(muridMap);
+
+  // Status LMS per murid
+  const lmsOK    = muridList.filter(m => m.bm && m.sej && m.bm.mark >= 40 && m.sej.mark >= 40);
+  const lmsGagal = muridList.filter(m => (m.bm && m.bm.mark < 40) || (m.sej && m.sej.mark < 40));
+  const lmsBelum = muridList.filter(m => !m.bm || !m.sej);
+
+  // Breakdown Asrama vs Harian
+  const asramaOK    = lmsOK.filter(m => m.penginapan === 'Asrama').length;
+  const asramaGagal = lmsGagal.filter(m => m.penginapan === 'Asrama').length;
+  const harianOK    = lmsOK.filter(m => m.penginapan === 'Harian').length;
+  const harianGagal = lmsGagal.filter(m => m.penginapan === 'Harian').length;
+  const total = muridList.length;
+  const pctLMS = total ? Math.round(lmsOK.length / total * 100) : 0;
+
+  // Fungsi chip gred
+  const gc = m => {
+    if (m == null) return '<span style="color:var(--t3)">—</span>';
+    const g = getGredObj(m);
+    return g ? `<span style="background:${g.warna}18;color:${g.warna};border:1px solid ${g.warna}44;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700">${g.gred}</span>` : '—';
+  };
+  const passChip = (m) => m != null && m >= 40
+    ? '<span style="background:rgba(34,197,94,.1);color:#16a34a;border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700">✓ Lulus</span>'
+    : m != null
+      ? '<span style="background:rgba(239,68,68,.1);color:#ef4444;border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700">✗ Gagal</span>'
+      : '<span style="color:var(--t3);font-size:10px">Tiada data</span>';
+
+  cont.innerHTML = `
+    <!-- KPI -->
+    <div class="jurang-kpi-row" style="margin-bottom:12px">
+      <div class="jurang-kpi">
+        <div class="jurang-kpi-lbl">Layak LMS</div>
+        <div class="jurang-kpi-val" style="color:#16a34a">${lmsOK.length}</div>
+        <div class="jurang-gap-bar"><div class="jurang-gap-fill" style="width:${pctLMS}%;background:#16a34a"></div></div>
+        <div class="jurang-kpi-sub">${pctLMS}% daripada ${total} murid</div>
+      </div>
+      <div class="jurang-kpi">
+        <div class="jurang-kpi-lbl">Tidak Layak LMS</div>
+        <div class="jurang-kpi-val" style="color:#ef4444">${lmsGagal.length}</div>
+        <div class="jurang-gap-bar"><div class="jurang-gap-fill" style="width:${total?Math.round(lmsGagal.length/total*100):0}%;background:#ef4444"></div></div>
+        <div class="jurang-kpi-sub">Gagal BM atau Sejarah</div>
+      </div>
+      <div class="jurang-kpi">
+        <div class="jurang-kpi-lbl">Belum Lengkap Data</div>
+        <div class="jurang-kpi-val" style="color:#f59e0b">${lmsBelum.length}</div>
+        <div class="jurang-gap-bar"><div class="jurang-gap-fill" style="width:${total?Math.round(lmsBelum.length/total*100):0}%;background:#f59e0b"></div></div>
+        <div class="jurang-kpi-sub">Tiada data BM atau Sejarah</div>
+      </div>
+    </div>
+
+    <!-- Breakdown Asrama vs Harian -->
+    <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:var(--t1);margin-bottom:10px">Breakdown LMS — Asrama vs Harian</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:rgba(59,130,246,.08);border-radius:8px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:6px">🏫 Asrama</div>
+          <div style="display:flex;gap:8px">
+            <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:#16a34a">${asramaOK}</div><div style="font-size:10px;color:var(--t3)">Layak LMS</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:#ef4444">${asramaGagal}</div><div style="font-size:10px;color:var(--t3)">Tidak Layak</div></div>
+          </div>
+        </div>
+        <div style="background:rgba(139,92,246,.08);border-radius:8px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:#8b5cf6;margin-bottom:6px">🏠 Harian</div>
+          <div style="display:flex;gap:8px">
+            <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:#16a34a">${harianOK}</div><div style="font-size:10px;color:var(--t3)">Layak LMS</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:#ef4444">${harianGagal}</div><div style="font-size:10px;color:var(--t3)">Tidak Layak</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pemerhatian -->
+    <div class="jurang-ai">🤖 <strong>Pemerhatian:</strong> Pelajar LMS ialah mereka yang lulus <strong>Bahasa Melayu</strong> dan <strong>Sejarah</strong> (markah ≥ 40 / Gred E ke atas).
+    ${lmsGagal.length > 0 ? ` <strong>${lmsGagal.length} murid</strong> berisiko tidak mendapat sijil SPM — intervensi segera diperlukan.` : ' Semua murid yang ada data lulus kedua-dua subjek wajib — prestasi baik.'}</div>
+
+    <!-- Jadual per murid -->
+    ${muridList.length > 0 ? `
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px">Senarai Status LMS Murid</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>Nama Murid</th>
+            <th style="text-align:center">Kelas</th>
+            <th style="text-align:center">Penginapan</th>
+            <th style="text-align:center">BM (Gred)</th>
+            <th style="text-align:center">Sejarah (Gred)</th>
+            <th style="text-align:center">Status LMS</th>
+          </tr></thead>
+          <tbody>${muridList.map(m => {
+            const bmOK  = m.bm  && m.bm.mark  >= 40;
+            const sejOK = m.sej && m.sej.mark >= 40;
+            const isLMS = m.bm && m.sej && bmOK && sejOK;
+            const belum = !m.bm || !m.sej;
+            const statusChip = belum
+              ? '<span class="chip chip-yellow" style="font-size:10px">Belum Lengkap</span>'
+              : isLMS
+                ? '<span class="chip chip-green" style="font-size:10px">✓ Layak LMS</span>'
+                : '<span class="chip chip-red" style="font-size:10px">✗ Tidak Layak</span>';
+            const pengChip = m.penginapan === 'Asrama'
+              ? '<span class="chip chip-blue" style="font-size:10px">Asrama</span>'
+              : '<span class="chip chip-purple" style="font-size:10px">Harian</span>';
+            return `<tr>
+              <td class="tc-name">${m.nama}</td>
+              <td style="text-align:center;color:var(--t2)">${m.kelas}</td>
+              <td style="text-align:center">${pengChip}</td>
+              <td style="text-align:center">${m.bm ? gc(m.bm.mark) + ' ' + passChip(m.bm.mark) : passChip(null)}</td>
+              <td style="text-align:center">${m.sej ? gc(m.sej.mark) + ' ' + passChip(m.sej.mark) : passChip(null)}</td>
+              <td style="text-align:center">${statusChip}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : '<div style="color:var(--t3);font-size:12px;padding:16px 0">Tiada data murid BM/Sejarah dijumpai.</div>'}
+  `;
 }
 
 function renderSKTrend() {
