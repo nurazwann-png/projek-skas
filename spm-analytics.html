@@ -546,6 +546,23 @@ section.active { display: block; overflow: visible; }
   </div>
 </div>
 
+<!-- Modal: Keterangan Pelajar Berisiko (SK Admin) -->
+<div class="modal-overlay" id="modal-sk-pelajar" hidden onclick="if(event.target===this)tutupModalSkPelajar()">
+  <div class="modal modal-lg">
+    <div id="sk-pelajar-header"></div>
+    <div id="sk-pelajar-marks" class="mark-trend-row"></div>
+    <div id="sk-pelajar-sparkwrap" style="margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:12px 16px">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Trend Markah</div>
+      <div style="position:relative;height:110px"><canvas id="sk-pelajar-spark-chart"></canvas></div>
+    </div>
+    <div id="sk-pelajar-info" style="background:var(--surface2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13px"></div>
+    <div id="sk-pelajar-cadangan" class="ai-card"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModalSkPelajar()">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <!-- Hidden file input -->
 <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden onchange="handleFileUpload(this)">
 
@@ -558,18 +575,18 @@ const DEMO = {
 };
 
 const PELAJAR_5A = [
-  { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
-  { id:'p2', nama:'Nurul Farhana Azman',   no:'02', marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
-  { id:'p3', nama:'Mohd Hafiz Roslan',     no:'03', marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
-  { id:'p4', nama:'Siti Aminah Saleh',     no:'04', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
-  { id:'p5', nama:'Khairul Nizam Ahmad',   no:'05', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
-  { id:'p6', nama:'Amirah Syuhada',        no:'06', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
-  { id:'p7', nama:'Fadzli Harun',          no:'07', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
-  { id:'p8', nama:'Roslinah Samion',       no:'08', marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
-  { id:'p9', nama:'Zulhilmi Bakar',        no:'09', marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
-  { id:'p10',nama:'Nabilah Ismail',        no:'10', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
-  { id:'p11',nama:'Hairudin Salleh',       no:'11', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
-  { id:'p12',nama:'Farah Nadia Kamal',     no:'12', marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
+  { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
+  { id:'p2', nama:'Nurul Farhana Azman',   no:'02', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
+  { id:'p3', nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
+  { id:'p4', nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'T20', lokasi:'Bandar', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
+  { id:'p5', nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Luar Bandar', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
+  { id:'p6', nama:'Amirah Syuhada',        no:'06', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'T20', lokasi:'Bandar', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
+  { id:'p7', nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
+  { id:'p8', nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
+  { id:'p9', nama:'Zulhilmi Bakar',        no:'09', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
+  { id:'p10',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
+  { id:'p11',nama:'Hairudin Salleh',       no:'11', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
+  { id:'p12',nama:'Farah Nadia Kamal',     no:'12', kelas:'5 Bestari', guru:'En. Johari Taib',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
 ];
 
 const PANITIA_SK = [
@@ -1632,6 +1649,93 @@ function closePelajarModal() {
   document.getElementById('modal-pelajar').hidden = true;
 }
 
+function bukaModalSkPelajar(id) {
+  const p = PELAJAR_5A.find(x => x.id === id);
+  if (!p) return;
+  const m = p.marks;
+  const drop = m.ar1 - m.percubaan;
+  const drop12 = m.ar1 - m.ar2;
+  const drop23 = m.ar2 - m.percubaan;
+  const initials = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('');
+  const gredAr1 = markToGred(m.ar1), gredAr2 = markToGred(m.ar2), gredPerc = markToGred(m.percubaan);
+
+  document.getElementById('sk-pelajar-header').innerHTML = `
+    <div class="pelajar-modal-header">
+      <div class="pelajar-av-lg">${initials}</div>
+      <div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:2px">${p.nama}</div>
+        <div style="font-size:12px;color:var(--t3)">${p.subjek} &nbsp;·&nbsp; Kelas ${p.kelas} &nbsp;·&nbsp; ${p.guru}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('sk-pelajar-marks').innerHTML = `
+    <div class="mark-trend-cell">
+      <div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:4px">AR1</div>
+      <div class="mark-trend-val">${m.ar1}</div>
+      <div><span class="chip ${gredClass(gredAr1)}" style="font-size:11px">${gredAr1}</span></div>
+    </div>
+    <div class="mark-trend-cell">
+      <div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:4px">AR2</div>
+      <div class="mark-trend-val" style="color:${drop12>0?'var(--red)':'var(--green)'}">${m.ar2}</div>
+      <div><span class="chip ${gredClass(gredAr2)}" style="font-size:11px">${gredAr2}</span></div>
+    </div>
+    <div class="mark-trend-cell">
+      <div style="font-size:10px;color:var(--t3);font-weight:700;margin-bottom:4px">Percubaan</div>
+      <div class="mark-trend-val" style="color:var(--red)">${m.percubaan}</div>
+      <div><span class="chip ${gredClass(gredPerc)}" style="font-size:11px">${gredPerc}</span></div>
+    </div>`;
+
+  document.getElementById('sk-pelajar-info').innerHTML = `
+    <div><span style="color:var(--t3);font-size:11px">SES</span><br><strong>${p.ses||'—'}</strong></div>
+    <div><span style="color:var(--t3);font-size:11px">Lokasi</span><br><strong>${p.lokasi||'—'}</strong></div>
+    <div><span style="color:var(--t3);font-size:11px">Penurunan AR1→AR2</span><br><strong style="color:${drop12>0?'var(--red)':'var(--green)'}">
+      ${drop12>0?'▼ −'+drop12+' mata':'▲ +'+Math.abs(drop12)+' mata'}</strong></div>
+    <div><span style="color:var(--t3);font-size:11px">Penurunan AR2→Perc</span><br><strong style="color:${drop23>0?'var(--red)':'var(--green)'}">
+      ${drop23>0?'▼ −'+drop23+' mata':'▲ +'+Math.abs(drop23)+' mata'}</strong></div>
+    <div style="grid-column:span 2"><span style="color:var(--t3);font-size:11px">Jumlah Penurunan (AR1→Percubaan)</span><br>
+      <strong style="font-size:16px;color:var(--red)">▼ ${drop} markah</strong></div>`;
+
+  // Cadangan ringkas dari perspektif pentadbir sekolah
+  const cad = [];
+  if (drop >= 10) {
+    cad.push({ level:'red', text:`Pelajar menunjukkan <strong>penurunan kritikal</strong> (${drop} mata) dari AR1 ke Percubaan. Pentadbir disyorkan mengarahkan guru ${p.guru} menyediakan pelan intervensi bertulis dan pemantauan mingguan.` });
+  } else {
+    cad.push({ level:'warn', text:`Trend <strong>merosot sederhana</strong> (${drop} mata) dikesan. Guru ${p.guru} perlu memantau dan melaporkan perkembangan pelajar ini sebelum SPM.` });
+  }
+  if (p.ses === 'B40') cad.push({ level:'warn', text:`Pelajar dari kumpulan <strong>B40</strong>. Pertimbangkan rujukan kepada program bantuan sekolah atau KPM yang berkaitan.` });
+  if (p.lokasi === 'Pedalaman') cad.push({ level:'warn', text:`Pelajar dari kawasan <strong>Pedalaman</strong>. Pastikan akses kepada bahan pembelajaran dan sokongan luar waktu sekolah.` });
+  if (m.percubaan < 50) cad.push({ level:'red', text:`Markah Percubaan <strong>di bawah lulus</strong> (${m.percubaan}/100). Intervensi segera diperlukan — sesi bimbingan intensif sebelum SPM.` });
+
+  document.getElementById('sk-pelajar-cadangan').innerHTML = `
+    <div class="ai-card-title">🤖 Cadangan & Tindakan — ${p.nama}</div>
+    ${cad.map(c=>`<div class="ai-item"><div class="ai-dot ${c.level}"></div><div>${c.text}</div></div>`).join('')}`;
+
+  // Spark chart
+  destroyChart('sk-pelajar-spark');
+  document.getElementById('modal-sk-pelajar').hidden = false;
+  setTimeout(() => {
+    const ctx = document.getElementById('sk-pelajar-spark-chart');
+    if (!ctx) return;
+    charts['sk-pelajar-spark'] = new Chart(ctx, {
+      type:'line',
+      data:{ labels:['AR1','AR2','Percubaan'], datasets:[{
+        data:[m.ar1,m.ar2,m.percubaan],
+        borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.08)',
+        borderWidth:2.5, tension:.35, pointRadius:5, pointBackgroundColor:'#ef4444', fill:true
+      }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{ y:{min:0,max:100,grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#64748b'}}, x:{grid:{display:false},ticks:{color:'#64748b'}} }
+      }
+    });
+  }, 50);
+}
+
+function tutupModalSkPelajar() {
+  destroyChart('sk-pelajar-spark');
+  document.getElementById('modal-sk-pelajar').hidden = true;
+}
+
 // ── Tab: Status Pengisian ─────────────────────────────────
 function renderStatusView() {
   if (kelasList.length === 0) return `
@@ -2276,11 +2380,11 @@ function buildPentadbir() {
       <div class="student-list">${PELAJAR_5A.filter(p=>p.alert).map(p => {
         const initials = p.nama.split(' ').slice(0,2).map(w=>w[0]).join('');
         const drop = p.marks.ar1 - p.marks.percubaan;
-        return `<div class="student-row at-risk">
+        return `<div class="student-row at-risk" style="cursor:pointer" onclick="bukaModalSkPelajar('${p.id}')">
           <div class="s-av">${initials}</div>
           <div class="s-info">
             <div class="s-name">${p.nama}</div>
-            <div class="s-meta">AR1: ${p.marks.ar1} &nbsp;·&nbsp; AR2: ${p.marks.ar2} &nbsp;·&nbsp; Percubaan: ${p.marks.percubaan} &nbsp;·&nbsp; Subjek: Matematik</div>
+            <div class="s-meta">${p.subjek} &nbsp;·&nbsp; Kelas ${p.kelas} &nbsp;·&nbsp; ${p.guru}</div>
           </div>
           <div class="s-spark">${sparkSVG(p.marks, true)}</div>
           <span class="chip chip-red" style="flex-shrink:0">−${drop} markah</span>
