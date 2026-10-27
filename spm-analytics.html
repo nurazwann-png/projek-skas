@@ -385,7 +385,7 @@ section.active { display: block; overflow: visible; }
 .nama-link:hover { opacity:.8; }
 
 /* ── Modal Pelajar (Individu) ── */
-.modal-lg { max-width:560px !important; }
+.modal-lg { max-width:520px !important; max-height:90vh; overflow-y:auto; }
 .pelajar-modal-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
 .pelajar-av-lg {
   width:48px; height:48px; border-radius:12px; background:rgba(59,130,246,.15);
@@ -535,7 +535,9 @@ section.active { display: block; overflow: visible; }
     <div class="mark-trend-row" id="pelajar-modal-marks"></div>
     <div id="pelajar-modal-sparkwrap" style="margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:12px 16px">
       <div style="font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Trend Markah</div>
-      <canvas id="pelajar-spark-chart" height="80"></canvas>
+      <div style="position:relative;height:110px">
+        <canvas id="pelajar-spark-chart"></canvas>
+      </div>
     </div>
     <div class="ai-card" id="pelajar-modal-ai"></div>
     <div class="modal-actions">
