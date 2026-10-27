@@ -128,10 +128,11 @@ section.active { display: block; overflow: visible; }
 
 /* ── Chips ── */
 .chip { display:inline-block; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:700; }
-.chip-green { background:rgba(34,197,94,.1); color:var(--green); }
-.chip-yellow { background:rgba(234,179,8,.1); color:var(--yellow); }
-.chip-red { background:rgba(239,68,68,.1); color:var(--red); }
-.chip-blue { background:rgba(59,130,246,.1); color:var(--accent); }
+.chip-green  { background:rgba(34,197,94,.12);  color:var(--green); }
+.chip-yellow { background:rgba(234,179,8,.12);  color:var(--yellow); }
+.chip-red    { background:rgba(239,68,68,.12);  color:var(--red); }
+.chip-blue   { background:rgba(59,130,246,.12); color:var(--accent); }
+.chip-purple { background:rgba(139,92,246,.12); color:#8b5cf6; }
 .chip-gray { background:var(--surface2); color:var(--t3); }
 
 /* ── Jurang tabs ── */
@@ -724,6 +725,28 @@ function calcGPSSasaran(data) {
 let _gpsImprove = calcGPSImprove(GPS_SEJARAH);
 let GPS_SASARAN = calcGPSSasaran(GPS_SEJARAH);
 
+// ── Gred SPM ─────────────────────────────────────────────────────────────────
+// Cemerlang: A+(90-100), A(80-89), A-(70-79)
+// Kepujian:  B+(65-69), B(60-64), C+(55-59), C(50-54)
+// Lulus:     D(45-49), E(40-44)
+// Gagal:     G(0-39)
+const GRED_SPM = [
+  { min:90, gred:'A+', gps:1, kategori:'Cemerlang', warna:'#16a34a' },
+  { min:80, gred:'A',  gps:2, kategori:'Cemerlang', warna:'#22c55e' },
+  { min:70, gred:'A-', gps:3, kategori:'Cemerlang', warna:'#4ade80' },
+  { min:65, gred:'B+', gps:4, kategori:'Kepujian',  warna:'#3b82f6' },
+  { min:60, gred:'B',  gps:5, kategori:'Kepujian',  warna:'#60a5fa' },
+  { min:55, gred:'C+', gps:6, kategori:'Kepujian',  warna:'#8b5cf6' },
+  { min:50, gred:'C',  gps:7, kategori:'Kepujian',  warna:'#c4b5fd' },
+  { min:45, gred:'D',  gps:8, kategori:'Lulus',     warna:'#f59e0b' },
+  { min:40, gred:'E',  gps:9, kategori:'Lulus',     warna:'#fb923c' },
+  { min:0,  gred:'G',  gps:10,kategori:'Gagal',     warna:'#ef4444' },
+];
+function getGredObj(m) {
+  if (typeof m !== 'number' || isNaN(m)) return null;
+  return GRED_SPM.find(g => m >= g.min) || GRED_SPM[GRED_SPM.length-1];
+}
+
 // Data agregat jurang sekolah — GPS & % lulus mengikut SES, Lokasi, Jantina
 const JURANG_SK = {
   ses: [
@@ -1191,6 +1214,14 @@ function renderRekodView(ak) {
         </div>
         <button class="btn-sm" onclick="activeUjian=null;pilihUjian(null)" style="font-size:11px">✕ Tutup</button>
       </div>
+      <!-- Rujukan Gred SPM -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center">
+        <span style="font-size:11px;font-weight:700;color:var(--t3);margin-right:4px">Rujukan Gred SPM:</span>
+        ${[['A+','90–100','Cemerlang','#16a34a'],['A','80–89','Cemerlang','#22c55e'],['A-','70–79','Cemerlang','#4ade80'],
+           ['B+','65–69','Kepujian','#3b82f6'],['B','60–64','Kepujian','#60a5fa'],['C+','55–59','Kepujian','#8b5cf6'],['C','50–54','Kepujian','#c4b5fd'],
+           ['D','45–49','Lulus','#f59e0b'],['E','40–44','Lulus','#fb923c'],['G','0–39','Gagal','#ef4444']
+          ].map(([gred,julat,kat,warna])=>`<span style="background:${warna}18;color:${warna};border:1px solid ${warna}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${gred} <span style="opacity:.7;font-weight:400">${julat}</span></span>`).join('')}
+      </div>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
@@ -1215,10 +1246,8 @@ function renderRekodView(ak) {
 
 // ── Tab: Analisis Kelas ───────────────────────────────────
 function getGPS(mark) {
-  // SPM GPS: A+(1) A(2) A-(3) B+(4) B(5) C+(6) C(7) D(8) E(9) G(10)
-  if(mark>=90)return 1; if(mark>=80)return 2; if(mark>=75)return 3;
-  if(mark>=70)return 4; if(mark>=65)return 5; if(mark>=60)return 6;
-  if(mark>=55)return 7; if(mark>=50)return 8; if(mark>=45)return 9; return 10;
+  const g = getGredObj(mark);
+  return g ? g.gps : 10;
 }
 
 function avg(arr) {
@@ -1323,15 +1352,13 @@ function renderAnalisisBody(ak) {
     return { label:s, avg: avg(pp.map(p=>markState[p.id][pepKey])), n:pp.length };
   }).filter(x=>x.n>0);
 
-  // Gred distribution — ujian terkini
-  const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
+  // Gred distribution — mengikut kategori SPM
+  const gredDist = { 'Cemerlang':0,'Kepujian':0,'Lulus':0,'Gagal':0 };
+  const gredDistDetail = {};
+  GRED_SPM.forEach(g => { gredDistDetail[g.gred] = 0; });
   activeVals.forEach(v => {
-    const g = markToGred(v);
-    if(g.startsWith('A')) gredDist['A']++;
-    else if(g.startsWith('B')) gredDist['B']++;
-    else if(g.startsWith('C')) gredDist['C']++;
-    else if(g==='D'||g==='E') gredDist['D/E']++;
-    else gredDist['G']++;
+    const go = getGredObj(v);
+    if (go) { gredDist[go.kategori]++; gredDistDetail[go.gred]++; }
   });
 
   const cadanganKelas = generateCadanganKelas(ak, { fasa, avgAr1, avgAr2, avgPerc, ar1Vals, ar2Vals, percVals, berisiko, sesData, lulusActive, activeVals, activeAvg });
@@ -1385,6 +1412,21 @@ function renderAnalisisBody(ak) {
       </div>` : ''}
     </div>
 
+    ${activeVals.length > 0 ? `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      ${[['Cemerlang','A+/A/A-','#16a34a'],['Kepujian','B+/B/C+/C','#3b82f6'],['Lulus','D/E','#f59e0b'],['Gagal','G','#ef4444']].map(([kat,sub,clr])=>{
+        const bil = gredDist[kat]||0;
+        const pct = activeVals.length ? Math.round(bil/activeVals.length*100) : 0;
+        return `<div style="background:${clr}12;border:1px solid ${clr}33;border-radius:10px;padding:12px 14px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:${clr};letter-spacing:.06em;text-transform:uppercase">${kat}</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:6px">${sub}</div>
+          <div style="font-size:26px;font-weight:800;color:${clr}">${bil}</div>
+          <div style="font-size:11px;color:var(--t3)">${pct}% murid</div>
+          <div style="height:4px;border-radius:2px;background:var(--surface2);margin-top:6px"><div style="height:100%;width:${pct}%;border-radius:2px;background:${clr}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+
     <div class="chart-grid">
       ${trendPointCount >= 2 ? `<div class="chart-card">
         <div class="chart-title">Trend Markah Purata Kelas</div>
@@ -1392,8 +1434,8 @@ function renderAnalisisBody(ak) {
         <div class="chart-wrap"><canvas id="analisis-trend-chart"></canvas></div>
       </div>` : ''}
       ${activeVals.length > 0 ? `<div class="chart-card">
-        <div class="chart-title">Taburan Gred (${activeLabel})</div>
-        <div class="chart-sub">Bilangan murid mengikut gred</div>
+        <div class="chart-title">Taburan Gred — ${activeLabel}</div>
+        <div class="chart-sub">Bilangan murid per gred (A+ hingga G)</div>
         <div class="chart-wrap"><canvas id="analisis-gred-chart"></canvas></div>
       </div>` : ''}
     </div>
@@ -1711,32 +1753,35 @@ function initAnalisisChart() {
   destroyChart('analisis-gred');
   const gredCtx = document.getElementById('analisis-gred-chart');
   if (gredCtx && activeVals.length > 0) {
-    const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
-    activeVals.forEach(v => {
-      const g = markToGred(v);
-      if(g.startsWith('A')) gredDist['A']++;
-      else if(g.startsWith('B')) gredDist['B']++;
-      else if(g.startsWith('C')) gredDist['C']++;
-      else if(g==='D'||g==='E') gredDist['D/E']++;
-      else gredDist['G']++;
-    });
+    // Carta detail per gred (A+, A, A-, B+, B, C+, C, D, E, G)
+    const detail = {};
+    GRED_SPM.forEach(g => { detail[g.gred] = 0; });
+    activeVals.forEach(v => { const go = getGredObj(v); if(go) detail[go.gred]++; });
+    const labels = GRED_SPM.map(g=>g.gred);
+    const data   = GRED_SPM.map(g=>detail[g.gred]);
+    const colors = GRED_SPM.map(g=>g.warna);
     charts['analisis-gred'] = new Chart(gredCtx, {
       type:'bar',
       data:{
-        labels:Object.keys(gredDist),
+        labels,
         datasets:[{
           label:'Bilangan Murid',
-          data:Object.values(gredDist),
-          backgroundColor:['#22c55e','#3b82f6','#eab308','#ef4444','#64748b'],
+          data,
+          backgroundColor: colors.map(c=>c+'cc'),
+          borderColor: colors,
+          borderWidth: 1,
           borderRadius:6, borderSkipped:false
         }]
       },
       options:{
         responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false} },
+        plugins:{
+          legend:{display:false},
+          tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} murid (${GRED_SPM[ctx.dataIndex].kategori})` } }
+        },
         scales:{
           y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b', stepSize:1} },
-          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+          x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{weight:'700'}} }
         }
       }
     });
@@ -2446,15 +2491,20 @@ function muat_turun_templat() {
 }
 
 function markToGred(m) {
-  if(m>=90)return'A+'; if(m>=80)return'A'; if(m>=75)return'A-';
-  if(m>=70)return'B+'; if(m>=65)return'B'; if(m>=60)return'C+';
-  if(m>=55)return'C';  if(m>=50)return'D'; if(m>=45)return'E'; return'G';
+  const g = getGredObj(m); return g ? g.gred : '—';
 }
 function gredClass(g) {
   if(['A+','A','A-'].includes(g)) return 'chip-green';
   if(['B+','B'].includes(g))      return 'chip-blue';
-  if(['C+','C'].includes(g))      return 'chip-yellow';
+  if(['C+','C'].includes(g))      return 'chip-purple';
+  if(['D','E'].includes(g))       return 'chip-yellow';
   return 'chip-red';
+}
+function kategoriGred(g) {
+  if(['A+','A','A-'].includes(g)) return 'Cemerlang';
+  if(['B+','B','C+','C'].includes(g)) return 'Kepujian';
+  if(['D','E'].includes(g)) return 'Lulus';
+  return 'Gagal';
 }
 
 // renderGuruPelajar removed — replaced by renderPelajarListDOM(ak)
