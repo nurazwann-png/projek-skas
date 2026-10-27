@@ -582,6 +582,12 @@ section.active { display: block; overflow: visible; }
         <div style="position:relative;height:200px"><canvas id="modal-sk-lokasi-chart"></canvas></div>
       </div>
     </div>
+    <!-- Trend AR1/AR2/Percubaan -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Trend GPS — AR1 → AR2 → Percubaan → SPM</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px" id="modal-sk-trend-kpi"></div>
+      <div style="position:relative;height:160px"><canvas id="modal-sk-ar-chart"></canvas></div>
+    </div>
     <!-- SES Analysis -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px">
       <div>
@@ -739,34 +745,42 @@ const JURANG_SK = {
 const SEKOLAH_DAERAH = [
   { id:'sk-dalat',    nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.98},{t:2022,g:5.76},{t:2023,g:5.44},{t:2024,g:5.28}],
+    trend:{ar1:5.82,ar2:5.61,perc:5.44,spm:5.28},
     panitia:[{subjek:'Matematik',gpmp:4.82,prev:5.12,bil:156},{subjek:'BM',gpmp:3.94,prev:4.21,bil:201},{subjek:'BI',gpmp:5.43,prev:5.71,bil:198},{subjek:'Sains',gpmp:5.87,prev:5.63,bil:145},{subjek:'Sejarah',gpmp:4.12,prev:4.48,bil:198}],
     berisiko:5, ses:{B40:42,M40:37,T20:21}, lokasi:{Bandar:41,LuarBandar:38,Pedalaman:21}, jantina:{Perempuan:241,Lelaki:239} },
   { id:'sk-balingian',nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.22},{t:2022,g:5.98},{t:2023,g:5.62},{t:2024,g:5.41}],
+    trend:{ar1:5.94,ar2:5.72,perc:5.58,spm:5.41},
     panitia:[{subjek:'Matematik',gpmp:5.11,prev:5.43,bil:98},{subjek:'BM',gpmp:4.22,prev:4.51,bil:112},{subjek:'BI',gpmp:5.62,prev:5.88,bil:102},{subjek:'Sains',gpmp:6.01,prev:6.24,bil:87},{subjek:'Sejarah',gpmp:4.88,prev:5.11,bil:112}],
     berisiko:8, ses:{B40:55,M40:31,T20:14}, lokasi:{Bandar:22,LuarBandar:54,Pedalaman:24}, jantina:{Perempuan:158,Lelaki:154} },
   { id:'sk-daro',     nama:'SMK Daro',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.41},{t:2022,g:6.12},{t:2023,g:5.71},{t:2024,g:5.63}],
+    trend:{ar1:6.11,ar2:5.88,perc:5.72,spm:5.63},
     panitia:[{subjek:'Matematik',gpmp:5.42,prev:5.68,bil:88},{subjek:'BM',gpmp:4.61,prev:4.72,bil:99},{subjek:'BI',gpmp:5.88,prev:5.94,bil:94},{subjek:'Sains',gpmp:6.22,prev:6.41,bil:78},{subjek:'Sejarah',gpmp:5.11,prev:5.28,bil:99}],
     berisiko:11, ses:{B40:61,M40:27,T20:12}, lokasi:{Bandar:18,LuarBandar:51,Pedalaman:31}, jantina:{Perempuan:146,Lelaki:141} },
   { id:'sk-mukah',    nama:'SMK Mukah',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.88},{t:2022,g:5.74},{t:2023,g:5.58},{t:2024,g:5.71}],
+    trend:{ar1:5.44,ar2:5.51,perc:5.62,spm:5.71},
     panitia:[{subjek:'Matematik',gpmp:5.62,prev:5.41,bil:178},{subjek:'BM',gpmp:4.81,prev:4.62,bil:201},{subjek:'BI',gpmp:5.94,prev:5.71,bil:188},{subjek:'Sains',gpmp:6.41,prev:6.22,bil:156},{subjek:'Sejarah',gpmp:5.28,prev:5.11,bil:201}],
     berisiko:19, ses:{B40:38,M40:44,T20:18}, lokasi:{Bandar:68,LuarBandar:28,Pedalaman:4}, jantina:{Perempuan:268,Lelaki:256} },
   { id:'sk-oya',      nama:'SMK Oya',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.71},{t:2022,g:6.44},{t:2023,g:6.02},{t:2024,g:5.84}],
+    trend:{ar1:6.38,ar2:6.14,perc:5.97,spm:5.84},
     panitia:[{subjek:'Matematik',gpmp:5.81,prev:6.11,bil:62},{subjek:'BM',gpmp:5.12,prev:5.41,bil:68},{subjek:'BI',gpmp:6.12,prev:6.38,bil:65},{subjek:'Sains',gpmp:6.54,prev:6.81,bil:55},{subjek:'Sejarah',gpmp:5.44,prev:5.72,bil:68}],
     berisiko:14, ses:{B40:72,M40:21,T20:7}, lokasi:{Bandar:8,LuarBandar:44,Pedalaman:48}, jantina:{Perempuan:102,Lelaki:96} },
   { id:'sk-selangau', nama:'SMK Selangau',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.31},{t:2023,g:5.89},{t:2024,g:5.97}],
+    trend:{ar1:5.72,ar2:5.81,perc:5.91,spm:5.97},
     panitia:[{subjek:'Matematik',gpmp:6.01,prev:5.88,bil:52},{subjek:'BM',gpmp:5.22,prev:5.11,bil:57},{subjek:'BI',gpmp:6.28,prev:6.12,bil:54},{subjek:'Sains',gpmp:6.71,prev:6.54,bil:47},{subjek:'Sejarah',gpmp:5.61,prev:5.44,bil:57}],
     berisiko:17, ses:{B40:78,M40:18,T20:4}, lokasi:{Bandar:5,LuarBandar:38,Pedalaman:57}, jantina:{Perempuan:86,Lelaki:81} },
   { id:'sk-tulai',    nama:'SMK Tulai',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.88},{t:2022,g:6.64},{t:2023,g:6.31},{t:2024,g:6.12}],
+    trend:{ar1:6.54,ar2:6.38,perc:6.22,spm:6.12},
     panitia:[{subjek:'Matematik',gpmp:6.14,prev:6.38,bil:44},{subjek:'BM',gpmp:5.44,prev:5.62,bil:48},{subjek:'BI',gpmp:6.41,prev:6.58,bil:46},{subjek:'Sains',gpmp:6.88,prev:7.11,bil:41},{subjek:'Sejarah',gpmp:5.81,prev:5.94,bil:48}],
     berisiko:21, ses:{B40:81,M40:16,T20:3}, lokasi:{Bandar:2,LuarBandar:31,Pedalaman:67}, jantina:{Perempuan:74,Lelaki:69} },
   { id:'sk-sgmaong',  nama:'SMK Sg. Maong',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.38},{t:2023,g:6.14},{t:2024,g:6.28}],
+    trend:{ar1:6.11,ar2:6.18,perc:6.22,spm:6.28},
     panitia:[{subjek:'Matematik',gpmp:6.31,prev:6.18,bil:31},{subjek:'BM',gpmp:5.62,prev:5.44,bil:33},{subjek:'BI',gpmp:6.54,prev:6.41,bil:32},{subjek:'Sains',gpmp:7.01,prev:6.88,bil:28},{subjek:'Sejarah',gpmp:5.98,prev:5.81,bil:33}],
     berisiko:24, ses:{B40:84,M40:13,T20:3}, lokasi:{Bandar:1,LuarBandar:24,Pedalaman:75}, jantina:{Perempuan:51,Lelaki:47} },
 ];
@@ -2940,6 +2954,28 @@ function bukaAnalisisSk(id) {
     </tr>`).join('')}</tbody>
   </table>`;
 
+  // Trend AR1 / AR2 / Percubaan / SPM KPI tiles
+  const tr = s.trend || { ar1: s.gps + 0.54, ar2: s.gps + 0.32, perc: s.gps + 0.16, spm: s.gps };
+  const trMeta = [
+    { label:'AR1',       val:tr.ar1,  clr:'#94a3b8', icon:'📝' },
+    { label:'AR2',       val:tr.ar2,  clr:'#60a5fa', icon:'📋' },
+    { label:'Percubaan', val:tr.perc, clr:'#f59e0b', icon:'🎯' },
+    { label:'SPM',       val:tr.spm,  clr:'#22c55e', icon:'🏆' },
+  ];
+  document.getElementById('modal-sk-trend-kpi').innerHTML = trMeta.map((m, i) => {
+    const prev = i > 0 ? trMeta[i-1].val : null;
+    const diff = prev !== null ? (m.val - prev).toFixed(2) : null;
+    const diffHtml = diff !== null
+      ? `<div style="font-size:10px;margin-top:2px;color:${parseFloat(diff)<0?'#22c55e':'#ef4444'}">${parseFloat(diff)<0?'↑ Baik':'↓ Lemah'} ${Math.abs(diff)}</div>`
+      : `<div style="font-size:10px;margin-top:2px;color:var(--t3)">Permulaan</div>`;
+    return `<div style="background:var(--surface2);border-radius:10px;padding:12px 10px;text-align:center;border:1px solid ${m.clr}33">
+      <div style="font-size:16px;margin-bottom:4px">${m.icon}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.04em">${m.label}</div>
+      <div style="font-size:20px;font-weight:800;color:${m.clr};margin-top:4px">${m.val.toFixed(2)}</div>
+      ${diffHtml}
+    </div>`;
+  }).join('');
+
   // SES KPI tiles — % komposisi + GPS anggaran
   // GPS anggaran per kumpulan SES: scaled dari GPS sekolah menggunakan nisbah daerah
   const sesRef = { B40: 5.82, M40: 5.21, T20: 4.63 }; // GPS daerah per SES
@@ -3005,6 +3041,44 @@ function bukaAnalisisSk(id) {
 
   // Charts
   setTimeout(() => {
+    // AR1 / AR2 / Percubaan / SPM trend line chart
+    const arCtx = document.getElementById('modal-sk-ar-chart');
+    if (arCtx) { const ex = Chart.getChart(arCtx); if(ex) ex.destroy(); }
+    if (arCtx) {
+      const arVals = [tr.ar1, tr.ar2, tr.perc, tr.spm];
+      const arMin = Math.min(...arVals) - 0.3;
+      const arMax = Math.max(...arVals) + 0.3;
+      const arColors = ['#94a3b8','#60a5fa','#f59e0b','#22c55e'];
+      new Chart(arCtx, {
+        type: 'line',
+        data: {
+          labels: ['AR1','AR2','Percubaan','SPM'],
+          datasets: [{
+            data: arVals,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,.1)',
+            fill: true,
+            tension: .3,
+            pointRadius: 8,
+            pointBackgroundColor: arColors,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` GPS: ${ctx.raw.toFixed(2)}` } }
+          },
+          scales: {
+            y: { min: arMin, max: arMax, reverse: false, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => v.toFixed(1) } },
+            x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12, weight: '600' } } }
+          }
+        }
+      });
+    }
+
     // Trend GPS
     const tCtx = document.getElementById('modal-sk-trend-chart');
     if (tCtx) { const ex = Chart.getChart(tCtx); if(ex) ex.destroy(); }
