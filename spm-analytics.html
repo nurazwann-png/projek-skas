@@ -3026,7 +3026,7 @@ function bindTabs() {
       const target = document.getElementById(btn.dataset.target);
       if(target) target.classList.add('active');
       if (btn.dataset.target === 'guru-analisis') setTimeout(initAnalisisChart, 0);
-      if (btn.dataset.target === 'sk-analitik')   setTimeout(initSkCharts, 0);
+      if (btn.dataset.target === 'sk-analitik')   setTimeout(() => { renderGPSSejarahTable(); renderSKTrend(); kemaskiniSasaranGPS(GPS_SASARAN); renderJurang(); }, 0);
       if (btn.dataset.target === 'ppd-paparan')    setTimeout(initPPDCharts, 0);
     });
   });
