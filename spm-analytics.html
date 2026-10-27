@@ -2400,8 +2400,8 @@ function buildPentadbir() {
               </td>
               <td style="text-align:center">
                 ${delta===null ? '<span style="color:var(--t3)">—</span>'
-                  : delta>0 ? `<span class="green">▼ ${delta.toFixed(2)}</span>`
-                  : `<span class="red-c">▲ ${Math.abs(delta).toFixed(2)}</span>`}
+                  : delta>0 ? `<span class="green">↑ Baik (−${delta.toFixed(2)})</span>`
+                  : `<span class="red-c">↓ Lemah (+${Math.abs(delta).toFixed(2)})</span>`}
               </td>
               <td style="text-align:center">${r.lulus100?'<span class="chip chip-green" style="font-size:11px">Ya</span>':'<span class="chip chip-gray" style="font-size:11px">Tidak</span>'}</td>
               <td style="text-align:center;color:var(--t2)">${r.subjekCemerlang}</td>
@@ -2604,7 +2604,7 @@ function renderJurang() {
         <div class="jurang-kpi-lbl">${r.label} <span style="color:var(--t3);font-weight:400">(${r.bil} pelajar)</span></div>
         <div class="jurang-kpi-val" style="color:${clr}">${r.gps.toFixed(2)}</div>
         <div class="jurang-gap-bar"><div class="jurang-gap-fill" style="width:${pct}%;background:${clr}"></div></div>
-        <div class="jurang-kpi-sub">Lulus ${r.lulusPeratus}% &nbsp;·&nbsp; ${improved > 0 ? '▼' : '▲'} ${Math.abs(improved).toFixed(2)} gps vs 2023</div>
+        <div class="jurang-kpi-sub">Lulus ${r.lulusPeratus}% &nbsp;·&nbsp; ${improved > 0 ? '<span style="color:var(--green)">↑ Baik</span>' : '<span style="color:var(--red)">↓ Lemah</span>'} ${Math.abs(improved).toFixed(2)} vs 2023</div>
       </div>`;
     }).join('') + `</div>`;
 
@@ -2676,10 +2676,15 @@ function renderSKTrend() {
   });
 }
 
+// GPS: nilai lebih rendah = prestasi lebih baik (seperti golf)
+// Anak panah menunjukkan arah PRESTASI, bukan arah nilai GPS
 function trendCell(curr, prev) {
-  const d = (curr - prev).toFixed(2);
-  if(Math.abs(d)<0.05) return `<span class="trend-eq">— Stabil</span>`;
-  return d<0 ? `<span class="trend-dn">▼ ${Math.abs(d)}</span>` : `<span class="trend-up">▲ ${d}</span>`;
+  const d = curr - prev;
+  if(Math.abs(d) < 0.05) return `<span class="trend-eq">— Stabil</span>`;
+  // GPS turun = prestasi naik (↑ hijau), GPS naik = prestasi turun (↓ merah)
+  return d < 0
+    ? `<span class="trend-dn">↑ Baik (−${Math.abs(d).toFixed(2)})</span>`
+    : `<span class="trend-up">↓ Lemah (+${d.toFixed(2)})</span>`;
 }
 function gpmpChip(v) {
   if(v<=4.5) return `<span class="chip chip-green">Cemerlang</span>`;
