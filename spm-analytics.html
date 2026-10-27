@@ -2909,15 +2909,15 @@ function buildPentadbir() {
       <div class="sh"><div><div class="sh-title">Jana Laporan</div><div class="sh-sub">Eksport data sekolah dalam pelbagai format</div></div></div>
       <div style="display:grid; gap:12px; max-width:560px">
         ${[
-          ['📊','Laporan GPS Sekolah 2024','Ringkasan pencapaian GPS dan trend tahunan','Sedia'],
-          ['📋','Laporan Panitia Mata Pelajaran','GPMP semua panitia dengan trend dan status','Sedia'],
-          ['⚠️','Laporan Pelajar Berisiko','Senarai pelajar memerlukan intervensi','Sedia'],
-          ['📤','Laporan Pengisian Data','Status pengisian guru panitia','Sedia'],
-        ].map(([ic,title,sub,st])=>`
-          <div class="prog-row" style="cursor:pointer" onclick="showToast('Laporan sedang dijana…')">
+          ['📊','Laporan GPS Sekolah 2024','Ringkasan pencapaian GPS dan trend tahunan','lap-gps-sk'],
+          ['📋','Laporan Panitia Mata Pelajaran','GPMP semua panitia dengan trend dan status','lap-panitia-sk'],
+          ['⚠️','Laporan Pelajar Berisiko','Senarai pelajar memerlukan intervensi','lap-berisiko-sk'],
+          ['📤','Laporan Pengisian Data','Status pengisian guru panitia','lap-pengisian-sk'],
+        ].map(([ic,title,sub,jenis])=>`
+          <div class="prog-row" style="cursor:pointer" onclick="janaLaporan('${jenis}')">
             <div class="prog-icon">${ic}</div>
             <div class="prog-info"><div class="prog-name">${title}</div><div class="prog-sub">${sub}</div></div>
-            <button class="btn-sm" onclick="event.stopPropagation();showToast('Laporan sedang dijana…')">Jana PDF</button>
+            <button class="btn-sm" onclick="event.stopPropagation();janaLaporan('${jenis}')">Jana PDF</button>
           </div>`).join('')}
       </div>
     </section>
@@ -4204,6 +4204,224 @@ function janaLaporan(jenis, skId) {
       </div>
     `);
     return;
+  }
+
+  // ── LAPORAN PENTADBIR SEKOLAH (dari localStorage) ────────
+  let kelasList = [], markState = {};
+  try {
+    const kl = localStorage.getItem('skas_kelas');
+    if (kl) kelasList = JSON.parse(kl);
+    const ms = localStorage.getItem('skas_marks');
+    if (ms) markState = JSON.parse(ms);
+  } catch(e) {}
+
+  if (jenis === 'lap-gps-sk') {
+    const allStudents = [];
+    kelasList.forEach(k => {
+      (k.pelajar||[]).forEach(p => {
+        if (!allStudents.find(s=>s.id===p.id)) {
+          const m = markState[p.id]||{};
+          const mark = m.percubaan??m.ar2??m.ar1??null;
+          allStudents.push({...p, mark, gps: mark!=null?getGPS(mark):null, lulus: mark!=null&&mark>=40});
+        }
+      });
+    });
+    const withGPS = allStudents.filter(s=>s.gps!=null);
+    const avgGPS = withGPS.length ? (withGPS.reduce((a,s)=>a+s.gps,0)/withGPS.length).toFixed(2) : 'N/A';
+    const lulusPct = withGPS.length ? Math.round(withGPS.filter(s=>s.lulus).length/withGPS.length*100) : 0;
+    const berisiko = withGPS.filter(s=>s.gps>6.0).length;
+    const bySubjek = {};
+    kelasList.forEach(k => {
+      if (!k.subjek) return;
+      if (!bySubjek[k.subjek]) bySubjek[k.subjek] = [];
+      (k.pelajar||[]).forEach(p => {
+        const m = markState[p.id]||{};
+        const mark = m.percubaan??m.ar2??m.ar1??null;
+        if (mark!=null) bySubjek[k.subjek].push(getGPS(mark));
+      });
+    });
+    const subjekRows = Object.entries(bySubjek).map(([subj, gpsList]) => {
+      const avg = (gpsList.reduce((a,g)=>a+g,0)/gpsList.length).toFixed(2);
+      const status = parseFloat(avg)<=5.0?'Cemerlang':parseFloat(avg)<=6.0?'Memuaskan':'Perlu Intervensi';
+      const clr = parseFloat(avg)<=5.0?'#16a34a':parseFloat(avg)<=6.0?'#ca8a04':'#dc2626';
+      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-weight:600">${subj}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${gpsList.length}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${gpsChip(parseFloat(avg))}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center"><span style="color:${clr};font-weight:700;font-size:12px">${status}</span></td>
+      </tr>`;
+    }).join('');
+    bukaWin(`
+      ${headerHTML('Laporan GPS Sekolah 2024', 'Ringkasan Pencapaian · SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Purata GPS Sekolah', avgGPS, 'SPM 2024', '#1e40af'],
+          ['Kadar Lulus', lulusPct+'%', 'Markah ≥ 40', '#16a34a'],
+          ['Pelajar Berisiko', berisiko, 'GPS > 6.0', '#dc2626'],
+          ['Jumlah Pelajar', withGPS.length, 'Ada markah', '#64748b'],
+        ])}
+        <h3 style="font-size:14px;font-weight:700;color:#1e293b;margin:20px 0 10px">Prestasi Mengikut Mata Pelajaran</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:10px 12px;text-align:left;font-weight:700;color:#475569;font-size:11px">MATA PELAJARAN</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;color:#475569;font-size:11px">BIL. PELAJAR</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;color:#475569;font-size:11px">GPS PURATA</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:700;color:#475569;font-size:11px">STATUS</th>
+          </tr></thead>
+          <tbody>${subjekRows}</tbody>
+        </table>
+        <p style="font-size:11px;color:#94a3b8;margin-top:16px;text-align:center">* GPS dikira berdasarkan Percubaan / AR2 / AR1 (keutamaan tertinggi ke terendah)</p>
+      </div>
+    `);
+  }
+
+  if (jenis === 'lap-panitia-sk') {
+    const bySubjek = {};
+    kelasList.forEach(k => {
+      const subj = k.subjek || 'Umum';
+      if (!bySubjek[subj]) bySubjek[subj] = [];
+      const marks = (k.pelajar||[]).map(p=>{ const m=markState[p.id]||{}; return m.percubaan??m.ar2??m.ar1??null; }).filter(v=>v!=null);
+      if (!marks.length) return;
+      const gpsArr = marks.map(m=>getGPS(m));
+      const avgGPS = gpsArr.reduce((a,g)=>a+g,0)/gpsArr.length;
+      const lulusPct = Math.round(marks.filter(m=>m>=40).length/marks.length*100);
+      bySubjek[subj].push({ guru: k.guru||'—', kelas:k.kelas||'—', bil:marks.length, gps:parseFloat(avgGPS.toFixed(2)), lulus:lulusPct });
+    });
+    const subjekBlocks = Object.entries(bySubjek).map(([subj, kl2]) => {
+      const allGPS = kl2.map(k=>k.gps);
+      const avgSubjGPS = (allGPS.reduce((a,g)=>a+g,0)/allGPS.length).toFixed(2);
+      const rows = kl2.map(k=>`<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${k.guru}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${k.bil}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${gpsChip(k.gps)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${k.lulus}%</td>
+      </tr>`).join('');
+      return `<div style="margin-bottom:20px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+        <div style="background:#1e3a5f;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700">${subj}</span>
+          <span style="font-size:12px;opacity:.8">GPS Purata Panitia: ${avgSubjGPS}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">GURU</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">BIL</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">GPS</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">LULUS%</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+    bukaWin(`
+      ${headerHTML('Laporan Panitia Mata Pelajaran', 'GPMP Semua Panitia · SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Jumlah Panitia', Object.keys(bySubjek).length, 'Mata pelajaran', '#1e40af'],
+          ['Jumlah Kelas', kelasList.length, 'Rekod guru', '#64748b'],
+        ])}
+        ${subjekBlocks}
+      </div>
+    `);
+  }
+
+  if (jenis === 'lap-berisiko-sk') {
+    const berisikoPelajar = [];
+    kelasList.forEach(k => {
+      (k.pelajar||[]).forEach(p => {
+        if (berisikoPelajar.find(s=>s.id===p.id)) return;
+        const m = markState[p.id]||{};
+        const mark = m.percubaan??m.ar2??m.ar1??null;
+        if (mark==null) return;
+        const gps = getGPS(mark);
+        if (gps>6.0 || mark<40) berisikoPelajar.push({...p, mark, gps, guru:k.guru||'—'});
+      });
+    });
+    berisikoPelajar.sort((a,b)=>b.gps-a.gps);
+    const rows = berisikoPelajar.map((p,i)=>{
+      const clr = p.mark<40?'#dc2626':p.gps>7?'#dc2626':'#ca8a04';
+      const status = p.mark<40?'GAGAL':p.gps>7?'Sangat Berisiko':'Berisiko';
+      return `<tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px">${i+1}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-weight:600">${p.nama}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px">${p.kelas||'—'}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px">${p.ses||'—'}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${p.mark}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${gpsChip(p.gps)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center"><span style="color:${clr};font-weight:700;font-size:11px">${status}</span></td>
+      </tr>`;
+    }).join('');
+    bukaWin(`
+      ${headerHTML('Laporan Pelajar Berisiko', 'Senarai Pelajar Memerlukan Intervensi · SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Pelajar Berisiko', berisikoPelajar.length, 'GPS > 6.0 atau Gagal', '#dc2626'],
+          ['Pelajar Gagal', berisikoPelajar.filter(p=>p.mark<40).length, 'Markah < 40', '#dc2626'],
+          ['Sangat Berisiko', berisikoPelajar.filter(p=>p.gps>7).length, 'GPS > 7.0', '#ca8a04'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-top:16px">
+          <thead><tr style="background:#fef2f2">
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">#</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">NAMA</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">KELAS</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">SES</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">MARKAH</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">GPS</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">STATUS</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        ${berisikoPelajar.length===0?'<p style="text-align:center;color:#16a34a;font-weight:700;padding:20px">✅ Tiada pelajar berisiko dikesan</p>':''}
+      </div>
+    `);
+  }
+
+  if (jenis === 'lap-pengisian-sk') {
+    const summary = kelasList.map(k => {
+      const total = (k.pelajar||[]).length;
+      const withMark = (k.pelajar||[]).filter(p=>{ const m=markState[p.id]||{}; return (m.percubaan??m.ar2??m.ar1)!=null; }).length;
+      const pct = total>0?Math.round(withMark/total*100):0;
+      const status = pct>=90?'Lengkap':pct>=60?'Separa':pct>0?'Bermula':'Tiada Data';
+      const clr = pct>=90?'#16a34a':pct>=60?'#ca8a04':pct>0?'#f97316':'#dc2626';
+      return { subjek:k.subjek||'—', guru:k.guru||'—', total, withMark, pct, status, clr };
+    });
+    summary.sort((a,b)=>a.pct-b.pct);
+    const totalPelajar = summary.reduce((a,k)=>a+k.total,0);
+    const totalIsi = summary.reduce((a,k)=>a+k.withMark,0);
+    const kelasPenuh = summary.filter(k=>k.pct>=90).length;
+    const rows = summary.map(k=>`<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;font-weight:600">${k.subjek}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9">${k.guru}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${k.total}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">${k.withMark}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center">
+        <div style="background:#f1f5f9;border-radius:4px;height:6px;position:relative">
+          <div style="background:${k.clr};width:${k.pct}%;height:100%;border-radius:4px"></div>
+        </div>
+        <span style="font-size:11px;color:${k.clr};font-weight:700">${k.pct}%</span>
+      </td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:center"><span style="color:${k.clr};font-weight:700;font-size:12px">${k.status}</span></td>
+    </tr>`).join('');
+    bukaWin(`
+      ${headerHTML('Laporan Pengisian Data', 'Status Pengisian Markah Guru Panitia · SPM 2024')}
+      <div class="body-pad">
+        ${kpiRow([
+          ['Kelas Lengkap', kelasPenuh+'/'+summary.length, '≥ 90% diisi', '#16a34a'],
+          ['Jumlah Pelajar', totalPelajar, 'Semua kelas', '#1e40af'],
+          ['Rekod Diisi', totalIsi, 'Ada markah', '#64748b'],
+          ['% Pengisian', totalPelajar>0?Math.round(totalIsi/totalPelajar*100)+'%':'0%', 'Keseluruhan', '#7c3aed'],
+        ])}
+        <table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-top:16px">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">SUBJEK</th>
+            <th style="padding:8px 12px;text-align:left;font-size:11px;color:#475569;font-weight:700">GURU</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">JUMLAH</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">DIISI</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">KEMAJUAN</th>
+            <th style="padding:8px 12px;text-align:center;font-size:11px;color:#475569;font-weight:700">STATUS</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `);
   }
 }
 
