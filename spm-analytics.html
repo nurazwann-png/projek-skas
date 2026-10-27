@@ -3132,46 +3132,154 @@ function renderJurangLMS() {
     <div class="jurang-ai">🤖 <strong>Pemerhatian:</strong> Pelajar LMS ialah mereka yang lulus <strong>Bahasa Melayu</strong> dan <strong>Sejarah</strong> (markah ≥ 40 / Gred E ke atas).
     ${lmsGagal.length > 0 ? ` <strong>${lmsGagal.length} murid</strong> berisiko tidak mendapat sijil SPM — intervensi segera diperlukan.` : ' Semua murid yang ada data lulus kedua-dua subjek wajib — prestasi baik.'}</div>
 
-    <!-- Jadual per murid -->
-    ${muridList.length > 0 ? `
-    <div style="margin-top:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px">Senarai Status LMS Murid</div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead><tr>
-            <th>Nama Murid</th>
-            <th style="text-align:center">Kelas</th>
-            <th style="text-align:center">Penginapan</th>
-            <th style="text-align:center">BM (Gred)</th>
-            <th style="text-align:center">Sejarah (Gred)</th>
-            <th style="text-align:center">Status LMS</th>
-          </tr></thead>
-          <tbody>${muridList.map(m => {
-            const bmOK  = m.bm  && m.bm.mark  >= 40;
-            const sejOK = m.sej && m.sej.mark >= 40;
-            const isLMS = m.bm && m.sej && bmOK && sejOK;
-            const belum = !m.bm || !m.sej;
-            const statusChip = belum
-              ? '<span class="chip chip-yellow" style="font-size:10px">Belum Lengkap</span>'
-              : isLMS
-                ? '<span class="chip chip-green" style="font-size:10px">✓ Layak LMS</span>'
-                : '<span class="chip chip-red" style="font-size:10px">✗ Tidak Layak</span>';
-            const pengChip = m.penginapan === 'Asrama'
-              ? '<span class="chip chip-blue" style="font-size:10px">Asrama</span>'
-              : '<span class="chip chip-purple" style="font-size:10px">Harian</span>';
-            return `<tr>
-              <td class="tc-name">${m.nama}</td>
-              <td style="text-align:center;color:var(--t2)">${m.kelas}</td>
-              <td style="text-align:center">${pengChip}</td>
-              <td style="text-align:center">${m.bm ? gc(m.bm.mark) + ' ' + passChip(m.bm.mark) : passChip(null)}</td>
-              <td style="text-align:center">${m.sej ? gc(m.sej.mark) + ' ' + passChip(m.sej.mark) : passChip(null)}</td>
-              <td style="text-align:center">${statusChip}</td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table>
+    <!-- Jadual per murid dengan filter + carian -->
+    <div style="margin-top:14px" id="lms-jadual-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--t2)">Senarai Status LMS Murid</div>
+        <input type="text" id="lms-carian" placeholder="🔍 Cari nama murid..." oninput="filterLMSTable()"
+          style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg2);color:var(--t1);font-size:12px;width:200px">
       </div>
-    </div>` : '<div style="color:var(--t3);font-size:12px;padding:16px 0">Tiada data murid BM/Sejarah dijumpai.</div>'}
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap" id="lms-filter-btns">
+        <button onclick="setLMSFilter('gagal')" id="lms-f-gagal"
+          style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid #ef4444;background:rgba(239,68,68,.15);color:#ef4444">
+          ✗ Tidak Layak <span id="lms-cnt-gagal">(${lmsGagal.length})</span>
+        </button>
+        <button onclick="setLMSFilter('ok')" id="lms-f-ok"
+          style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--t2)">
+          ✓ Layak LMS <span id="lms-cnt-ok">(${lmsOK.length})</span>
+        </button>
+        <button onclick="setLMSFilter('belum')" id="lms-f-belum"
+          style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--t2)">
+          ⏳ Belum Lengkap <span id="lms-cnt-belum">(${lmsBelum.length})</span>
+        </button>
+        <button onclick="setLMSFilter('semua')" id="lms-f-semua"
+          style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--t2)">
+          Semua (${muridList.length})
+        </button>
+      </div>
+      <div id="lms-jadual-body"><!-- diisi oleh filterLMSTable() --></div>
+    </div>
   `;
+
+  // Simpan data murid untuk filter
+  window._lmsData = { muridList, gc, passChip };
+  window._lmsFilter = 'gagal';
+  filterLMSTable();
+}
+}
+
+function setLMSFilter(f) {
+  window._lmsFilter = f;
+  // Update button styles
+  const btns = { gagal:'lms-f-gagal', ok:'lms-f-ok', belum:'lms-f-belum', semua:'lms-f-semua' };
+  Object.entries(btns).forEach(([key, id]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const isActive = key === f;
+    const colors = { gagal:'#ef4444', ok:'#16a34a', belum:'#f59e0b', semua:'var(--accent)' };
+    const c = colors[key];
+    if (isActive) {
+      btn.style.background = key === 'gagal' ? 'rgba(239,68,68,.25)' : key === 'ok' ? 'rgba(34,197,94,.25)' : key === 'belum' ? 'rgba(245,158,11,.25)' : 'rgba(59,130,246,.25)';
+      btn.style.borderColor = c;
+      btn.style.color = c;
+    } else {
+      btn.style.background = 'var(--bg2)';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--t2)';
+    }
+  });
+  filterLMSTable();
+}
+
+function filterLMSTable() {
+  const d = window._lmsData;
+  if (!d) return;
+  const { muridList, gc, passChip } = d;
+  const f = window._lmsFilter || 'gagal';
+  const q = (document.getElementById('lms-carian')?.value || '').toLowerCase();
+
+  const getStatus = m => {
+    const bmOK  = m.bm  && m.bm.mark  >= 40;
+    const sejOK = m.sej && m.sej.mark >= 40;
+    if (!m.bm || !m.sej) return 'belum';
+    if (bmOK && sejOK) return 'ok';
+    return 'gagal';
+  };
+
+  let filtered = muridList;
+  if (f !== 'semua') filtered = filtered.filter(m => getStatus(m) === f);
+  if (q) filtered = filtered.filter(m => m.nama.toLowerCase().includes(q));
+
+  const body = document.getElementById('lms-jadual-body');
+  if (!body) return;
+
+  if (filtered.length === 0) {
+    body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">
+      ${q ? `Tiada murid bernama "<strong>${q}</strong>"` : 'Tiada murid dalam kategori ini.'}</div>`;
+    return;
+  }
+
+  // Kumpul ikut kelas
+  const byKelas = {};
+  filtered.forEach(m => {
+    if (!byKelas[m.kelas]) byKelas[m.kelas] = [];
+    byKelas[m.kelas].push(m);
+  });
+
+  const rowHTML = m => {
+    const status = getStatus(m);
+    const statusChip = status === 'belum'
+      ? '<span class="chip chip-yellow" style="font-size:10px">⏳ Belum Lengkap</span>'
+      : status === 'ok'
+        ? '<span class="chip chip-green" style="font-size:10px">✓ Layak LMS</span>'
+        : '<span class="chip chip-red" style="font-size:10px">✗ Tidak Layak</span>';
+    const pengChip = m.penginapan === 'Asrama'
+      ? '<span class="chip chip-blue" style="font-size:10px">Asrama</span>'
+      : '<span class="chip chip-purple" style="font-size:10px">Harian</span>';
+    // Highlight carian
+    const nama = q ? m.nama.replace(new RegExp(`(${q})`, 'gi'), '<mark style="background:#facc15;color:#000;border-radius:2px">$1</mark>') : m.nama;
+    return `<tr>
+      <td class="tc-name">${nama}</td>
+      <td style="text-align:center">${pengChip}</td>
+      <td style="text-align:center">${m.bm ? gc(m.bm.mark) + ' ' + passChip(m.bm.mark) : passChip(null)}</td>
+      <td style="text-align:center">${m.sej ? gc(m.sej.mark) + ' ' + passChip(m.sej.mark) : passChip(null)}</td>
+      <td style="text-align:center">${statusChip}</td>
+    </tr>`;
+  };
+
+  let html = '';
+  Object.entries(byKelas).sort().forEach(([kelas, murid]) => {
+    const kelasOK    = murid.filter(m => getStatus(m) === 'ok').length;
+    const kelasGagal = murid.filter(m => getStatus(m) === 'gagal').length;
+    const kelasBelum = murid.filter(m => getStatus(m) === 'belum').length;
+    html += `
+      <div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer"
+          onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
+          <span style="font-size:12px;font-weight:800;color:var(--t1)">📚 ${kelas}</span>
+          <span style="font-size:10px;color:var(--t3)">${murid.length} murid</span>
+          ${kelasGagal > 0 ? `<span class="chip chip-red" style="font-size:10px;margin-left:auto">${kelasGagal} tidak layak</span>` : ''}
+          ${kelasOK > 0 ? `<span class="chip chip-green" style="font-size:10px${kelasGagal?'':';margin-left:auto'}">${kelasOK} layak</span>` : ''}
+          ${kelasBelum > 0 ? `<span class="chip chip-yellow" style="font-size:10px${(!kelasGagal&&!kelasOK)?';margin-left:auto':''}">${kelasBelum} belum lengkap</span>` : ''}
+          <span style="font-size:11px;color:var(--t3);margin-left:${(kelasGagal||kelasOK||kelasBelum)?'4px':'auto'}">▾</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl" style="font-size:12px">
+            <thead><tr>
+              <th>Nama Murid</th>
+              <th style="text-align:center">Penginapan</th>
+              <th style="text-align:center">BM (Gred)</th>
+              <th style="text-align:center">Sejarah (Gred)</th>
+              <th style="text-align:center">Status LMS</th>
+            </tr></thead>
+            <tbody>${murid.map(rowHTML).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+
+  body.innerHTML = `<div style="font-size:11px;color:var(--t3);margin-bottom:8px">${filtered.length} murid dipaparkan</div>` + html;
 }
 
 function renderSKTrend() {
