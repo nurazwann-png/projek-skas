@@ -1064,26 +1064,67 @@ function renderAnalisisBody(ak) {
     </div>`;
 
   const pelajarDenganMark = ak.pelajar.filter(p => markState[p.id]);
-  const ar1Vals    = pelajarDenganMark.map(p => markState[p.id].ar1).filter(v=>typeof v==='number');
-  const ar2Vals    = pelajarDenganMark.map(p => markState[p.id].ar2).filter(v=>typeof v==='number');
-  const percVals   = pelajarDenganMark.map(p => markState[p.id].percubaan).filter(v=>typeof v==='number');
+  const ar1Vals  = pelajarDenganMark.map(p => markState[p.id].ar1).filter(v=>typeof v==='number');
+  const ar2Vals  = pelajarDenganMark.map(p => markState[p.id].ar2).filter(v=>typeof v==='number');
+  const percVals = pelajarDenganMark.map(p => markState[p.id].percubaan).filter(v=>typeof v==='number');
 
   const avgAr1  = avg(ar1Vals);
   const avgAr2  = avg(ar2Vals);
   const avgPerc = avg(percVals);
 
-  const gpsAr1  = avgAr1  !== null ? getGPS(avgAr1).toFixed(2)  : '—';
-  const gpsAr2  = avgAr2  !== null ? getGPS(avgAr2).toFixed(2)  : '—';
-  const gpsPerc = avgPerc !== null ? getGPS(avgPerc).toFixed(2) : '—';
+  const hasAr1  = avgAr1  !== null;
+  const hasAr2  = avgAr2  !== null;
+  const hasPerc = avgPerc !== null;
 
-  const berisiko = ak.pelajar.filter(p => isAlert(p.id));
-  const lulusAr1 = ar1Vals.filter(v=>v>=50).length;
-  const lulusPerc= percVals.filter(v=>v>=50).length;
-  const perLulus = percVals.length ? Math.round(lulusPerc/percVals.length*100) : 0;
+  // Detect fasa
+  const fasa = !hasAr1 ? 0 : !hasAr2 && !hasPerc ? 1 : hasAr1 && hasAr2 && !hasPerc ? 2 : 3;
+  const fasaInfo = [
+    { label:'Belum ada data',         sub:'Isi markah AR1 untuk mula analisis',                   cls:'chip-gray'   },
+    { label:'Fasa 1 — Selepas AR1',   sub:'AR2 dan Percubaan SPM belum diisi',                    cls:'chip-blue'   },
+    { label:'Fasa 2 — Selepas AR2',   sub:'AR1 + AR2 tersedia · Percubaan SPM belum diisi',       cls:'chip-yellow' },
+    { label:'Fasa 3 — Selepas Percubaan', sub:'Semua 3 ujian tersedia · Analisis penuh',          cls:'chip-green'  },
+  ][fasa];
 
-  // Gred distribution (Percubaan)
+  // Active vals for KPI — gunakan ujian terkini yang ada
+  const activeVals = hasPerc ? percVals : hasAr2 ? ar2Vals : ar1Vals;
+  const activeAvg  = hasPerc ? avgPerc  : hasAr2  ? avgAr2  : avgAr1;
+  const activeLabel= hasPerc ? 'Percubaan' : hasAr2 ? 'AR2' : 'AR1';
+
+  const gpsAr1  = hasAr1  ? getGPS(avgAr1).toFixed(2)  : '—';
+  const gpsAr2  = hasAr2  ? getGPS(avgAr2).toFixed(2)  : '—';
+  const gpsPerc = hasPerc ? getGPS(avgPerc).toFixed(2) : '—';
+
+  // Murid berisiko — bergantung kepada fasa
+  // Fasa 1: gagal AR1; Fasa 2: turun AR1→AR2; Fasa 3: turun AR1→Percubaan
+  const berisiko = ak.pelajar.filter(p => {
+    const m = markState[p.id];
+    if (!m) return false;
+    if (fasa === 1) return typeof m.ar1==='number' && m.ar1 < 50;
+    if (fasa === 2) return typeof m.ar1==='number' && typeof m.ar2==='number' && (m.ar2 - m.ar1) < -5;
+    return (m.ar1 - m.percubaan) > 5;
+  });
+
+  const lulusActive = activeVals.filter(v=>v>=50).length;
+  const perLulus    = activeVals.length ? Math.round(lulusActive/activeVals.length*100) : 0;
+
+  // Trend delta antara dua ujian terkini yang ada
+  const trendDelta = hasAr2 && hasAr1 ? (hasPerc ? avgPerc - avgAr2 : avgAr2 - avgAr1) : null;
+  const trendLabel = hasPerc ? 'AR2→Percubaan' : hasAr2 ? 'AR1→AR2' : null;
+  const trendSign  = trendDelta !== null
+    ? (trendDelta >= 0 ? `<span class="green">▲ +${trendDelta.toFixed(1)}</span>` : `<span class="red-c">▼ ${trendDelta.toFixed(1)}</span>`)
+    : '—';
+
+  // SES breakdown — guna ujian terkini
+  const sesGroups = ['B40','M40','T20'];
+  const sesData = sesGroups.map(s => {
+    const pp = ak.pelajar.filter(p => p.ses===s && markState[p.id] && typeof markState[p.id][hasPerc?'percubaan':hasAr2?'ar2':'ar1']==='number');
+    const pepKey = hasPerc?'percubaan':hasAr2?'ar2':'ar1';
+    return { label:s, avg: avg(pp.map(p=>markState[p.id][pepKey])), n:pp.length };
+  }).filter(x=>x.n>0);
+
+  // Gred distribution — ujian terkini
   const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
-  percVals.forEach(v => {
+  activeVals.forEach(v => {
     const g = markToGred(v);
     if(g.startsWith('A')) gredDist['A']++;
     else if(g.startsWith('B')) gredDist['B']++;
@@ -1092,63 +1133,73 @@ function renderAnalisisBody(ak) {
     else gredDist['G']++;
   });
 
-  // SES breakdown (Percubaan avg)
-  const sesGroups = ['B40','M40','T20'];
-  const sesData = sesGroups.map(s => {
-    const pp = ak.pelajar.filter(p=>p.ses===s && markState[p.id] && typeof markState[p.id].percubaan==='number');
-    return { label:s, avg: avg(pp.map(p=>markState[p.id].percubaan)), n:pp.length };
-  }).filter(x=>x.n>0);
+  const cadanganKelas = generateCadanganKelas(ak, { fasa, avgAr1, avgAr2, avgPerc, ar1Vals, ar2Vals, percVals, berisiko, sesData, lulusActive, activeVals, activeAvg });
 
-  const cadanganKelas = generateCadanganKelas(ak, { avgAr1, avgAr2, avgPerc, berisiko, sesData, lulusPerc, percVals });
-
-  const trendDelta = (avgPerc !== null && avgAr1 !== null) ? (avgPerc - avgAr1).toFixed(1) : null;
-  const trendSign  = trendDelta !== null ? (trendDelta >= 0 ? `<span class="green">▲ +${trendDelta}</span>` : `<span class="red-c">▼ ${trendDelta}</span>`) : '—';
+  // Papar trend chart hanya jika ada ≥2 data titik
+  const trendDataPoints = [hasAr1?avgAr1:null, hasAr2?avgAr2:null, hasPerc?avgPerc:null];
+  const trendPointCount = trendDataPoints.filter(v=>v!==null).length;
 
   return `
+    <div class="fasa-banner chip ${fasaInfo.cls}" style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;margin-bottom:20px;font-size:12px;font-weight:700">
+      ${fasaInfo.label}
+      <span style="font-weight:400;opacity:.8">— ${fasaInfo.sub}</span>
+    </div>
+
+    ${fasa === 0 ? `<div class="empty-state" style="padding:32px 0">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">Belum ada data markah</div>
+      <div class="empty-sub">Isi markah AR1 melalui tab <strong>Rekod Markah</strong> untuk mula melihat analisis.</div>
+    </div>` : `
+
     <div class="kpi-grid">
       <div class="kpi">
         <div class="kpi-lbl">GPS Purata (AR1)</div>
-        <div class="kpi-val">${gpsAr1}</div>
-        <span class="kpi-delta" style="color:var(--t3)">Markah purata: ${avgAr1!==null?avgAr1.toFixed(1):'—'}</span>
+        <div class="kpi-val ${hasAr1?'':''}${!hasAr1?'':'green'}">${gpsAr1}</div>
+        <span class="kpi-delta" style="color:var(--t3)">${hasAr1?`Purata: ${avgAr1.toFixed(1)}`:'Belum diisi'}</span>
       </div>
       <div class="kpi">
         <div class="kpi-lbl">GPS Purata (AR2)</div>
         <div class="kpi-val">${gpsAr2}</div>
-        <span class="kpi-delta" style="color:var(--t3)">Markah purata: ${avgAr2!==null?avgAr2.toFixed(1):'—'}</span>
+        <span class="kpi-delta" style="color:var(--t3)">${hasAr2?`Purata: ${avgAr2.toFixed(1)}`:'Belum diisi'}</span>
       </div>
       <div class="kpi">
         <div class="kpi-lbl">GPS Purata (Percubaan)</div>
         <div class="kpi-val">${gpsPerc}</div>
-        <span class="kpi-delta">${trendSign} dari AR1</span>
+        <span class="kpi-delta" style="color:var(--t3)">${hasPerc?`Purata: ${avgPerc.toFixed(1)}`:'Belum diisi'}</span>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">Murid Berisiko</div>
+        <div class="kpi-lbl">Murid Perlu Perhatian</div>
         <div class="kpi-val ${berisiko.length>0?'red-c':'green'}">${berisiko.length}</div>
-        <span class="kpi-delta ${berisiko.length>0?'red-c':'green'}">${berisiko.length>0?'Perlu intervensi':'Tiada isu merosot'}</span>
+        <span class="kpi-delta ${berisiko.length>0?'red-c':'green'}">${berisiko.length>0?'Perlu tindakan':'Tiada isu'}</span>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">% Lulus (Percubaan)</div>
-        <div class="kpi-val ${perLulus>=90?'green':perLulus>=70?'yellow':'red-c'}">${percVals.length?perLulus+'%':'—'}</div>
-        <span class="kpi-delta" style="color:var(--t3)">${lulusPerc}/${percVals.length} murid lulus</span>
+        <div class="kpi-lbl">% Lulus (${activeLabel})</div>
+        <div class="kpi-val ${perLulus>=90?'green':perLulus>=70?'yellow':'red-c'}">${activeVals.length?perLulus+'%':'—'}</div>
+        <span class="kpi-delta" style="color:var(--t3)">${lulusActive}/${activeVals.length} murid lulus</span>
       </div>
+      ${trendLabel ? `<div class="kpi">
+        <div class="kpi-lbl">Trend (${trendLabel})</div>
+        <div class="kpi-val" style="font-size:22px">${trendSign}</div>
+        <span class="kpi-delta" style="color:var(--t3)">${Math.abs(trendDelta).toFixed(1)} mata ${trendDelta>=0?'naik':'turun'}</span>
+      </div>` : ''}
     </div>
 
     <div class="chart-grid">
-      <div class="chart-card">
+      ${trendPointCount >= 2 ? `<div class="chart-card">
         <div class="chart-title">Trend Markah Purata Kelas</div>
-        <div class="chart-sub">AR1 → AR2 → Percubaan SPM</div>
+        <div class="chart-sub">Perbandingan ujian yang telah diisi</div>
         <div class="chart-wrap"><canvas id="analisis-trend-chart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Taburan Gred (Percubaan)</div>
+      </div>` : ''}
+      ${activeVals.length > 0 ? `<div class="chart-card">
+        <div class="chart-title">Taburan Gred (${activeLabel})</div>
         <div class="chart-sub">Bilangan murid mengikut gred</div>
         <div class="chart-wrap"><canvas id="analisis-gred-chart"></canvas></div>
-      </div>
+      </div>` : ''}
     </div>
 
     ${sesData.length > 0 ? `
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">Perbandingan Prestasi mengikut SES (Percubaan)</div>
+      <div class="chart-title">Perbandingan Prestasi mengikut SES (${activeLabel})</div>
       <div class="chart-sub">Markah purata mengikut kumpulan sosioekonomi</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
         ${sesData.map(s=>`
@@ -1171,64 +1222,138 @@ function renderAnalisisBody(ak) {
     </div>
 
     ${berisiko.length > 0 ? `
-    <div class="sh" style="margin-top:4px"><div><div class="sh-title">Murid Berisiko</div><div class="sh-sub">Trend markah merosot — klik nama untuk lihat cadangan individu</div></div></div>
+    <div class="sh" style="margin-top:4px">
+      <div>
+        <div class="sh-title">Murid Perlu Perhatian</div>
+        <div class="sh-sub">${fasa===1?'Gagal AR1':fasa===2?'Merosot AR1→AR2':'Merosot AR1→Percubaan'} — klik nama untuk cadangan individu</div>
+      </div>
+    </div>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Nama Murid</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th style="text-align:center">Perubahan</th><th>Profil</th></tr></thead>
+      <thead><tr>
+        <th>Nama Murid</th>
+        ${hasAr1?'<th style="text-align:center">AR1</th>':''}
+        ${hasAr2?'<th style="text-align:center">AR2</th>':''}
+        ${hasPerc?'<th style="text-align:center">Percubaan</th>':''}
+        <th style="text-align:center">${fasa===1?'Status':fasa===2?'AR1→AR2':'AR1→Perc'}</th>
+        <th>Profil</th>
+      </tr></thead>
       <tbody>${berisiko.map(p => {
         const m = markState[p.id] || {};
-        const delta = typeof m.percubaan==='number' && typeof m.ar1==='number' ? m.percubaan-m.ar1 : null;
+        const deltaBerisiko = fasa===2
+          ? (typeof m.ar2==='number'&&typeof m.ar1==='number' ? m.ar2-m.ar1 : null)
+          : (typeof m.percubaan==='number'&&typeof m.ar1==='number' ? m.percubaan-m.ar1 : null);
         return `<tr>
           <td class="tc-name"><button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button></td>
-          <td style="text-align:center" class="tc-num">${typeof m.ar1==='number'?m.ar1:'—'}</td>
-          <td style="text-align:center" class="tc-num">${typeof m.ar2==='number'?m.ar2:'—'}</td>
-          <td style="text-align:center" class="tc-num tc-red">${typeof m.percubaan==='number'?m.percubaan:'—'}</td>
-          <td style="text-align:center" class="tc-red">${delta!==null?`▼ ${Math.abs(delta)} mata`:'—'}</td>
+          ${hasAr1?`<td style="text-align:center" class="tc-num">${typeof m.ar1==='number'?m.ar1:'—'}</td>`:''}
+          ${hasAr2?`<td style="text-align:center" class="tc-num">${typeof m.ar2==='number'?m.ar2:'—'}</td>`:''}
+          ${hasPerc?`<td style="text-align:center" class="tc-num tc-red">${typeof m.percubaan==='number'?m.percubaan:'—'}</td>`:''}
+          <td style="text-align:center" class="${fasa===1?'tc-red':'tc-red'}">${fasa===1?'Gagal':deltaBerisiko!==null?`▼ ${Math.abs(deltaBerisiko)} mata`:'—'}</td>
           <td>${[p.ses,p.lokasi].filter(Boolean).map(x=>`<span class="chip chip-gray" style="font-size:10px;margin-right:3px">${x}</span>`).join('')}</td>
         </tr>`;
       }).join('')}</tbody>
     </table></div>` : ''}
+  `}
   `;
 }
 
-function generateCadanganKelas(ak, { avgAr1, avgAr2, avgPerc, berisiko, sesData, lulusPerc, percVals }) {
+function generateCadanganKelas(ak, { fasa, avgAr1, avgAr2, avgPerc, ar1Vals, ar2Vals, percVals, berisiko, sesData, lulusActive, activeVals, activeAvg }) {
   const cadangan = [];
-  const total = percVals.length;
+  const pepKey = avgPerc!==null?'percubaan':avgAr2!==null?'ar2':'ar1';
+  const activeLabel = avgPerc!==null?'Percubaan':avgAr2!==null?'AR2':'AR1';
 
-  if (avgPerc !== null && avgAr1 !== null) {
-    const delta = avgPerc - avgAr1;
-    if (delta < -5) {
-      cadangan.push({ level:'red', text:`Trend kelas menunjukkan <strong>penurunan ketara</strong> sebanyak ${Math.abs(delta).toFixed(1)} markah dari AR1 ke Percubaan. Guru disyorkan mengadakan sesi pemulihan berfokus pada topik-topik kelemahan utama sebelum SPM.` });
-    } else if (delta < 0) {
-      cadangan.push({ level:'warn', text:`Terdapat <strong>penurunan sederhana</strong> (${Math.abs(delta).toFixed(1)} markah) dari AR1 ke Percubaan. Pantau perkembangan murid yang menunjukkan trend turun dan beri sokongan tambahan.` });
+  // --- FASA 1: Hanya AR1 tersedia ---
+  if (fasa === 1) {
+    const lulusAr1 = ar1Vals.filter(v=>v>=50).length;
+    const perLulusAr1 = ar1Vals.length ? Math.round(lulusAr1/ar1Vals.length*100) : 0;
+
+    cadangan.push({ level:'', text:`<strong>Analisis Awal (AR1)</strong>: Data AR2 dan Percubaan belum tersedia. Cadangan ini berdasarkan prestasi AR1 sahaja — kemaskini selepas AR2 untuk perbandingan trend.` });
+
+    if (avgAr1 !== null) {
+      if (avgAr1 >= 70) {
+        cadangan.push({ level:'green', text:`Purata kelas AR1 ${avgAr1.toFixed(1)} adalah baik. Teruskan strategi pengajaran semasa dan pastikan topik-topik dalam sukatan SPM diliputi dengan menyeluruh.` });
+      } else if (avgAr1 >= 50) {
+        cadangan.push({ level:'warn', text:`Purata kelas AR1 ${avgAr1.toFixed(1)} berada pada tahap sederhana. Kenal pasti topik yang paling banyak murid gagal dan rancang sesi pengukuhan sebelum AR2.` });
+      } else {
+        cadangan.push({ level:'red', text:`Purata kelas AR1 ${avgAr1.toFixed(1)} adalah membimbangkan. Cadangkan analisis item bagi mengenal pasti kelemahan utama dan laksanakan intervensi segera sebelum AR2.` });
+      }
+    }
+
+    if (berisiko.length > 0) {
+      const names = berisiko.slice(0,3).map(p=>p.nama.split(' ').slice(0,2).join(' ')).join(', ');
+      cadangan.push({ level:'red', text:`<strong>${berisiko.length} murid gagal AR1</strong> (${names}${berisiko.length>3?`, +${berisiko.length-3} lagi`:''}) — markah di bawah 50. Cadangkan sesi bimbingan awal dan hubungi ibu bapa untuk makluman.` });
+    }
+
+    if (perLulusAr1 < 70) {
+      cadangan.push({ level:'warn', text:`Kadar lulus AR1 (${perLulusAr1}%) di bawah sasaran 70%. Rancang program pemulihan berfokus sebelum AR2 untuk memastikan lebih ramai murid mencapai tahap lulus.` });
+    }
+  }
+
+  // --- FASA 2: AR1 + AR2 tersedia, Percubaan belum ---
+  else if (fasa === 2) {
+    const delta12 = avgAr2 - avgAr1;
+    if (delta12 < -5) {
+      cadangan.push({ level:'red', text:`Trend kelas menunjukkan <strong>penurunan ketara</strong> ${Math.abs(delta12).toFixed(1)} markah dari AR1 ke AR2. Sebelum Percubaan SPM, laksanakan sesi diagnostik menyeluruh untuk kenal pasti punca penurunan.` });
+    } else if (delta12 < 0) {
+      cadangan.push({ level:'warn', text:`Terdapat <strong>penurunan sederhana</strong> (${Math.abs(delta12).toFixed(1)} markah) AR1→AR2. Pantau murid yang merosot dan beri sokongan pembelajaran bersasar sebelum Percubaan SPM.` });
+    } else if (delta12 > 5) {
+      cadangan.push({ level:'green', text:`Kelas menunjukkan <strong>peningkatan yang menggalakkan</strong> (+${delta12.toFixed(1)} markah) dari AR1 ke AR2. Kekalkan momentum dan fokus kepada topik SPM yang tinggal.` });
     } else {
-      cadangan.push({ level:'green', text:`Kelas menunjukkan <strong>trend positif</strong> dengan peningkatan ${delta.toFixed(1)} markah dari AR1 ke Percubaan. Teruskan strategi pengajaran semasa dan kekalkan momentum.` });
+      cadangan.push({ level:'green', text:`Prestasi kelas <strong>stabil</strong> antara AR1 dan AR2 (perubahan ${delta12>=0?'+':''}${delta12.toFixed(1)} markah). Sasarkan peningkatan ketara dalam Percubaan SPM.` });
     }
-  }
 
-  if (berisiko.length > 0) {
-    const names = berisiko.slice(0,3).map(p=>p.nama.split(' ').slice(0,2).join(' ')).join(', ');
-    cadangan.push({ level:'red', text:`<strong>${berisiko.length} murid berisiko</strong> dikenal pasti (${names}${berisiko.length>3?`, +${berisiko.length-3} lagi`:''}) — markah merosot lebih 5 mata dari AR1 ke Percubaan. Cadangkan sesi bimbingan individu atau kumpulan kecil.` });
-  }
-
-  const b40Data = sesData.find(s=>s.label==='B40');
-  const t20Data = sesData.find(s=>s.label==='T20');
-  if (b40Data && t20Data && b40Data.avg !== null && t20Data.avg !== null) {
-    const gap = t20Data.avg - b40Data.avg;
-    if (gap > 10) {
-      cadangan.push({ level:'warn', text:`<strong>Jurang prestasi SES</strong> sebanyak ${gap.toFixed(1)} markah antara pelajar T20 dan B40 dikesan. Pertimbangkan program sokongan bersasar untuk pelajar B40, termasuk modul latihan tambahan dan bimbingan rakan sebaya.` });
+    if (berisiko.length > 0) {
+      const names = berisiko.slice(0,3).map(p=>p.nama.split(' ').slice(0,2).join(' ')).join(', ');
+      cadangan.push({ level:'red', text:`<strong>${berisiko.length} murid merosot AR1→AR2</strong> (${names}${berisiko.length>3?`, +${berisiko.length-3} lagi`:''}) — penurunan melebihi 5 mata. Intervensi segera diperlukan sebelum Percubaan SPM.` });
     }
-  }
 
-  const pedalaman = ak.pelajar.filter(p=>p.lokasi==='Pedalaman' && markState[p.id] && typeof markState[p.id].percubaan==='number');
-  if (pedalaman.length > 0) {
-    const avgPed = avg(pedalaman.map(p=>markState[p.id].percubaan));
-    if (avgPed !== null && avgPerc !== null && avgPed < avgPerc - 5) {
-      cadangan.push({ level:'warn', text:`Pelajar dari kawasan <strong>Pedalaman</strong> (${pedalaman.length} orang) mencatat markah purata ${avgPed.toFixed(1)} berbanding purata kelas ${avgPerc.toFixed(1)}. Pertimbangkan pendekatan pengajaran yang lebih fleksibel dan menyediakan bahan rujukan tambahan.` });
+    const b40 = sesData.find(s=>s.label==='B40'), t20 = sesData.find(s=>s.label==='T20');
+    if (b40 && t20 && b40.avg!==null && t20.avg!==null && (t20.avg-b40.avg) > 10) {
+      cadangan.push({ level:'warn', text:`<strong>Jurang SES</strong> antara T20 dan B40 sebanyak ${(t20.avg-b40.avg).toFixed(1)} markah (AR2). Pertimbangkan program sokongan bersasar untuk murid B40 sebelum Percubaan.` });
     }
+
+    cadangan.push({ level:'', text:`Percubaan SPM belum diisi. Lengkapkan markah Percubaan untuk mendapat analisis penuh perbandingan 3-ujian dan cadangan pra-SPM.` });
   }
 
-  if (total > 0 && lulusPerc/total < 0.7) {
-    cadangan.push({ level:'red', text:`Kadar lulus kelas (${Math.round(lulusPerc/total*100)}%) masih di bawah sasaran 70%. Cadangkan pengukuhan kemahiran asas melalui latihan kendiri berpandukan soalan SPM lepas dan ujian diagnostik mingguan.` });
+  // --- FASA 3: Semua 3 ujian tersedia ---
+  else if (fasa === 3) {
+    const deltaTotal = avgPerc - avgAr1;
+    const delta12 = avgAr2 - avgAr1;
+    const delta23 = avgPerc - avgAr2;
+
+    if (deltaTotal < -5) {
+      cadangan.push({ level:'red', text:`Trend kelas menunjukkan <strong>penurunan ketara</strong> (${deltaTotal.toFixed(1)} markah AR1→Percubaan). Guru disyorkan mengadakan sesi pemulihan intensif berfokus topik kelemahan utama sebelum SPM.` });
+    } else if (deltaTotal < 0) {
+      cadangan.push({ level:'warn', text:`Terdapat <strong>penurunan sederhana</strong> (${deltaTotal.toFixed(1)} markah) AR1→Percubaan. Pantau dan sokong murid yang menunjukkan trend turun dalam minggu-minggu terakhir sebelum SPM.` });
+    } else {
+      cadangan.push({ level:'green', text:`Kelas menunjukkan <strong>trend positif</strong> (+${deltaTotal.toFixed(1)} markah AR1→Percubaan). Teruskan strategi pengajaran semasa dan kekalkan momentum menjelang SPM.` });
+    }
+
+    if (delta23 < -5) {
+      cadangan.push({ level:'warn', text:`Walaupun AR2 baik, prestasi <strong>merosot di Percubaan</strong> (${delta23.toFixed(1)} markah AR2→Percubaan). Kemungkinan tekanan peperiksaan — cadangkan teknik pengurusan stres dan latihan soalan SPM berbentuk sebenar.` });
+    }
+
+    if (berisiko.length > 0) {
+      const names = berisiko.slice(0,3).map(p=>p.nama.split(' ').slice(0,2).join(' ')).join(', ');
+      cadangan.push({ level:'red', text:`<strong>${berisiko.length} murid berisiko</strong> (${names}${berisiko.length>3?`, +${berisiko.length-3} lagi`:''}) — merosot lebih 5 mata AR1→Percubaan. Sesi bimbingan individu segera disyorkan.` });
+    }
+
+    const b40 = sesData.find(s=>s.label==='B40'), t20 = sesData.find(s=>s.label==='T20');
+    if (b40 && t20 && b40.avg!==null && t20.avg!==null && (t20.avg-b40.avg) > 10) {
+      cadangan.push({ level:'warn', text:`<strong>Jurang SES Percubaan</strong>: T20 ${t20.avg.toFixed(1)} vs B40 ${b40.avg.toFixed(1)} (beza ${(t20.avg-b40.avg).toFixed(1)} markah). Program sokongan bersasar untuk B40 perlu diperkemaskan sebelum SPM.` });
+    }
+
+    const pedalaman = ak.pelajar.filter(p=>p.lokasi==='Pedalaman' && markState[p.id] && typeof markState[p.id].percubaan==='number');
+    if (pedalaman.length > 0) {
+      const avgPed = avg(pedalaman.map(p=>markState[p.id].percubaan));
+      if (avgPed!==null && avgPerc!==null && avgPed < avgPerc-5) {
+        cadangan.push({ level:'warn', text:`Murid <strong>Pedalaman</strong> (${pedalaman.length} orang) purata Percubaan ${avgPed.toFixed(1)} — ${(avgPerc-avgPed).toFixed(1)} markah di bawah purata kelas. Sediakan bahan rujukan tambahan dan pantau akses pembelajaran.` });
+      }
+    }
+
+    const lulusPerc = percVals.filter(v=>v>=50).length;
+    if (percVals.length > 0 && lulusPerc/percVals.length < 0.7) {
+      cadangan.push({ level:'red', text:`Kadar lulus Percubaan (${Math.round(lulusPerc/percVals.length*100)}%) masih di bawah sasaran 70%. Laksanakan ulangkaji intensif dan ujian diagnostik mingguan sebelum SPM.` });
+    }
   }
 
   if (cadangan.length === 0) {
@@ -1241,47 +1366,94 @@ function generateCadanganKelas(ak, { avgAr1, avgAr2, avgPerc, berisiko, sesData,
 function generateCadanganIndividu(p, marks) {
   const cadangan = [];
   const ar1 = marks.ar1, ar2 = marks.ar2, perc = marks.percubaan;
-  const hasAll = typeof ar1==='number' && typeof ar2==='number' && typeof perc==='number';
+  const hasAr1  = typeof ar1  === 'number';
+  const hasAr2  = typeof ar2  === 'number';
+  const hasPerc = typeof perc === 'number';
 
-  if (!hasAll) {
-    cadangan.push({ level:'', text:'Data markah tidak lengkap. Lengkapkan rekod AR1, AR2 dan Percubaan untuk mendapat cadangan yang lebih tepat.' });
+  if (!hasAr1) {
+    cadangan.push({ level:'', text:'Belum ada data markah untuk murid ini. Isi markah AR1 melalui tab Rekod Markah untuk mula melihat cadangan individu.' });
     return cadangan;
   }
 
-  const delta1 = ar2 - ar1;
-  const delta2 = perc - ar2;
+  // --- FASA 1: Hanya AR1 ---
+  if (hasAr1 && !hasAr2 && !hasPerc) {
+    cadangan.push({ level:'', text:`<strong>Analisis berdasarkan AR1 sahaja.</strong> Isi markah AR2 dan Percubaan untuk cadangan trend yang lebih lengkap.` });
+    if (ar1 < 50) {
+      cadangan.push({ level:'red', text:`Murid <strong>gagal AR1</strong> (${ar1}/100). Perlu intervensi awal — cadangkan sesi bimbingan fokus pada topik-topik asas yang gagal dicapai.` });
+    } else if (ar1 < 60) {
+      cadangan.push({ level:'warn', text:`Markah AR1 (${ar1}/100) berada di tahap lulus rendah. Galakkan murid untuk lebih kerap berlatih soalan dan dapatkan bimbingan tambahan.` });
+    } else if (ar1 >= 80) {
+      cadangan.push({ level:'green', text:`Markah AR1 yang cemerlang (${ar1}/100). Kekalkan prestasi dan fokus kepada topik lanjutan untuk capai A dalam SPM.` });
+    } else {
+      cadangan.push({ level:'green', text:`Prestasi AR1 baik (${ar1}/100). Pastikan semua topik sukatan diliputi sepenuhnya sebelum AR2.` });
+    }
+    if (p.ses === 'B40') cadangan.push({ level:'warn', text:`Murid dari kumpulan <strong>B40</strong>. Pastikan akses kepada bahan pembelajaran yang mencukupi dan pertimbangkan program sokongan yang ada.` });
+    if (p.lokasi === 'Pedalaman') cadangan.push({ level:'warn', text:`Murid dari kawasan <strong>Pedalaman</strong>. Sediakan bahan bercetak atau digital untuk rujukan di luar waktu sekolah.` });
+    return cadangan;
+  }
+
+  // --- FASA 2: AR1 + AR2 ---
+  if (hasAr1 && hasAr2 && !hasPerc) {
+    const delta12 = ar2 - ar1;
+    cadangan.push({ level:'', text:`<strong>Analisis berdasarkan AR1 dan AR2.</strong> Isi markah Percubaan untuk cadangan pra-SPM yang menyeluruh.` });
+
+    if (delta12 > 10) {
+      cadangan.push({ level:'green', text:`<strong>Peningkatan ketara</strong> (+${delta12} mata AR1→AR2). Teruskan usaha ini dan kekalkan strategi belajar yang berkesan menjelang Percubaan SPM.` });
+    } else if (delta12 > 3) {
+      cadangan.push({ level:'green', text:`Menunjukkan <strong>peningkatan yang konsisten</strong> (+${delta12} mata). Fokus kepada topik yang masih memerlukan pengukuhan sebelum Percubaan SPM.` });
+    } else if (delta12 < -10) {
+      cadangan.push({ level:'red', text:`<strong>Penurunan serius</strong> (${delta12} mata AR1→AR2). Guru perlu berbincang dengan murid secara individu untuk kenal pasti punca dan sediakan pelan pemulihan segera sebelum Percubaan.` });
+    } else if (delta12 < -3) {
+      cadangan.push({ level:'warn', text:`Terdapat <strong>penurunan sederhana</strong> (${delta12} mata AR1→AR2). Pantau lebih rapat dan galakkan perbincangan dengan guru untuk mengenal pasti punca.` });
+    } else {
+      cadangan.push({ level:'', text:`Prestasi <strong>stabil</strong> antara AR1 dan AR2 (${delta12>=0?'+':''}${delta12} mata). Fokus kepada peningkatan dalam Percubaan SPM.` });
+    }
+
+    if (ar2 < 50) {
+      cadangan.push({ level:'red', text:`Markah AR2 (${ar2}/100) masih <strong>di bawah lulus</strong>. Intervensi intensif diperlukan sebelum Percubaan SPM.` });
+    } else if (ar2 >= 80) {
+      cadangan.push({ level:'green', text:`Pencapaian cemerlang dalam AR2 (${ar2}/100). Sasarkan konsistensi dan gred A dalam Percubaan SPM.` });
+    }
+
+    if (p.ses === 'B40') cadangan.push({ level:'warn', text:`Murid dari kumpulan <strong>B40</strong>. Pastikan akses kepada bahan pembelajaran dan sokongan yang mencukupi menjelang Percubaan SPM.` });
+    if (p.lokasi === 'Pedalaman') cadangan.push({ level:'warn', text:`Murid dari kawasan <strong>Pedalaman</strong>. Sediakan bahan rujukan tambahan untuk persediaan Percubaan SPM.` });
+    return cadangan;
+  }
+
+  // --- FASA 3: Semua 3 ujian (atau sekurang-kurangnya Percubaan ada) ---
+  const delta1 = hasAr2 ? ar2 - ar1 : null;
+  const delta2 = hasAr2 ? perc - ar2 : null;
   const deltaTotal = perc - ar1;
 
   if (deltaTotal > 10) {
-    cadangan.push({ level:'green', text:`Trend <strong>peningkatan yang ketara</strong> (+${deltaTotal} mata dari AR1 ke Percubaan). Teruskan usaha dan strategi belajar semasa. Sasarkan gred lebih tinggi dalam SPM.` });
+    cadangan.push({ level:'green', text:`Trend <strong>peningkatan yang ketara</strong> (+${deltaTotal} mata AR1→Percubaan). Teruskan usaha dan sasarkan gred lebih tinggi dalam SPM sebenar.` });
   } else if (deltaTotal > 3) {
-    cadangan.push({ level:'green', text:`Menunjukkan <strong>peningkatan yang konsisten</strong> (+${deltaTotal} mata). Galakkan pelajar untuk memfokuskan kepada topik yang masih lemah bagi memaksimumkan pencapaian SPM.` });
+    cadangan.push({ level:'green', text:`Menunjukkan <strong>peningkatan yang konsisten</strong> (+${deltaTotal} mata). Fokus kepada topik yang masih lemah untuk memaksimumkan pencapaian SPM.` });
   } else if (deltaTotal < -10) {
-    cadangan.push({ level:'red', text:`Trend <strong>penurunan yang serius</strong> (${deltaTotal} mata dari AR1 ke Percubaan). Guru perlu bertemu pelajar secara individu untuk kenal pasti punca dan menyediakan pelan pemulihan segera.` });
+    cadangan.push({ level:'red', text:`Trend <strong>penurunan serius</strong> (${deltaTotal} mata AR1→Percubaan). Guru perlu bertemu murid secara individu, kenal pasti punca, dan sediakan pelan pemulihan segera sebelum SPM.` });
   } else if (deltaTotal < -3) {
-    cadangan.push({ level:'warn', text:`Trend <strong>penurunan sederhana</strong> (${deltaTotal} mata). Pantau lebih rapat dan galakkan pelajar untuk lebih kerap berbincang dengan guru.` });
+    cadangan.push({ level:'warn', text:`Trend <strong>penurunan sederhana</strong> (${deltaTotal} mata). Pantau lebih rapat dan galakkan murid untuk berbincang dengan guru mengenai strategi belajar.` });
   } else {
-    cadangan.push({ level:'', text:`Prestasi <strong>stabil</strong> sepanjang tiga ujian. Fokus kepada topik atau subtopik yang masih menimbulkan kelemahan untuk meningkatkan gred SPM.` });
+    cadangan.push({ level:'', text:`Prestasi <strong>stabil</strong> sepanjang ujian. Fokus kepada topik kelemahan untuk meningkatkan gred dalam SPM sebenar.` });
   }
 
-  if (delta2 < -5) {
-    cadangan.push({ level:'warn', text:`Prestasi <strong>merosot antara AR2 dan Percubaan</strong> (${delta2} mata). Kemungkinan tekanan peperiksaan atau ketidakbersediaan. Cadangkan teknik pengurusan stres dan latihan soalan berbentuk SPM.` });
-  } else if (delta1 < -5 && delta2 > 0) {
-    cadangan.push({ level:'green', text:`Pelajar menunjukkan <strong>pemulihan positif</strong> selepas penurunan di AR2 — petanda baik untuk SPM. Dorong pelajar untuk kekalkan momentum ini.` });
+  if (delta2 !== null && delta2 < -5) {
+    cadangan.push({ level:'warn', text:`Prestasi <strong>merosot antara AR2 dan Percubaan</strong> (${delta2} mata). Kemungkinan tekanan peperiksaan — cadangkan teknik pengurusan stres dan latihan soalan berformat SPM.` });
+  } else if (delta1 !== null && delta2 !== null && delta1 < -5 && delta2 > 0) {
+    cadangan.push({ level:'green', text:`Murid menunjukkan <strong>pemulihan positif</strong> selepas penurunan di AR2 — petanda baik untuk SPM. Dorong murid untuk kekalkan momentum ini.` });
   }
 
   if (p.ses === 'B40') {
-    cadangan.push({ level:'warn', text:`Pelajar dari kumpulan <strong>B40</strong>. Pastikan pelajar mempunyai akses kepada bahan pembelajaran yang mencukupi. Pertimbangkan program biasiswa atau bantuan kewangan yang boleh membantu tumpuan pelajaran.` });
+    cadangan.push({ level:'warn', text:`Murid dari kumpulan <strong>B40</strong>. Pastikan akses kepada bahan pembelajaran yang mencukupi. Pertimbangkan program biasiswa atau bantuan yang tersedia.` });
   }
-
   if (p.lokasi === 'Pedalaman') {
-    cadangan.push({ level:'warn', text:`Pelajar dari kawasan <strong>Pedalaman</strong>. Pertimbangkan akses kepada sumber digital dan bahan bercetak untuk rujukan di luar waktu sekolah.` });
+    cadangan.push({ level:'warn', text:`Murid dari kawasan <strong>Pedalaman</strong>. Sediakan bahan digital atau bercetak untuk rujukan di luar waktu sekolah menjelang SPM.` });
   }
 
   if (perc < 50) {
-    cadangan.push({ level:'red', text:`Markah Percubaan masih <strong>di bawah tahap lulus</strong> (${perc}/100). Guru perlu menyusun pelan intervensi berfokus termasuk sesi ulangkaji intensif bagi topik kritikal.` });
+    cadangan.push({ level:'red', text:`Markah Percubaan <strong>di bawah lulus</strong> (${perc}/100). Pelan intervensi intensif diperlukan — sesi ulangkaji fokus pada topik kritikal sebelum SPM.` });
   } else if (perc >= 80) {
-    cadangan.push({ level:'green', text:`Pencapaian <strong>cemerlang</strong> dalam Percubaan (${perc}/100). Dorong pelajar untuk menyasarkan gred A dalam SPM melalui latihan soalan sukar dan penguasaan topik lanjutan.` });
+    cadangan.push({ level:'green', text:`Pencapaian <strong>cemerlang</strong> dalam Percubaan (${perc}/100). Sasarkan gred A dalam SPM melalui latihan soalan sukar dan penguasaan topik lanjutan.` });
   }
 
   return cadangan;
