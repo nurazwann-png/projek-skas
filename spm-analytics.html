@@ -683,7 +683,18 @@ function showToast(msg) {
 }
 
 // ── Charts helper ─────────────────────────────────────────
-function destroyChart(id) { if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  // Also destroy any Chart.js instance attached to the canvas directly
+  const suffix = id === 'analisis-trend' ? 'analisis-trend-chart'
+               : id === 'analisis-gred'  ? 'analisis-gred-chart'
+               : id + '-chart';
+  const el = document.getElementById(suffix) || document.getElementById(id+'-chart');
+  if (el) {
+    const existing = Chart.getChart(el);
+    if (existing) existing.destroy();
+  }
+}
 
 function sparkSVG(marks, isAlert) {
   const arr = Object.values(marks);
@@ -1471,16 +1482,27 @@ function initAnalisisChart() {
   const avgAr2  = avg(ar2Vals);
   const avgPerc = avg(percVals);
 
+  // Guna ujian terkini untuk carta gred
+  const activeVals  = percVals.length ? percVals : ar2Vals.length ? ar2Vals : ar1Vals;
+  const activeLabel = percVals.length ? 'Percubaan' : ar2Vals.length ? 'AR2' : 'AR1';
+
+  // Trend chart: hanya papar titik yang ada data
+  const trendPoints = [
+    { label:'AR1', val:avgAr1 },
+    { label:'AR2', val:avgAr2 },
+    { label:'Percubaan', val:avgPerc },
+  ].filter(p => p.val !== null);
+
   destroyChart('analisis-trend');
   const trendCtx = document.getElementById('analisis-trend-chart');
-  if (trendCtx) {
+  if (trendCtx && trendPoints.length >= 2) {
     charts['analisis-trend'] = new Chart(trendCtx, {
       type:'line',
       data:{
-        labels:['AR1','AR2','Percubaan'],
+        labels: trendPoints.map(p=>p.label),
         datasets:[{
           label:'Markah Purata',
-          data:[avgAr1, avgAr2, avgPerc],
+          data: trendPoints.map(p=>p.val),
           borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.1)',
           borderWidth:2.5, tension:.35, pointRadius:5, pointBackgroundColor:'#3b82f6', fill:true
         }]
@@ -1498,9 +1520,9 @@ function initAnalisisChart() {
 
   destroyChart('analisis-gred');
   const gredCtx = document.getElementById('analisis-gred-chart');
-  if (gredCtx) {
+  if (gredCtx && activeVals.length > 0) {
     const gredDist = { 'A':0,'B':0,'C':0,'D/E':0,'G':0 };
-    percVals.forEach(v => {
+    activeVals.forEach(v => {
       const g = markToGred(v);
       if(g.startsWith('A')) gredDist['A']++;
       else if(g.startsWith('B')) gredDist['B']++;
