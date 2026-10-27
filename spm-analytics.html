@@ -553,29 +553,29 @@ const DUMMY_KELAS = [
   {
     id:'k1', subjek:'Matematik', tingkatan:'5', kelas:'Amanah', tahun:'2025',
     pelajar:[
-      {id:'p1',  nama:'Ahmad Syafiq bin Zulkifli',     jantina:'L'},
-      {id:'p2',  nama:'Nurul Farhana binti Azman',     jantina:'P'},
-      {id:'p3',  nama:'Muhammad Haziq bin Rosli',      jantina:'L'},
-      {id:'p4',  nama:'Siti Nur Aisyah binti Kamal',   jantina:'P'},
-      {id:'p5',  nama:'Mohamad Aiman bin Saiful',      jantina:'L'},
-      {id:'p6',  nama:'Nur Syafiqah binti Hamdan',     jantina:'P'},
-      {id:'p7',  nama:'Izzatul Hafizah binti Nordin',  jantina:'P'},
-      {id:'p8',  nama:'Khairul Anam bin Rashid',       jantina:'L'},
-      {id:'p9',  nama:'Fatin Nabilah binti Yusof',     jantina:'P'},
-      {id:'p10', nama:'Luqmanul Hakim bin Azhari',     jantina:'L'},
+      {id:'p1',  nama:'Ahmad Syafiq bin Zulkifli',     jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
+      {id:'p2',  nama:'Nurul Farhana binti Azman',     jantina:'P', ses:'M40', lokasi:'Bandar'},
+      {id:'p3',  nama:'Muhammad Haziq bin Rosli',      jantina:'L', ses:'B40', lokasi:'Pedalaman'},
+      {id:'p4',  nama:'Siti Nur Aisyah binti Kamal',   jantina:'P', ses:'T20', lokasi:'Bandar'},
+      {id:'p5',  nama:'Mohamad Aiman bin Saiful',      jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
+      {id:'p6',  nama:'Nur Syafiqah binti Hamdan',     jantina:'P', ses:'M40', lokasi:'Bandar'},
+      {id:'p7',  nama:'Izzatul Hafizah binti Nordin',  jantina:'P', ses:'T20', lokasi:'Bandar'},
+      {id:'p8',  nama:'Khairul Anam bin Rashid',       jantina:'L', ses:'B40', lokasi:'Pedalaman'},
+      {id:'p9',  nama:'Fatin Nabilah binti Yusof',     jantina:'P', ses:'M40', lokasi:'Luar Bandar'},
+      {id:'p10', nama:'Luqmanul Hakim bin Azhari',     jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
     ]
   },
   {
     id:'k2', subjek:'Matematik', tingkatan:'5', kelas:'Bestari', tahun:'2025',
     pelajar:[
-      {id:'p11', nama:'Nur Ain binti Mohd Noor',       jantina:'P'},
-      {id:'p12', nama:'Farhan Hafizi bin Zainudin',    jantina:'L'},
-      {id:'p13', nama:'Aina Maisarah binti Suhaimi',   jantina:'P'},
-      {id:'p14', nama:'Amirul Fitri bin Jamaludin',    jantina:'L'},
-      {id:'p15', nama:'Nurulhuda binti Zakaria',       jantina:'P'},
-      {id:'p16', nama:'Syahmi Irfan bin Othman',       jantina:'L'},
-      {id:'p17', nama:'Qistina Izzah binti Razali',    jantina:'P'},
-      {id:'p18', nama:'Hafiz bin Mokhtar',             jantina:'L'},
+      {id:'p11', nama:'Nur Ain binti Mohd Noor',       jantina:'P', ses:'M40', lokasi:'Bandar'},
+      {id:'p12', nama:'Farhan Hafizi bin Zainudin',    jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
+      {id:'p13', nama:'Aina Maisarah binti Suhaimi',   jantina:'P', ses:'T20', lokasi:'Bandar'},
+      {id:'p14', nama:'Amirul Fitri bin Jamaludin',    jantina:'L', ses:'B40', lokasi:'Pedalaman'},
+      {id:'p15', nama:'Nurulhuda binti Zakaria',       jantina:'P', ses:'M40', lokasi:'Bandar'},
+      {id:'p16', nama:'Syahmi Irfan bin Othman',       jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
+      {id:'p17', nama:'Qistina Izzah binti Razali',    jantina:'P', ses:'T20', lokasi:'Bandar'},
+      {id:'p18', nama:'Hafiz bin Mokhtar',             jantina:'L', ses:'B40', lokasi:'Pedalaman'},
     ]
   },
 ];
@@ -1272,7 +1272,7 @@ function simpanPelajarModal() {
   } else {
     if (!ak) { alert('Pilih kelas dahulu sebelum tambah murid.'); return; }
     const id = 'p' + (++pelajarNextId);
-    ak.pelajar.push({ id, nama, jantina });
+    ak.pelajar.push({ id, nama, jantina, ses: '', lokasi: '' });
     markState[id] = { ar1, ar2, percubaan: perc };
     showToast(`✓ ${nama} berjaya ditambah`);
   }
@@ -1341,13 +1341,37 @@ function processFile(file) {
 
 // Map column header names (case-insensitive) to standard keys
 const COL_MAP = {
-  nama:['nama','name','nama pelajar','nama penuh'],
-  jantina:['jantina','gender','jantina pelajar','sex'],
-  kelas:['kelas','class','tingkatan'],
-  ar1:['ar1','ujian 1','ujian pertengahan','mid','markah ar1','ar 1'],
-  ar2:['ar2','ujian 2','ujian akhir','end','markah ar2','ar 2'],
+  nama:     ['nama','name','nama pelajar','nama penuh'],
+  jantina:  ['jantina','gender','jantina pelajar','sex'],
+  kelas:    ['kelas','class','tingkatan'],
+  ses:      ['ses','status sosioekonomi','b40','m40','t20','kumpulan isi rumah','kir','pendapatan'],
+  lokasi:   ['lokasi','location','kawasan','tempat tinggal','lokasi rumah'],
+  ar1:      ['ar1','ujian 1','ujian pertengahan','mid','markah ar1','ar 1'],
+  ar2:      ['ar2','ujian 2','ujian akhir','end','markah ar2','ar 2'],
   percubaan:['percubaan','trial','perc','markah percubaan','percubaan spm'],
 };
+
+// Nilai sah SES dan Lokasi
+const SES_VALID    = ['B40','M40','T20'];
+const LOKASI_VALID = ['Bandar','Luar Bandar','Pedalaman'];
+
+function normSES(raw) {
+  if (!raw) return '';
+  const v = String(raw).trim().toUpperCase();
+  if (v === 'B40' || v.includes('B40')) return 'B40';
+  if (v === 'M40' || v.includes('M40')) return 'M40';
+  if (v === 'T20' || v.includes('T20')) return 'T20';
+  return '';
+}
+
+function normLokasi(raw) {
+  if (!raw) return '';
+  const v = String(raw).trim().toLowerCase();
+  if (v.includes('pedalaman')) return 'Pedalaman';
+  if (v.includes('luar') || v.includes('desa') || v.includes('kampung')) return 'Luar Bandar';
+  if (v.includes('bandar') || v.includes('urban')) return 'Bandar';
+  return '';
+}
 
 function findCol(headers, key) {
   const aliases = COL_MAP[key] || [];
@@ -1357,22 +1381,26 @@ function findCol(headers, key) {
 function parseRows(data) {
   if (data.length < 2) return [];
   const headers = data[0].map(h => String(h).toLowerCase().trim());
-  const iNama  = findCol(headers, 'nama');
-  const iJant  = findCol(headers, 'jantina');
-  const iKelas = findCol(headers, 'kelas');
-  const iAr1   = findCol(headers, 'ar1');
-  const iAr2   = findCol(headers, 'ar2');
-  const iPerc  = findCol(headers, 'percubaan');
+  const iNama   = findCol(headers, 'nama');
+  const iJant   = findCol(headers, 'jantina');
+  const iKelas  = findCol(headers, 'kelas');
+  const iSES    = findCol(headers, 'ses');
+  const iLokasi = findCol(headers, 'lokasi');
+  const iAr1    = findCol(headers, 'ar1');
+  const iAr2    = findCol(headers, 'ar2');
+  const iPerc   = findCol(headers, 'percubaan');
 
   return data.slice(1).filter(r => r.some(c => String(c).trim())).map(r => {
-    const nama = iNama >= 0 ? String(r[iNama] || '').trim() : '';
-    const rawJ = iJant >= 0 ? String(r[iJant] || '').trim().toUpperCase() : '';
+    const nama    = iNama   >= 0 ? String(r[iNama]   || '').trim() : '';
+    const rawJ    = iJant   >= 0 ? String(r[iJant]   || '').trim().toUpperCase() : '';
     const jantina = rawJ.startsWith('P') ? 'P' : 'L';
-    const kelas  = iKelas >= 0 ? String(r[iKelas] || '').trim() : '';
-    const ar1    = iAr1  >= 0 ? clamp(+r[iAr1]  || 0) : 0;
-    const ar2    = iAr2  >= 0 ? clamp(+r[iAr2]  || 0) : ar1;
-    const perc   = iPerc >= 0 ? clamp(+r[iPerc] || 0) : ar1;
-    return { nama, jantina, kelas, ar1, ar2, percubaan: perc };
+    const kelas   = iKelas  >= 0 ? String(r[iKelas]  || '').trim() : '';
+    const ses     = iSES    >= 0 ? normSES(r[iSES])               : '';
+    const lokasi  = iLokasi >= 0 ? normLokasi(r[iLokasi])         : '';
+    const ar1     = iAr1    >= 0 ? clamp(+r[iAr1]   || 0) : 0;
+    const ar2     = iAr2    >= 0 ? clamp(+r[iAr2]   || 0) : ar1;
+    const perc    = iPerc   >= 0 ? clamp(+r[iPerc]  || 0) : ar1;
+    return { nama, jantina, kelas, ses, lokasi, ar1, ar2, percubaan: perc };
   }).filter(r => r.nama);
 }
 
@@ -1393,14 +1421,35 @@ function showImportPreview(rows, filename) {
   document.getElementById('import-warn').textContent =
     warn > 0 ? `⚠ ${warn} baris diabaikan kerana nama kosong` : '';
 
-  document.getElementById('import-preview').innerHTML = `
+  const sesStat  = { B40: rows.filter(r=>r.ses==='B40').length, M40: rows.filter(r=>r.ses==='M40').length, T20: rows.filter(r=>r.ses==='T20').length, tiada: rows.filter(r=>!r.ses).length };
+  const lokStat  = { Bandar: rows.filter(r=>r.lokasi==='Bandar').length, 'Luar Bandar': rows.filter(r=>r.lokasi==='Luar Bandar').length, Pedalaman: rows.filter(r=>r.lokasi==='Pedalaman').length, tiada: rows.filter(r=>!r.lokasi).length };
+  const infoHtml = (sesStat.tiada < rows.length || lokStat.tiada < rows.length) ? `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px">
+      ${sesStat.tiada < rows.length ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px">
+        <span style="color:var(--t3);font-weight:600">SES:</span>
+        ${sesStat.B40?`<span class="chip chip-yellow" style="font-size:10px;margin-left:4px">B40 · ${sesStat.B40}</span>`:''}
+        ${sesStat.M40?`<span class="chip chip-blue"   style="font-size:10px;margin-left:4px">M40 · ${sesStat.M40}</span>`:''}
+        ${sesStat.T20?`<span class="chip chip-green"  style="font-size:10px;margin-left:4px">T20 · ${sesStat.T20}</span>`:''}
+        ${sesStat.tiada?`<span style="color:var(--t3);margin-left:4px">${sesStat.tiada} tiada data</span>`:''}
+      </div>` : ''}
+      ${lokStat.tiada < rows.length ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px">
+        <span style="color:var(--t3);font-weight:600">Lokasi:</span>
+        ${lokStat.Bandar?`<span class="chip chip-blue"   style="font-size:10px;margin-left:4px">Bandar · ${lokStat.Bandar}</span>`:''}
+        ${lokStat['Luar Bandar']?`<span class="chip chip-yellow" style="font-size:10px;margin-left:4px">Luar Bandar · ${lokStat['Luar Bandar']}</span>`:''}
+        ${lokStat.Pedalaman?`<span class="chip chip-red"    style="font-size:10px;margin-left:4px">Pedalaman · ${lokStat.Pedalaman}</span>`:''}
+        ${lokStat.tiada?`<span style="color:var(--t3);margin-left:4px">${lokStat.tiada} tiada data</span>`:''}
+      </div>` : ''}
+    </div>` : `<div style="font-size:12px;color:var(--yellow);margin-bottom:10px">⚠ Lajur SES dan Lokasi tidak dijumpai — data analisis tidak lengkap. Guna templat CSV untuk format yang betul.</div>`;
+
+  document.getElementById('import-preview').innerHTML = infoHtml + `
     <table class="tbl" style="font-size:12px">
-      <thead><tr><th>No.</th><th>Nama Pelajar</th><th>Jantina</th><th>Kelas</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th></tr></thead>
+      <thead><tr><th>No.</th><th>Nama Pelajar</th><th>Jantina</th><th>SES</th><th>Lokasi</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th></tr></thead>
       <tbody>${rows.map((r,i) => `<tr>
         <td style="color:var(--t3)">${i+1}</td>
         <td class="tc-name">${r.nama || '<span style="color:var(--red)">—</span>'}</td>
         <td style="color:var(--t3)">${r.jantina==='P'?'♀ P':'♂ L'}</td>
-        <td style="color:var(--t3);font-size:11px">${r.kelas||'—'}</td>
+        <td>${r.ses ? `<span class="chip ${r.ses==='B40'?'chip-yellow':r.ses==='T20'?'chip-green':'chip-blue'}" style="font-size:10px">${r.ses}</span>` : '<span style="color:var(--t3)">—</span>'}</td>
+        <td style="color:var(--t3);font-size:11px">${r.lokasi||'—'}</td>
         <td style="text-align:center">${r.ar1||'—'}</td>
         <td style="text-align:center">${r.ar2||'—'}</td>
         <td style="text-align:center">${r.percubaan||'—'}</td>
@@ -1417,7 +1466,7 @@ function confirmImport() {
   importBuffer.forEach(r => {
     if (!r.nama) return;
     const id = 'p' + (++pelajarNextId);
-    ak.pelajar.push({ id, nama: r.nama, jantina: r.jantina });
+    ak.pelajar.push({ id, nama: r.nama, jantina: r.jantina, ses: r.ses || '', lokasi: r.lokasi || '' });
     markState[id] = { ar1: r.ar1, ar2: r.ar2, percubaan: r.percubaan };
     added++;
   });
@@ -1429,7 +1478,7 @@ function confirmImport() {
 }
 
 function muat_turun_templat() {
-  const csv = 'Nama,Jantina,Kelas,AR1,AR2,Percubaan\nAhmad Syafiq bin Zulkifli,L,5 Amanah,72,68,65\nNurul Farhana binti Azman,P,5 Amanah,85,87,89\n';
+  const csv = 'Nama,Jantina,Kelas,SES,Lokasi,AR1,AR2,Percubaan\nAhmad Syafiq bin Zulkifli,L,5 Amanah,B40,Luar Bandar,72,68,65\nNurul Farhana binti Azman,P,5 Amanah,M40,Bandar,85,87,89\nMuhammad Haziq bin Rosli,L,5 Amanah,T20,Bandar,90,88,91\n';
   const blob = new Blob([csv], { type:'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
