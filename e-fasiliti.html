@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Fasiliti PPD</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    .modal-enter { animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .toast-anim { animation: slideIn .25s ease; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+    .timeline-line::before { content:''; position:absolute; left:11px; top:24px; bottom:0; width:2px; background:#334155; }
+    .tab-active { border-bottom: 2px solid #3b82f6; color: #f1f5f9; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #94a3b8; }
+    select, input, textarea { color-scheme: dark; }
+    .role-active { background: #3b82f6 !important; color: #fff !important; }
+    .role-btn { transition: background .15s; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+<div id="app"></div>
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+<div id="modal-root"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// MOCK DATA
+// ══════════════════════════════════════════════
+const TIKET_DATA = [
+  {
+    id: 'TKT-2024-001', tajuk: 'Paip pecah di tandas blok A',
+    kategori: 'Paip & Sanitasi',
+    butiran: 'Paip utama di tandas blok A tingkat 2 pecah menyebabkan air melimpah ke koridor. Keadaan licin dan berbahaya kepada pelajar.',
+    sekolah: 'SMK Dalat', zon: 'Zon 1', tarikh: '2024-10-28',
+    status: 'Selesai', keutamaan: 'Kritikal', gambar: null,
+    notaPJ: 'Paip PVC 4 inci perlu diganti. Anggaran kos RM 850. Kerja boleh siap dalam 2 hari.',
+    notaPPD: 'Bajet diluluskan. Kontraktor dilantik.',
+    timeline: [
+      { tarikh: '2024-10-28 08:30', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Dalat', status: 'Baru' },
+      { tarikh: '2024-10-28 14:15', tindakan: 'Lawatan tapak oleh PJ. Aduan disahkan.', oleh: 'En. Haziq (PJ Zon 1)', status: 'Disemak PJ' },
+      { tarikh: '2024-10-29 09:00', tindakan: 'Bajet RM 850 diluluskan oleh PPD', oleh: 'PPD Dalat', status: 'Lulus Bajet' },
+      { tarikh: '2024-10-30 16:00', tindakan: 'Kerja pembaikan selesai', oleh: 'Kontraktor', status: 'Selesai' },
+    ]
+  },
+  {
+    id: 'TKT-2024-002', tajuk: 'Bumbung dewan bocor ketika hujan lebat',
+    kategori: 'Bumbung',
+    butiran: 'Bumbung dewan sekolah bocor di 3 titik semasa hujan lebat. Air menitis ke atas kerusi pelajar semasa perhimpunan.',
+    sekolah: 'SMK Oya', zon: 'Zon 2', tarikh: '2024-10-29',
+    status: 'Lulus Bajet', keutamaan: 'Tinggi', gambar: null,
+    notaPJ: 'Jubin bumbung retak di kawasan seluas 12m². Keperluan: 200 jubin + kos buruh. Anggaran RM 3,200.',
+    notaPPD: null,
+    timeline: [
+      { tarikh: '2024-10-29 10:00', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Oya', status: 'Baru' },
+      { tarikh: '2024-10-30 11:30', tindakan: 'Lawatan tapak disahkan. Kritikal sebelum musim tengkujuh.', oleh: 'Pn. Farah (PJ Zon 2)', status: 'Disemak PJ' },
+      { tarikh: '2024-10-31 09:00', tindakan: 'Bajet RM 3,200 diluluskan', oleh: 'PPD Dalat', status: 'Lulus Bajet' },
+    ]
+  },
+  {
+    id: 'TKT-2024-003', tajuk: 'Litar elektrik trip berulang kali di makmal sains',
+    kategori: 'Elektrik',
+    butiran: 'Bekalan elektrik di makmal sains trip 3-4 kali sehari. Menjejaskan penggunaan peralatan makmal dan menyebabkan data komputer hilang.',
+    sekolah: 'SMK Batang Igan', zon: 'Zon 3', tarikh: '2024-10-30',
+    status: 'Disemak PJ', keutamaan: 'Kritikal', gambar: null,
+    notaPJ: 'Panel elektrik lama perlu upgrade. Anggaran kos RM 5,500. Perlu kontraktor berlesen.',
+    notaPPD: null,
+    timeline: [
+      { tarikh: '2024-10-30 07:45', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Batang Igan', status: 'Baru' },
+      { tarikh: '2024-10-31 13:00', tindakan: 'Disahkan oleh PJ. Panel elektrik usang, berisiko.', oleh: 'En. Razif (PJ Zon 3)', status: 'Disemak PJ' },
+    ]
+  },
+  {
+    id: 'TKT-2024-004', tajuk: 'Pagar sekolah rosak — keselamatan terjejas',
+    kategori: 'Struktur & Pagar',
+    butiran: 'Bahagian pagar besi di pintu masuk belakang rebah. Pelajar boleh keluar masuk tanpa kawalan.',
+    sekolah: 'SMK Agama Igan', zon: 'Zon 2', tarikh: '2024-10-31',
+    status: 'Baru', keutamaan: 'Tinggi', gambar: null,
+    notaPJ: null, notaPPD: null,
+    timeline: [
+      { tarikh: '2024-10-31 08:00', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Agama Igan', status: 'Baru' },
+    ]
+  },
+  {
+    id: 'TKT-2024-005', tajuk: 'Kipas siling bilik darjah tidak berfungsi',
+    kategori: 'Elektrik',
+    butiran: '6 buah kipas siling di blok B tidak berfungsi. Cuaca panas menyebabkan pelajar tidak selesa semasa belajar.',
+    sekolah: 'SMK Dalat', zon: 'Zon 1', tarikh: '2024-10-31',
+    status: 'Baru', keutamaan: 'Sederhana', gambar: null,
+    notaPJ: null, notaPPD: null,
+    timeline: [
+      { tarikh: '2024-10-31 09:15', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Dalat', status: 'Baru' },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let state = {
+  role: 'sekolah',        // 'sekolah' | 'pj' | 'ppd'
+  subTab: 'baru',         // 'baru' | 'saya' (sekolah)
+  sekolahFilter: 'SMK Dalat',
+  zonFilter: 'Semua',
+  tiketId: null,          // next ticket counter
+};
+let tiketCounter = 6;
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+const STATUS_BADGE = {
+  'Baru':        'bg-blue-600',
+  'Disemak PJ':  'bg-orange-500',
+  'Lulus Bajet': 'bg-purple-600',
+  'Dalam Kerja': 'bg-yellow-500 text-slate-900',
+  'Selesai':     'bg-green-600',
+  'Ditolak':     'bg-red-600',
+};
+const STATUS_ICON = {
+  'Baru':'🔵','Disemak PJ':'🟠','Lulus Bajet':'🟣','Dalam Kerja':'🟡','Selesai':'🟢','Ditolak':'🔴',
+};
+const KEU_COLOR = {
+  'Kritikal': 'bg-red-600',
+  'Tinggi':   'bg-orange-500',
+  'Sederhana':'bg-yellow-500 text-slate-900',
+  'Rendah':   'bg-green-600',
+};
+
+function badge(text, extra='') {
+  const cls = STATUS_BADGE[text] || 'bg-slate-600';
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls} ${extra}">${text}</span>`;
+}
+function keuBadge(k) {
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${KEU_COLOR[k]||'bg-slate-600'}">${k}</span>`;
+}
+function now() {
+  return new Date().toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(',','');
+}
+function nextId() {
+  return `TKT-2024-00${tiketCounter++}`;
+}
+
+function showToast(msg, type='ok') {
+  const el = document.createElement('div');
+  const clr = type==='ok' ? 'bg-green-700 border-green-500' : 'bg-red-800 border-red-600';
+  el.className = `toast-anim px-4 py-3 rounded-lg border text-sm font-medium shadow-xl ${clr} text-white max-w-xs`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+function openModal(html) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4" style="backdrop-filter:blur(2px)">
+      <div class="modal-enter bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        ${html}
+      </div>
+    </div>`;
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target.id === 'modal-overlay') closeModal();
+  });
+}
+function closeModal() {
+  document.getElementById('modal-root').innerHTML = '';
+}
+
+function timelineHTML(tl) {
+  if (!tl || !tl.length) return '<p class="text-slate-500 text-sm">Tiada rekod.</p>';
+  return `<div class="space-y-0">` + tl.map((t,i) => `
+    <div class="relative pl-8 pb-5 timeline-line">
+      <div class="absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center text-xs border-2 border-slate-600 bg-slate-800">${STATUS_ICON[t.status]||'⚪'}</div>
+      <div class="bg-slate-700/50 rounded-lg p-3">
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          ${badge(t.status)}
+          <span class="text-xs text-slate-400">${t.tarikh}</span>
+        </div>
+        <p class="text-sm text-slate-200">${t.tindakan}</p>
+        <p class="text-xs text-slate-400 mt-1">oleh: ${t.oleh}</p>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+function ticketDetailHTML(t, showActions='') {
+  return `
+    <div class="p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs text-slate-400 font-mono">${t.id}</span>
+            ${keuBadge(t.keutamaan)}
+            ${badge(t.status)}
+          </div>
+          <h2 class="text-lg font-bold text-slate-100">${t.tajuk}</h2>
+        </div>
+        <button id="close-modal-btn" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
+        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Sekolah</span>${t.sekolah}</div>
+        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Zon</span>${t.zon}</div>
+        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Kategori</span>${t.kategori}</div>
+        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Tarikh Aduan</span>${t.tarikh}</div>
+      </div>
+      <div class="bg-slate-700/40 rounded-lg p-3 mb-4">
+        <span class="text-slate-400 text-xs block mb-1">Butiran Kerosakan</span>
+        <p class="text-sm text-slate-200">${t.butiran}</p>
+      </div>
+      ${t.notaPJ ? `<div class="bg-orange-900/30 border border-orange-700/40 rounded-lg p-3 mb-4">
+        <span class="text-orange-400 text-xs font-semibold block mb-1">📋 Nota PJ</span>
+        <p class="text-sm text-slate-200">${t.notaPJ}</p>
+      </div>` : ''}
+      ${showActions}
+      <div class="mt-5">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">📅 Garis Masa</h3>
+        ${timelineHTML(t.timeline)}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER: HEADER
+// ══════════════════════════════════════════════
+function renderHeader() {
+  const roles = [
+    { id:'sekolah', label:'🏫 Sekolah' },
+    { id:'pj',      label:'👷 Pej. Jurutera' },
+    { id:'ppd',     label:'🏛 Admin PPD' },
+  ];
+  return `
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <a href="index.html" class="text-xs text-slate-400 hover:text-blue-400 transition-colors">← Portal PPD Dalat</a>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="text-lg">🔧</span>
+            <span class="font-bold text-white text-base">e-Fasiliti PPD Dalat</span>
+          </div>
+        </div>
+        <div class="flex gap-1 bg-slate-900 p-1 rounded-xl">
+          ${roles.map(r => `
+            <button data-role="${r.id}" class="role-btn px-3 py-1.5 rounded-lg text-sm font-medium ${state.role===r.id?'role-active':'text-slate-400 hover:text-white hover:bg-slate-700'}">${r.label}</button>
+          `).join('')}
+        </div>
+      </div>
+    </header>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER: SEKOLAH VIEW
+// ══════════════════════════════════════════════
+function renderSekolah() {
+  const tabs = [
+    { id:'baru', label:'📋 Aduan Baharu' },
+    { id:'saya', label:'📄 Aduan Saya' },
+  ];
+  return `
+    <div class="max-w-4xl mx-auto px-4 py-6">
+      <div class="flex gap-1 border-b border-slate-700 mb-6">
+        ${tabs.map(t => `
+          <button data-subtab="${t.id}" class="px-4 py-2 text-sm font-medium transition-colors ${state.subTab===t.id?'tab-active':'tab-inactive hover:text-slate-300'}">${t.label}</button>
+        `).join('')}
+      </div>
+      ${state.subTab==='baru' ? renderFormAduan() : renderAduanSaya()}
+    </div>`;
+}
+
+function renderFormAduan() {
+  return `
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6">
+      <h2 class="text-base font-bold mb-5 text-slate-100">Borang Aduan Kerosakan</h2>
+      <div class="space-y-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Nama Sekolah *</label>
+            <select id="f-sekolah" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+              <option value="">-- Pilih Sekolah --</option>
+              ${['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'].map(s=>`<option>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Tajuk Aduan *</label>
+            <input id="f-tajuk" type="text" placeholder="Contoh: Paip bocor di makmal sains" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Kategori Kerosakan *</label>
+            <select id="f-kategori" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+              <option value="">-- Pilih Kategori --</option>
+              ${['Elektrik','Paip & Sanitasi','Bumbung','Struktur & Pagar','Cat & Kemasan','Tandas','Lain-lain'].map(k=>`<option>${k}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Tahap Keutamaan *</label>
+            <select id="f-keutamaan" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+              <option value="">-- Pilih Keutamaan --</option>
+              ${['Kritikal','Tinggi','Sederhana','Rendah'].map(k=>`<option>${k}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Butiran Kerosakan *</label>
+          <textarea id="f-butiran" rows="4" placeholder="Huraikan kerosakan dengan terperinci. Nyatakan lokasi tepat, tempoh berlaku, dan kesan kepada sekolah..." class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Gambar Kerosakan</label>
+          <div class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
+            <div class="text-3xl mb-2">📷</div>
+            <p class="text-sm text-slate-400">Klik atau seret gambar ke sini</p>
+            <p class="text-xs text-slate-500 mt-1">PNG, JPG sehingga 10MB</p>
+          </div>
+        </div>
+        <div class="flex justify-end pt-2">
+          <button id="btn-hantar" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors">📤 Hantar Laporan</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAduanSaya() {
+  const sekolahOpts = ['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'];
+  const filtered = TIKET_DATA.filter(t => t.sekolah === state.sekolahFilter);
+  return `
+    <div>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 class="text-base font-bold text-slate-100">Rekod Aduan Sekolah</h2>
+        <select id="filter-sekolah" class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+          ${sekolahOpts.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      ${filtered.length===0 ? emptyState('Tiada aduan untuk sekolah ini') : `
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 text-left">ID Tiket</th>
+                <th class="px-4 py-3 text-left">Tajuk</th>
+                <th class="px-4 py-3 text-left">Kategori</th>
+                <th class="px-4 py-3 text-left">Tarikh</th>
+                <th class="px-4 py-3 text-left">Keutamaan</th>
+                <th class="px-4 py-3 text-left">Status</th>
+                <th class="px-4 py-3 text-left">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              ${filtered.map(t=>`
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
+                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
+                  <td class="px-4 py-3 text-slate-300">${t.kategori}</td>
+                  <td class="px-4 py-3 text-slate-400">${t.tarikh}</td>
+                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
+                  <td class="px-4 py-3">${badge(t.status)}</td>
+                  <td class="px-4 py-3">
+                    <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">📋 Butiran</button>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER: PJ VIEW
+// ══════════════════════════════════════════════
+function renderPJ() {
+  const baru = TIKET_DATA.filter(t=>t.status==='Baru').length;
+  const disemak = TIKET_DATA.filter(t=>t.status==='Disemak PJ').length;
+  const selesai = TIKET_DATA.filter(t=>t.status==='Selesai').length;
+  const zones = ['Semua','Zon 1','Zon 2','Zon 3'];
+  const filtered = TIKET_DATA.filter(t => state.zonFilter==='Semua' || t.zon===state.zonFilter);
+
+  return `
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <div class="flex flex-wrap gap-3 mb-5">
+        <div class="bg-blue-900/40 border border-blue-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
+          <span class="text-2xl font-bold text-blue-400">${baru}</span>
+          <span class="text-sm text-slate-400">Aduan Baru</span>
+        </div>
+        <div class="bg-orange-900/30 border border-orange-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
+          <span class="text-2xl font-bold text-orange-400">${disemak}</span>
+          <span class="text-sm text-slate-400">Disemak PJ</span>
+        </div>
+        <div class="bg-green-900/30 border border-green-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
+          <span class="text-2xl font-bold text-green-400">${selesai}</span>
+          <span class="text-sm text-slate-400">Selesai</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <h2 class="text-base font-bold text-slate-100">Papan Pemuka Tugasan</h2>
+        <div class="flex gap-1 bg-slate-800 border border-slate-700 p-1 rounded-xl">
+          ${zones.map(z=>`<button data-zon="${z}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${state.zonFilter===z?'bg-blue-600 text-white':'text-slate-400 hover:text-white hover:bg-slate-700'}">${z}</button>`).join('')}
+        </div>
+      </div>
+      ${filtered.length===0 ? emptyState('Tiada aduan untuk zon ini') : `
+      <div class="grid sm:grid-cols-2 gap-4">
+        ${filtered.map(t=>`
+          <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 hover:border-slate-500 transition-colors">
+            <div class="flex items-start justify-between mb-2">
+              <span class="font-mono text-xs text-slate-500">${t.id}</span>
+              ${keuBadge(t.keutamaan)}
+            </div>
+            <h3 class="font-semibold text-slate-100 mb-2 leading-snug">${t.tajuk}</h3>
+            <div class="space-y-1 mb-3">
+              <p class="text-xs text-slate-400">🏫 ${t.sekolah} · ${t.zon}</p>
+              <p class="text-xs text-slate-400">📂 ${t.kategori} · 📅 ${t.tarikh}</p>
+            </div>
+            <div class="flex items-center justify-between">
+              ${badge(t.status)}
+              <button data-pj-semak="${t.id}" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-xs font-semibold transition-colors">🔍 Semak Aduan</button>
+            </div>
+          </div>`).join('')}
+      </div>`}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER: PPD VIEW
+// ══════════════════════════════════════════════
+function renderPPD() {
+  const aktif = TIKET_DATA.filter(t=>!['Selesai','Ditolak'].includes(t.status)).length;
+  const tunggu = TIKET_DATA.filter(t=>t.status==='Disemak PJ').length;
+  const selesai = TIKET_DATA.filter(t=>t.status==='Selesai').length;
+  const kritikal = TIKET_DATA.filter(t=>t.keutamaan==='Kritikal').length;
+  const arahKelulusan = TIKET_DATA.filter(t=>t.status==='Disemak PJ');
+  const statusCounts = {};
+  TIKET_DATA.forEach(t=>{ statusCounts[t.status]=(statusCounts[t.status]||0)+1; });
+
+  return `
+    <div class="max-w-6xl mx-auto px-4 py-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        ${[
+          ['Aduan Aktif', aktif, 'Belum selesai', 'text-blue-400', 'bg-blue-900/30 border-blue-700/40'],
+          ['Tunggu Kelulusan', tunggu, 'Disemak PJ', 'text-orange-400', 'bg-orange-900/30 border-orange-700/40'],
+          ['Selesai', selesai, 'Bulan ini', 'text-green-400', 'bg-green-900/30 border-green-700/40'],
+          ['Kritikal', kritikal, 'Perlu perhatian', 'text-red-400', 'bg-red-900/30 border-red-700/40'],
+        ].map(([lbl,val,sub,tc,bc])=>`
+          <div class="border rounded-2xl px-5 py-4 ${bc}">
+            <p class="text-xs text-slate-400 mb-1">${lbl}</p>
+            <p class="text-3xl font-bold ${tc}">${val}</p>
+            <p class="text-xs text-slate-500 mt-1">${sub}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-6">
+        ${Object.entries(statusCounts).map(([s,c])=>`
+          <span class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[s]||'bg-slate-600'}">${STATUS_ICON[s]||'⚪'} ${s} <span class="opacity-75">(${c})</span></span>
+        `).join('')}
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden mb-6">
+        <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+          <h2 class="font-bold text-slate-100">⏳ Senarai Menunggu Kelulusan Bajet</h2>
+          <span class="text-xs text-orange-400 font-semibold">${tunggu} tiket</span>
+        </div>
+        ${arahKelulusan.length===0 ? `<div class="px-5 py-8 text-center text-slate-500 text-sm">Tiada tiket menunggu kelulusan.</div>` : `
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 text-left">ID</th>
+                <th class="px-4 py-3 text-left">Sekolah</th>
+                <th class="px-4 py-3 text-left">Tajuk</th>
+                <th class="px-4 py-3 text-left">Kategori</th>
+                <th class="px-4 py-3 text-left">Keutamaan</th>
+                <th class="px-4 py-3 text-left">Nota PJ</th>
+                <th class="px-4 py-3 text-left">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              ${arahKelulusan.map(t=>`
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
+                  <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${t.sekolah}</td>
+                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
+                  <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${t.kategori}</td>
+                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
+                  <td class="px-4 py-3 text-slate-400 text-xs max-w-xs truncate">${t.notaPJ||'—'}</td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-2">
+                      <button data-lulus-bajet="${t.id}" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 rounded-lg text-xs font-semibold text-white transition-colors whitespace-nowrap">✅ Lulus Bajet</button>
+                      <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">🔍 Lihat</button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-700">
+          <h2 class="font-bold text-slate-100">📋 Semua Aduan</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 text-left">ID</th>
+                <th class="px-4 py-3 text-left">Sekolah</th>
+                <th class="px-4 py-3 text-left">Tajuk</th>
+                <th class="px-4 py-3 text-left">Tarikh</th>
+                <th class="px-4 py-3 text-left">Keutamaan</th>
+                <th class="px-4 py-3 text-left">Status</th>
+                <th class="px-4 py-3 text-left">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              ${TIKET_DATA.map(t=>`
+                <tr class="hover:bg-slate-700/30 transition-colors cursor-pointer">
+                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
+                  <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${t.sekolah}</td>
+                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
+                  <td class="px-4 py-3 text-slate-400">${t.tarikh}</td>
+                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
+                  <td class="px-4 py-3">${badge(t.status)}</td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-2">
+                      <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">🔍 Lihat</button>
+                      ${t.status==='Lulus Bajet'?`<button data-selesai="${t.id}" class="px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded-lg text-xs font-semibold text-white transition-colors whitespace-nowrap">✅ Tandakan Selesai</button>`:''}
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function emptyState(msg) {
+  return `<div class="text-center py-16 text-slate-500">
+    <div class="text-5xl mb-3">📭</div>
+    <p class="text-sm">${msg}</p>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// MAIN RENDER
+// ══════════════════════════════════════════════
+function render() {
+  let content = '';
+  if (state.role==='sekolah') content = renderSekolah();
+  else if (state.role==='pj') content = renderPJ();
+  else content = renderPPD();
+
+  document.getElementById('app').innerHTML = renderHeader() + content;
+  bindEvents();
+}
+
+// ══════════════════════════════════════════════
+// EVENT BINDING
+// ══════════════════════════════════════════════
+function bindEvents() {
+  // Role switch
+  document.querySelectorAll('[data-role]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.role = btn.dataset.role;
+      state.subTab = 'baru';
+      render();
+    });
+  });
+
+  // Sub-tabs (sekolah)
+  document.querySelectorAll('[data-subtab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.subTab = btn.dataset.subtab;
+      render();
+    });
+  });
+
+  // Sekolah filter
+  const sf = document.getElementById('filter-sekolah');
+  if (sf) sf.addEventListener('change', () => { state.sekolahFilter=sf.value; render(); });
+
+  // Zon filter (PJ)
+  document.querySelectorAll('[data-zon]').forEach(btn => {
+    btn.addEventListener('click', () => { state.zonFilter=btn.dataset.zon; render(); });
+  });
+
+  // Form submit (sekolah)
+  const btnHantar = document.getElementById('btn-hantar');
+  if (btnHantar) btnHantar.addEventListener('click', handleHantarAduan);
+
+  // View tiket detail
+  document.querySelectorAll('[data-view-tiket]').forEach(btn => {
+    btn.addEventListener('click', () => openTiketDetail(btn.dataset.viewTiket));
+  });
+
+  // PJ semak
+  document.querySelectorAll('[data-pj-semak]').forEach(btn => {
+    btn.addEventListener('click', () => openPJSemak(btn.dataset.pjSemak));
+  });
+
+  // Lulus bajet (PPD)
+  document.querySelectorAll('[data-lulus-bajet]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = TIKET_DATA.find(x=>x.id===btn.dataset.lulusBasjet||x.id===btn.dataset.lulusBasjet);
+      // handle attribute name correctly
+      const id = btn.getAttribute('data-lulus-bajet');
+      lulusBasjet(id);
+    });
+  });
+
+  // Tandakan selesai (PPD)
+  document.querySelectorAll('[data-selesai]').forEach(btn => {
+    btn.addEventListener('click', () => tandaSelesai(btn.dataset.selesai));
+  });
+}
+
+// ══════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════
+function handleHantarAduan() {
+  const sekolah = document.getElementById('f-sekolah').value;
+  const tajuk = document.getElementById('f-tajuk').value.trim();
+  const kategori = document.getElementById('f-kategori').value;
+  const keutamaan = document.getElementById('f-keutamaan').value;
+  const butiran = document.getElementById('f-butiran').value.trim();
+
+  if (!sekolah||!tajuk||!kategori||!keutamaan||!butiran) {
+    showToast('Sila lengkapkan semua medan bertanda *', 'err');
+    return;
+  }
+  const zon = sekolah==='SMK Dalat'?'Zon 1':sekolah==='SMK Batang Igan'?'Zon 3':'Zon 2';
+  const tarikh = new Date().toISOString().slice(0,10);
+  const id = `TKT-2024-00${tiketCounter++}`;
+  TIKET_DATA.push({
+    id, tajuk, kategori, butiran, sekolah, zon, tarikh,
+    status:'Baru', keutamaan, gambar:null, notaPJ:null, notaPPD:null,
+    timeline:[{ tarikh:now(), tindakan:'Aduan dihantar oleh sekolah', oleh:sekolah, status:'Baru' }]
+  });
+  showToast(`✅ Aduan ${id} berjaya dihantar!`);
+  state.sekolahFilter = sekolah;
+  state.subTab = 'saya';
+  render();
+}
+
+function openTiketDetail(id) {
+  const t = TIKET_DATA.find(x=>x.id===id);
+  if (!t) return;
+  openModal(ticketDetailHTML(t));
+  document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+}
+
+function openPJSemak(id) {
+  const t = TIKET_DATA.find(x=>x.id===id);
+  if (!t) return;
+
+  let actions = '';
+  if (t.status==='Baru') {
+    actions = `
+      <div class="bg-slate-700/40 rounded-xl p-4 mb-4">
+        <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-2">📋 Nota Siasatan Teknikal & Anggaran Kos</label>
+        <textarea id="nota-pj-input" rows="3" placeholder="Contoh: Paip PVC 4 inci perlu diganti. Anggaran kos RM 850. Kerja boleh siap dalam 2 hari." class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 resize-none">${t.notaPJ||''}</textarea>
+        <div class="flex gap-3 mt-3">
+          <button id="btn-sah" class="flex-1 py-2.5 bg-green-700 hover:bg-green-600 text-white font-semibold rounded-xl text-sm transition-colors">✅ Sah &amp; Sokong Pembaikan</button>
+          <button id="btn-tolak" class="flex-1 py-2.5 bg-red-700 hover:bg-red-600 text-white font-semibold rounded-xl text-sm transition-colors">❌ Tolak Aduan</button>
+        </div>
+      </div>`;
+  } else if (t.notaPJ) {
+    actions = `<div class="bg-orange-900/30 border border-orange-700/40 rounded-xl p-4 mb-4">
+      <p class="text-xs text-orange-400 font-semibold mb-1">📋 Nota PJ (Selesai)</p>
+      <p class="text-sm text-slate-200">${t.notaPJ}</p>
+    </div>`;
+  }
+
+  openModal(ticketDetailHTML(t, actions));
+  document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+
+  const btnSah = document.getElementById('btn-sah');
+  const btnTolak = document.getElementById('btn-tolak');
+  if (btnSah) btnSah.addEventListener('click', () => {
+    const nota = document.getElementById('nota-pj-input').value.trim();
+    if (!nota) { showToast('Sila masukkan nota siasatan teknikal', 'err'); return; }
+    t.notaPJ = nota;
+    t.status = 'Disemak PJ';
+    t.timeline.push({ tarikh:now(), tindakan:'Aduan disahkan oleh PJ. '+nota, oleh:'Penolong Jurutera', status:'Disemak PJ' });
+    closeModal();
+    showToast(`✅ Aduan ${t.id} disahkan dan dihantar ke PPD.`);
+    render();
+  });
+  if (btnTolak) btnTolak.addEventListener('click', () => {
+    const nota = document.getElementById('nota-pj-input').value.trim();
+    t.status = 'Ditolak';
+    t.timeline.push({ tarikh:now(), tindakan:'Aduan ditolak oleh PJ.'+(nota?' Sebab: '+nota:''), oleh:'Penolong Jurutera', status:'Ditolak' });
+    closeModal();
+    showToast(`Aduan ${t.id} ditolak.`, 'err');
+    render();
+  });
+}
+
+function lulusBasjet(id) {
+  const t = TIKET_DATA.find(x=>x.id===id);
+  if (!t) return;
+  t.status = 'Lulus Bajet';
+  t.timeline.push({ tarikh:now(), tindakan:'Bajet diluluskan oleh PPD Dalat.', oleh:'PPD Dalat', status:'Lulus Bajet' });
+  showToast(`✅ Bajet untuk ${t.id} diluluskan.`);
+  render();
+}
+
+function tandaSelesai(id) {
+  const t = TIKET_DATA.find(x=>x.id===id);
+  if (!t) return;
+  t.status = 'Selesai';
+  t.timeline.push({ tarikh:now(), tindakan:'Kerja pembaikan disahkan selesai oleh PPD.', oleh:'PPD Dalat', status:'Selesai' });
+  showToast(`✅ Aduan ${t.id} ditandakan Selesai.`);
+  render();
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
