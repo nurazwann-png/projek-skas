@@ -489,6 +489,26 @@ body {
       </div>
     </div>
 
+    <!-- e-Fasiliti Card -->
+    <div class="app-card" id="efasiliti-card" style="cursor:pointer">
+      <div class="app-card-bg" style="background:#0f766e"></div>
+      <div class="app-icon" style="background:linear-gradient(135deg,#14b8a6,#0f766e)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <div class="app-card-body">
+        <div class="app-name">e-Fasiliti</div>
+        <div class="app-full-name">Pengurusan Fasiliti</div>
+        <div class="app-desc">Sistem aduan dan pemantauan kerosakan infrastruktur sekolah — dari laporan hingga kelulusan bajet.</div>
+      </div>
+      <div id="efasiliti-role-strip"></div>
+      <div class="app-footer">
+        <span class="app-badge badge-live">Aktif</span>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </div>
+
     <!-- SPM Card -->
     <div class="app-card" id="spm-card" style="cursor:pointer">
       <div class="app-card-bg" style="background:#d97706"></div>
@@ -533,8 +553,9 @@ const DEMO_USERS = [
     id: 'u_azlan', name: 'Azlan bin Hamid', initials: 'AH',
     org: 'PPD Dalat', color: '#1d4ed8',
     appRoles: {
-      skpm: [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#1d4ed8' }],
-      spm:  [{ role:'ppd_admin', label:'Admin SPM',  sub:'PPD Dalat', color:'#1d4ed8' }],
+      skpm:      [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#1d4ed8' }],
+      spm:       [{ role:'ppd_admin', label:'Admin SPM', sub:'PPD Dalat', color:'#1d4ed8' }],
+      efasiliti: [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#0f766e' }],
     }
   },
   {
@@ -548,14 +569,18 @@ const DEMO_USERS = [
       spm: [
         { role:'school_admin', label:'Admin SPM',    sub:'SK Wangsa Maju 1', color:'#7c3aed' },
       ],
+      efasiliti: [
+        { role:'sekolah', label:'Pentadbir Sekolah', sub:'SK Wangsa Maju 1', color:'#7c3aed' },
+      ],
     }
   },
   {
     id: 'u_azman', name: 'Cikgu Azman Harun', initials: 'AZ',
     org: 'SK Wangsa Maju 1', color: '#059669',
     appRoles: {
-      skpm: [{ role:'teacher', label:'Guru', sub:'SK Wangsa Maju 1', color:'#059669' }],
-      spm:  [{ role:'teacher', label:'Guru SPM', sub:'SK Wangsa Maju 1', color:'#059669' }],
+      skpm:      [{ role:'teacher', label:'Guru', sub:'SK Wangsa Maju 1', color:'#059669' }],
+      spm:       [{ role:'teacher', label:'Guru SPM', sub:'SK Wangsa Maju 1', color:'#059669' }],
+      efasiliti: [{ role:'sekolah', label:'Sekolah', sub:'SK Wangsa Maju 1', color:'#059669' }],
     }
   },
 ];
@@ -608,8 +633,9 @@ function updateUI() {
   document.getElementById('profile-av').style.background = u.color;
   document.getElementById('profile-name').textContent = u.name;
   document.getElementById('profile-org').textContent = u.org;
-  buildRoleStrip('skpm', 'skpm-role-strip');
-  buildRoleStrip('spm',  'spm-role-strip');
+  buildRoleStrip('skpm',      'skpm-role-strip');
+  buildRoleStrip('spm',       'spm-role-strip');
+  buildRoleStrip('efasiliti', 'efasiliti-role-strip');
 }
 
 // ── Klik kad app — pilih peranan jika lebih dari 1 ───────
@@ -682,8 +708,9 @@ function openUserModal() {
 // ── Init ──────────────────────────────────────────────────
 updateUI();
 document.getElementById('profile-chip').addEventListener('click', openUserModal);
-document.getElementById('skpm-card').addEventListener('click', () => handleAppCardClick('skpm', 'skas-preview.html'));
-document.getElementById('spm-card').addEventListener('click',  () => handleAppCardClick('spm',  'spm-analytics.html'));
+document.getElementById('skpm-card').addEventListener('click',      () => handleAppCardClick('skpm',      'skas-preview.html'));
+document.getElementById('spm-card').addEventListener('click',       () => handleAppCardClick('spm',       'spm-analytics.html'));
+document.getElementById('efasiliti-card').addEventListener('click', () => handleAppCardClick('efasiliti', 'e-fasiliti.html'));
 </script>
 
 </body>
