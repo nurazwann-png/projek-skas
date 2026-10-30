@@ -1,0 +1,73 @@
+/* Tema rasmi PPD Dalat — dikongsi oleh portal dan semua aplikasi */
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --ppd-font:      'Public Sans', 'Segoe UI', system-ui, sans-serif;
+  --ppd-navy-0:    #071c33;
+  --ppd-navy:      #0b2a4a;
+  --ppd-navy-2:    #13406e;
+  --ppd-blue:      #1d5fa0;
+  --ppd-gold:      #c8962a;
+  --ppd-gold-2:    #e5c066;
+  --ppd-bg:        #f3f5f8;
+  --ppd-surface:   #ffffff;
+  --ppd-surface-2: #f8fafc;
+  --ppd-border:    #dde3eb;
+  --ppd-t1:        #1a2433;
+  --ppd-t2:        #475467;
+  --ppd-t3:        #6b7686;
+  --ppd-accent:    #13406e;
+  --ppd-accent-l:  #e6eef7;
+  --ppd-ok:        #067647;  --ppd-ok-l:     #e7f6ee;
+  --ppd-warn:      #b54708;  --ppd-warn-l:   #fef4e6;
+  --ppd-danger:    #b42318;  --ppd-danger-l: #fdecea;
+  --ppd-radius:    10px;
+  --ppd-shadow:    0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --ppd-shadow-lg: 0 4px 8px rgba(16,24,40,.06), 0 12px 24px rgba(16,24,40,.08);
+  --ppd-strip-h:   34px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ppd-bg: #0d1520; --ppd-surface: #141f2e; --ppd-surface-2: #182536; --ppd-border: #26364b;
+    --ppd-t1: #eef2f7; --ppd-t2: #b3bfcd; --ppd-t3: #8492a4;
+    --ppd-accent: #7fb0e6; --ppd-accent-l: #1a2d45;
+    --ppd-ok: #5fd39a; --ppd-ok-l: #12301f; --ppd-warn: #f2b05e; --ppd-warn-l: #33230f;
+    --ppd-danger: #f38b80; --ppd-danger-l: #3a1714;
+    --ppd-shadow: 0 1px 2px rgba(0,0,0,.3); --ppd-shadow-lg: 0 8px 24px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ppd-bg: #0d1520; --ppd-surface: #141f2e; --ppd-surface-2: #182536; --ppd-border: #26364b;
+  --ppd-t1: #eef2f7; --ppd-t2: #b3bfcd; --ppd-t3: #8492a4;
+  --ppd-accent: #7fb0e6; --ppd-accent-l: #1a2d45;
+  --ppd-ok: #5fd39a; --ppd-ok-l: #12301f; --ppd-warn: #f2b05e; --ppd-warn-l: #33230f;
+  --ppd-danger: #f38b80; --ppd-danger-l: #3a1714;
+  --ppd-shadow: 0 1px 2px rgba(0,0,0,.3); --ppd-shadow-lg: 0 8px 24px rgba(0,0,0,.4);
+}
+
+/* Jalur rasmi + navigasi balik ke portal (sama di semua aplikasi) */
+.ppd-strip {
+  height: var(--ppd-strip-h);
+  background: var(--ppd-navy-0);
+  color: #c9d4e2;
+  font: 500 12px/1 var(--ppd-font);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 2px solid var(--ppd-gold);
+  position: relative; z-index: 60; flex-shrink: 0;
+}
+.ppd-strip a { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.ppd-strip a:hover { color: var(--ppd-gold-2); }
+.ppd-strip svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.ppd-strip-l { display: flex; align-items: center; gap: 10px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.ppd-strip-sep { opacity: .35; }
+.ppd-strip-app { color: var(--ppd-gold-2); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.ppd-strip-r { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.ppd-flag {
+  width: 18px; height: 12px; border-radius: 1px; flex-shrink: 0;
+  background:
+    linear-gradient(#010066,#010066) 0 0 / 50% 53.8% no-repeat,
+    repeating-linear-gradient(#cc0001 0 7.14%, #fff 7.14% 14.28%);
+}
+@media (max-width: 560px) { .ppd-strip-r span { display: none; } }

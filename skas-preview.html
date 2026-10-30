@@ -1,80 +1,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SKPM Kualiti@Sekolah</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/ppd-theme.css">
 
 <style>
 /* --- Token system ----------------------------------------------- */
 :root {
-  --navy:     #0f172a;
-  --navy-2:   #1e3a8a;
-  --navy-hi:  #2563eb;
-  --accent:   #2563eb;
-  --accent-h: #1d4ed8;
-  --violet:   #7c3aed;
-  --violet-l: #ede9fe;
-  --gold:     #b45309;
-  --gold-l:   #fef3c7;
-  --bg:       #eef2ff;
-  --surface:  #ffffff;
-  --border:   #e2e8f0;
-  --border-2: #c7d2fe;
-  --t1:       #0f172a;
-  --t2:       #334155;
-  --t3:       #94a3b8;
-  --ok:       #059669;
-  --ok-l:     #d1fae5;
-  --warn:     #b45309;
-  --warn-l:   #fef3c7;
-  --danger:   #dc2626;
-  --danger-l: #fee2e2;
-  --chip:     #dbeafe;
-  --chip-fg:  #1e40af;
-  --h: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --b: 'Inter', system-ui, sans-serif;
-  --shadow: 0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.08);
-  --shadow-sm: 0 1px 2px rgba(15,23,42,.04), 0 2px 8px rgba(15,23,42,.05);
+  --navy:     #0b2a4a;
+  --navy-2:   #13406e;
+  --navy-hi:  #1d5fa0;
+  --accent:   var(--ppd-accent);
+  --accent-h: #0b2a4a;
+  --violet:   #5b4b9a;
+  --violet-l: #efedf7;
+  --gold:     #9a6b12;
+  --gold-l:   #fbf3e1;
+  --bg:       var(--ppd-bg);
+  --surface:  var(--ppd-surface);
+  --surface2: var(--ppd-surface-2);
+  --border:   var(--ppd-border);
+  --border-2: #c3cfdd;
+  --t1:       var(--ppd-t1);
+  --t2:       var(--ppd-t2);
+  --t3:       var(--ppd-t3);
+  --ok:       var(--ppd-ok);
+  --ok-l:     var(--ppd-ok-l);
+  --warn:     var(--ppd-warn);
+  --warn-l:   var(--ppd-warn-l);
+  --danger:   var(--ppd-danger);
+  --danger-l: var(--ppd-danger-l);
+  --chip:     var(--ppd-accent-l);
+  --chip-fg:  var(--ppd-accent);
+  --h: var(--ppd-font);
+  --b: var(--ppd-font);
+  --shadow: var(--ppd-shadow);
+  --shadow-sm: var(--ppd-shadow);
 
-  --lv-int: #c2410c; --lv-int-bg: #fed7aa;
-  --lv-nat: #1e40af; --lv-nat-bg: #bfdbfe;
-  --lv-neg: #047857; --lv-neg-bg: #a7f3d0;
-  --lv-bah: #0e7490; --lv-bah-bg: #a5f3fc;
-  --lv-dae: #6d28d9; --lv-dae-bg: #ddd6fe;
-  --lv-skl: #475569; --lv-skl-bg: #e2e8f0;
+  --lv-int: #b54708; --lv-int-bg: #fdead7;
+  --lv-nat: #13406e; --lv-nat-bg: #dbe6f2;
+  --lv-neg: #067647; --lv-neg-bg: #dcf3e6;
+  --lv-bah: #0e6680; --lv-bah-bg: #d8eff5;
+  --lv-dae: #5b4b9a; --lv-dae-bg: #e7e3f4;
+  --lv-skl: #475467; --lv-skl-bg: #e8ecf1;
   /* aliases used by inline JS-generated HTML */
-  --bdr: #e2e8f0;
-  --card: #ffffff;
+  --bdr: var(--ppd-border);
+  --card: var(--ppd-surface);
+  --fg: var(--ppd-t1);
   /* vivid level colors for bars */
-  --lv-int-bar: #f97316;
-  --lv-nat-bar: #2563eb;
-  --lv-neg-bar: #10b981;
-  --lv-bah-bar: #06b6d4;
-  --lv-dae-bar: #7c3aed;
-  --lv-skl-bar: #6b7280;
+  --lv-int-bar: #d97706;
+  --lv-nat-bar: #13406e;
+  --lv-neg-bar: #12a05c;
+  --lv-bah-bar: #1b8fb0;
+  --lv-dae-bar: #6e5bb8;
+  --lv-skl-bar: #7a8696;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b0f1a; --surface: #141c2e; --border: #1e2d45;
-    --border-2: #263450; --t1: #e8edf8; --t2: #8090aa;
-    --t3: #3d4f6a; --chip: #1a2540; --chip-fg: #93c5fd;
-    --violet-l: #1e1040; --gold-l: #2c1c00; --ok-l: #052e16;
-    --warn-l: #1c0e00; --danger-l: #1a0505;
-    --shadow: 0 1px 3px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.25);
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.15), 0 2px 6px rgba(0,0,0,.18);
-    --lv-int-bg: #2c1005; --lv-nat-bg: #0c1d40; --lv-neg-bg: #032013;
-    --lv-bah-bg: #022010; --lv-dae-bg: #160730; --lv-skl-bg: #111827;
+    --border-2: #34465e; --violet-l: #241d3d; --gold: #e5c066; --gold-l: #2e2614;
+    --lv-int-bg: #33230f; --lv-nat-bg: #1a2d45; --lv-neg-bg: #12301f;
+    --lv-bah-bg: #0f2a33; --lv-dae-bg: #241d3d; --lv-skl-bg: #1c2633;
+    --lv-int: #f2b05e; --lv-nat: #7fb0e6; --lv-neg: #5fd39a; --lv-bah: #6fcde6; --lv-dae: #b7a8f0; --lv-skl: #b3bfcd;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0b0f1a; --surface: #141c2e; --border: #1e2d45; --border-2: #263450;
-  --t1: #e8edf8; --t2: #8090aa; --t3: #3d4f6a; --chip: #1a2540; --chip-fg: #93c5fd;
-  --violet-l: #1e1040; --gold-l: #2c1c00; --ok-l: #052e16;
-  --warn-l: #1c0e00; --danger-l: #1a0505;
-  --shadow: 0 1px 3px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.25);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.15), 0 2px 6px rgba(0,0,0,.18);
-  --lv-int-bg: #2c1005; --lv-nat-bg: #0c1d40; --lv-neg-bg: #032013;
-  --lv-bah-bg: #022010; --lv-dae-bg: #160730; --lv-skl-bg: #111827;
+  --border-2: #34465e; --violet-l: #241d3d; --gold: #e5c066; --gold-l: #2e2614;
+  --lv-int-bg: #33230f; --lv-nat-bg: #1a2d45; --lv-neg-bg: #12301f;
+  --lv-bah-bg: #0f2a33; --lv-dae-bg: #241d3d; --lv-skl-bg: #1c2633;
+  --lv-int: #f2b05e; --lv-nat: #7fb0e6; --lv-neg: #5fd39a; --lv-bah: #6fcde6; --lv-dae: #b7a8f0; --lv-skl: #b3bfcd;
   color-scheme: dark;
 }
 
@@ -83,14 +76,14 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* --- Shell --------------------------------------------------- */
 .shell{display:flex;height:100%;overflow:hidden}
-.sidebar{width:228px;flex-shrink:0;background:linear-gradient(175deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%);color:#fff;display:flex;flex-direction:column;overflow:hidden}
+.sidebar{width:228px;flex-shrink:0;background:linear-gradient(175deg,#0f172a 0%,#0b2a4a 55%,#0b2a4a 100%);color:#fff;display:flex;flex-direction:column;overflow:hidden}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 1px 0 var(--border),0 2px 12px rgba(15,23,42,.04)}
 .content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
 
 /* --- Sidebar ------------------------------------------------- */
 .sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
-.sb-logo .mark{font-family:var(--h);font-size:22px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(90deg,#93c5fd,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sb-logo .mark{font-family:var(--h);font-size:22px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(90deg,#e5c066,#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sb-logo .sub{font-size:10.5px;color:rgba(255,255,255,.42);margin-top:2px}
 .sb-section{padding:12px 12px 2px;flex:1;overflow-y:auto}
 .sb-section-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.32);padding:0 8px;margin-bottom:4px}
@@ -107,7 +100,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;border:2px solid rgba(255,255,255,.3)}
 .sb-uname{font-size:11.5px;font-weight:700;color:#fff}
 .sb-urole{font-size:10.5px;color:rgba(255,255,255,.45)}
-.sb-ppd{font-size:11px;font-weight:600;color:#93c5fd;margin-top:1px;letter-spacing:.3px}
+.sb-ppd{font-size:11px;font-weight:600;color:#e5c066;margin-top:1px;letter-spacing:.3px}
 
 /* demo role switcher */
 
@@ -136,7 +129,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* --- Generic -------------------------------------------------- */
 .btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--b);font-size:13px;font-weight:600;padding:8px 16px;border-radius:10px;border:none;cursor:pointer;transition:all .15s}
-.btn-pri{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.btn-pri{background:linear-gradient(135deg,#1d5fa0,#0b2a4a);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
 .btn-pri:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.4)}
 .btn-pri:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
 .btn-vio{background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;box-shadow:0 2px 8px rgba(109,40,217,.3)}
@@ -188,7 +181,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .ach-group-hdr .lv{font-size:12px}
 .ach-group-count{font-size:11px;color:var(--t3);font-weight:400}
 .ach-row{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-top:1px solid var(--border);cursor:pointer;transition:background .1s}
-.ach-row:hover{background:linear-gradient(90deg,#eef2ff,#f0fdf4 120%)}
+.ach-row:hover{background:linear-gradient(90deg,#e6eef7,#f0fdf4 120%)}
 .ach-row-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;opacity:.7}
 .ach-row-body{flex:1;min-width:0}
 .ach-row-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -224,7 +217,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* --- Upload zone ---------------------------------------------- */
 .upzone{border:2px dashed var(--border-2);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface)}
-.upzone:hover{border-color:var(--accent);background:#eef2ff}
+.upzone:hover{border-color:var(--accent);background:#e6eef7}
 .upzone.has-file{border-color:var(--ok);background:var(--ok-l)}
 
 /* --- AI panel ------------------------------------------------- */
@@ -317,7 +310,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* -- School Profile ------------------------------------------- */
 .pf-wrap{display:flex;flex-direction:column;gap:24px;padding:4px 0}
-.pf-hero{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 60%,#3b82f6 100%);border-radius:16px;padding:28px 32px;color:#fff;box-shadow:0 4px 24px rgba(37,99,235,.25)}
+.pf-hero{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#0b2a4a 0%,#13406e 60%,#1d5fa0 100%);border-radius:16px;padding:28px 32px;color:#fff;box-shadow:0 4px 24px rgba(37,99,235,.25)}
 .pf-avatar{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;flex-shrink:0;border:3px solid rgba(255,255,255,.4)}
 .pf-hero-info{flex:1;min-width:0}
 .pf-school-name{font-size:1.35rem;font-weight:700;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -329,17 +322,17 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .pf-hero-actions{display:flex;gap:8px;flex-shrink:0}
 .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .pf-card{background:var(--card,#fff);border:1px solid var(--bdr,#e2e8f0);border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:2px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.pf-section-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;border-bottom:2px solid #e0e7ff;padding-bottom:8px;margin-bottom:12px}
+.pf-section-hdr{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#13406e;border-bottom:2px solid #dbe6f2;padding-bottom:8px;margin-bottom:12px}
 .pf-field{display:flex;flex-direction:column;gap:3px;padding:6px 0;border-bottom:1px solid var(--bdr,#f1f5f9)}
 .pf-field:last-child{border-bottom:none}
 .pf-lbl{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8}
 .pf-val{font-size:.92rem;color:var(--fg,#1e293b);font-weight:500}
-.pf-inp{font-size:.92rem;color:var(--fg,#1e293b);background:var(--bg,#eef2ff);border:1.5px solid #6366f1;border-radius:6px;padding:5px 9px;outline:none;width:100%;box-sizing:border-box}
+.pf-inp{font-size:.92rem;color:var(--fg,#1e293b);background:var(--bg,#e6eef7);border:1.5px solid #13406e;border-radius:6px;padding:5px 9px;outline:none;width:100%;box-sizing:border-box}
 .pf-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
 .pf-stat{text-align:center;background:#f8fafc;border-radius:10px;padding:16px 8px;border:1px solid var(--bdr,#e2e8f0)}
-.pf-stat-val{font-size:1.8rem;font-weight:800;color:#2563eb}
+.pf-stat-val{font-size:1.8rem;font-weight:800;color:#13406e}
 .pf-stat-lbl{font-size:.75rem;color:#64748b;margin-top:2px}
-.btn-primary{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#6366f1,#2563eb);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#13406e,#13406e);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-weight:600;cursor:pointer;transition:opacity .2s}
 .btn-primary:hover{opacity:.88}
 .btn-outline{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;padding:8px 14px;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s}
 .btn-outline:hover{background:rgba(255,255,255,.25)}
@@ -348,8 +341,76 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
   .pf-hero{flex-wrap:wrap}
   .pf-hero-actions{width:100%}
 }
-</style>
 
+/* === Tema rasmi PPD Dalat (override) ======================== */
+html,body{height:100%}
+body{display:flex;flex-direction:column;margin:0}
+.shell{flex:1;height:auto;min-height:0}
+.sidebar{background:linear-gradient(180deg,#0b2a4a 0%,#071c33 100%);border-right:1px solid rgba(255,255,255,.06)}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 16px 16px}
+.sb-logo-tile{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#e3faf6,#fdf8dc);display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.sb-logo-tile img{height:30px;width:auto;mix-blend-mode:multiply}
+.sb-logo .mark{display:block;font-size:19px;letter-spacing:0;background:none;-webkit-text-fill-color:#fff;color:#fff}
+.sb-logo .sub{display:block;font-size:10.5px;color:var(--ppd-gold-2);font-weight:600;margin-top:1px}
+.sb-section-lbl{color:rgba(255,255,255,.45);font-weight:700;margin-top:6px}
+.sb-btn{min-height:40px;border-radius:8px;color:rgba(255,255,255,.72);position:relative}
+.sb-btn:hover{background:rgba(255,255,255,.07);color:#fff}
+.sb-btn.active{background:rgba(255,255,255,.1);box-shadow:none;color:#fff}
+.sb-btn.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--ppd-gold)}
+.sb-ppd{color:var(--ppd-gold-2)}
+.topbar{box-shadow:var(--ppd-shadow);padding:12px 24px;min-height:60px}
+.tb-info .g{color:var(--t3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.tb-info .n{font-size:16px;font-weight:800;color:var(--t1)}
+.btn{border-radius:8px;min-height:38px}
+.btn-pri{background:var(--ppd-navy-2);box-shadow:none}
+.btn-pri:hover{background:var(--ppd-navy);opacity:1;transform:none;box-shadow:none}
+.btn-vio{background:#5b4b9a;box-shadow:none}
+.btn-vio:hover{background:#4a3c82;opacity:1;transform:none}
+.btn-ok{background:var(--ppd-ok);box-shadow:none;border-radius:8px}
+.btn-ok:hover{opacity:.92;transform:none}
+.btn-danger{border-radius:8px}
+.btn-primary{background:var(--ppd-navy-2);border-radius:8px}
+.btn-primary:hover{background:var(--ppd-navy);opacity:1}
+.stat-card,.panel,.apv-card,.school-card,.pf-card{border-radius:var(--ppd-radius);box-shadow:var(--ppd-shadow);border-color:var(--border)}
+.stat-card:hover,.school-card:hover{transform:none;box-shadow:var(--ppd-shadow-lg)}
+.stat-val{font-weight:800}
+.ph{background:var(--surface2);border-radius:var(--ppd-radius) var(--ppd-radius) 0 0}
+.pt{display:flex;align-items:center;gap:8px;font-weight:700}
+.pt::before{content:'';width:4px;height:16px;background:var(--ppd-gold);border-radius:2px;flex-shrink:0}
+.pg-title{font-size:22px;display:flex;align-items:center;gap:10px}
+.pg-title::before{content:'';width:4px;height:22px;background:var(--ppd-gold);border-radius:2px;flex-shrink:0}
+.ach-row:hover{background:var(--ppd-accent-l)}
+.upzone{border-radius:var(--ppd-radius)}
+.upzone:hover{background:var(--ppd-accent-l)}
+.notif-panel{border-radius:var(--ppd-radius);border-top:3px solid var(--ppd-gold);top:96px}
+.notif-item:hover{background:var(--surface2)}
+.notif-item.unread{background:var(--ppd-accent-l)}
+.notif-item.unread:hover{background:var(--surface2)}
+.ai-box{background:var(--violet-l);border-radius:var(--ppd-radius)}
+.fi,.fs,.fta,.cdd-btn{border-radius:8px}
+.fi:focus,.fs:focus,.fta:focus{box-shadow:0 0 0 3px rgba(200,150,42,.25);border-color:var(--ppd-gold)}
+.pf-hero{background:linear-gradient(110deg,#071c33 0%,#0b2a4a 55%,#13406e 100%);border-radius:var(--ppd-radius);box-shadow:var(--ppd-shadow-lg);border-bottom:3px solid var(--ppd-gold)}
+.pf-section-hdr{color:var(--accent);border-bottom-color:var(--border)}
+.pf-stat{background:var(--surface2)}
+.pf-stat-val{color:var(--accent)}
+.pf-stat-lbl{color:var(--t3)}
+.pf-lbl{color:var(--t3)}
+.pf-inp{border-color:var(--accent)}
+.empty{padding:48px 24px;color:var(--t3);font-size:13px}
+.empty::before{content:'';display:block;width:44px;height:44px;margin:0 auto 12px;border-radius:50%;background:var(--ppd-accent-l) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313406e' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/22px no-repeat}
+:where(button,a,[tabindex],input,select,textarea):focus-visible{outline:3px solid var(--ppd-gold);outline-offset:2px}
+.step.active{color:var(--accent)}
+@media(max-width:640px){
+  .sidebar{width:60px}
+  .sb-logo{justify-content:center;padding:12px 8px}
+  .sb-logo .mark,.sb-logo .sub,.sb-section-lbl{display:none}
+  .sb-footer{justify-content:center;padding:12px 6px}
+  .sb-btn{justify-content:center;padding:10px 0}
+  .sb-btn.active::before{left:-12px}
+  .notif-panel{left:12px;right:12px;width:auto}
+}</style>
+
+<div class="ppd-strip"><div class="ppd-strip-l"><a href="ppd-dalat.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a><span class="ppd-strip-sep">|</span><span class="ppd-strip-app">SK@S · SKPM Kualiti@Sekolah</span></div><div class="ppd-strip-r"><span class="ppd-flag"></span><span>Portal rasmi KPM</span></div></div>
 <div class="shell" id="app" data-theme-root></div>
 
 <script>
@@ -379,7 +440,7 @@ const IC = {
 /* -- Level config -- highest to lowest -------------------------- */
 const LEVELS = [
   { key:'INT', label:'Antarabangsa', cls:'lv-INT', tier:1, icon:'', color:'#f97316' },
-  { key:'NAT', label:'Kebangsaan',   cls:'lv-NAT', tier:2, icon:'', color:'#2563eb' },
+  { key:'NAT', label:'Kebangsaan',   cls:'lv-NAT', tier:2, icon:'', color:'#13406e' },
   { key:'NEG', label:'Negeri',       cls:'lv-NEG', tier:3, icon:'', color:'#10b981' },
   { key:'BAH', label:'Bahagian',     cls:'lv-BAH', tier:3, icon:'', note:'(Setaraf Negeri)', color:'#06b6d4' },
   { key:'DAE', label:'Daerah',       cls:'lv-DAE', tier:4, icon:'', color:'#7c3aed' },
@@ -729,11 +790,7 @@ function sidebar() {
     { v:'announcements', label:'Siaran Diterima',       icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
   ];
   return `<aside class="sidebar">
-    <a href="/ppd-dalat.html" class="sb-portal-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a>
-    <div class="sb-logo">
-      <div class="mark">SKPM</div>
-      <div class="sub">Kualiti@Sekolah</div>
-    </div>
+    <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
     <div class="sb-section">
       <div class="sb-section-lbl">Menu Guru</div>
       ${navTeacher.map((n)=>{
@@ -761,7 +818,7 @@ function bellBadgeHtml(unread) {
 function buildNotifPanel(anns, userId, validSasaran, annViewState) {
   const filtered = anns.filter(a => validSasaran.includes(a.sasaran));
   const unread = filtered.filter(a => !a.dibaca.includes(userId));
-  const katColor = k => k==='segera'?'#dc2626':k==='penting'?'#d97706':'#6366f1';
+  const katColor = k => k==='segera'?'#dc2626':k==='penting'?'#d97706':'#13406e';
   const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
   const items = filtered.slice(0,6).map(a => {
     const isUnread = !a.dibaca.includes(userId);
@@ -947,7 +1004,7 @@ function viewDashboard() {
   const defaultPanels = panelGuide;
 
   const me = S.teachers.find(t=>t.id==='t1') || S.teachers[0] || {};
-  const avC = '#2563eb';
+  const avC = '#13406e';
   const profileCard = `<div class="panel" style="margin-bottom:4px">
     <div class="pb" style="display:flex;align-items:center;gap:14px">
       <div style="width:52px;height:52px;border-radius:14px;background:${avC};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0">${esc(me.av||'?')}</div>
@@ -1096,7 +1153,7 @@ function viewRecords() {
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
             ${verdict}
-            <span style="font-size:10px;color:#1d4ed8;font-weight:500">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><path d="M12 6v6l4 2"/>',11)} Dinilai AI &rsaquo;</span>
+            <span style="font-size:10px;color:#0b2a4a;font-weight:500">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><path d="M12 6v6l4 2"/>',11)} Dinilai AI &rsaquo;</span>
           </div>
         </div>
       </div>`;
@@ -1150,7 +1207,7 @@ function viewRecords() {
       const penuh = count>=HAD_PER_PERINGKAT;
       const lebih = count>HAD_PER_PERINGKAT;
       const top20 = allLayakByLevel[k].slice(0,HAD_PER_PERINGKAT);
-      const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #3b82f644">
+      const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #1d5fa044">
         <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:4px">&#x2728; AI memilih ${HAD_PER_PERINGKAT} rekod terbaik untuk SKPM (daripada ${count} rekod layak):</div>
         ${top20.slice(0,3).map((r,i)=>`<div style="font-size:10px;color:var(--t2);padding:1px 0">${i+1}. ${esc(r.program||'Rekod')} &mdash; ${TAHAP_MAP[r.tahap]?.short||r.tahap}</div>`).join('')}
         ${count>HAD_PER_PERINGKAT+3?`<div style="font-size:10px;color:var(--t3);margin-top:2px">... dan ${HAD_PER_PERINGKAT-3} lagi rekod dipilih</div>`:''}
@@ -1158,12 +1215,12 @@ function viewRecords() {
       return `<div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:12px;font-weight:700;color:${count>0?col:'var(--t3)'}">${label}</span>
-          <span style="font-size:11px;font-weight:700;color:${lebih?'#3b82f6':penuh?'#22c55e':count>0?col:'var(--t3)'}">
+          <span style="font-size:11px;font-weight:700;color:${lebih?'#1d5fa0':penuh?'#22c55e':count>0?col:'var(--t3)'}">
             ${lebih?`${HAD_PER_PERINGKAT}/${count} (AI pilih)`:count+' / '+HAD_PER_PERINGKAT+(penuh?' &#x2713;':'')}
           </span>
         </div>
         <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${lebih?'#3b82f6':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
+          <div style="height:100%;width:${pct}%;background:${lebih?'#1d5fa0':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
         </div>
         ${cadangan}
       </div>`;
@@ -1248,17 +1305,17 @@ function viewRecordDetail() {
 
   const notLayakNote = !ai.layak
     ? `<div style="margin-top:6px;padding:11px 14px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;gap:8px">
-        <span style="color:#1d4ed8;flex-shrink:0;margin-top:1px">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/>',15)}</span>
+        <span style="color:#0b2a4a;flex-shrink:0;margin-top:1px">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/>',15)}</span>
         <span style="font-size:12px;color:#1e40af;line-height:1.5"><b>Cadangan AI:</b> Rekod ini boleh disimpan dalam sistem dalaman sekolah sebagai dokumentasi profesionalisme guru. Ia tidak dihantar ke SKPM 5.4.1 tetapi boleh menyokong komponen lain seperti <b>Kekuatan Kami (A1)</b> atau portfolio guru.</span>
       </div>` : '';
 
   const ragSection = refs.map((ref, idx) =>
     `<div style="border-radius:9px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:8px">
       <div style="padding:9px 13px;background:var(--surface);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">
-        <span style="width:20px;height:20px;border-radius:5px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:10px;font-weight:700;flex-shrink:0">${idx+1}</span>
+        <span style="width:20px;height:20px;border-radius:5px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;color:#0b2a4a;font-size:10px;font-weight:700;flex-shrink:0">${idx+1}</span>
         <div style="min-width:0">
           <div style="font-size:11.5px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(ref.doc)}</div>
-          <div style="font-size:10.5px;color:#1d4ed8;font-weight:600;margin-top:1px">${esc(ref.section)} &middot; ${esc(ref.page)}</div>
+          <div style="font-size:10.5px;color:#0b2a4a;font-weight:600;margin-top:1px">${esc(ref.section)} &middot; ${esc(ref.page)}</div>
         </div>
       </div>
       <div style="padding:9px 13px;font-size:11.5px;color:var(--t2);line-height:1.6;font-style:italic">"${esc(ref.excerpt)}"</div>
@@ -1668,8 +1725,7 @@ function sidebarAdmin() {
       { pv:'announcements',   label:'Siaran & Hebahan',  icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
     ];
     return `<aside class="sidebar">
-      <a href="/ppd-dalat.html" class="sb-portal-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a>
-      <div class="sb-logo"><div class="mark">SKPM</div><div class="sub">Kualiti@Sekolah</div></div>
+      <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
       ${roleSw}
       <div class="sb-section">
         <div class="sb-section-lbl">Menu Admin PPD</div>
@@ -1699,8 +1755,7 @@ function sidebarAdmin() {
     { sv:'announcements',      label:'Siaran Diterima',           icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
   ];
   return `<aside class="sidebar">
-    <a href="/ppd-dalat.html" class="sb-portal-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a>
-    <div class="sb-logo"><div class="mark">SKPM</div><div class="sub">Kualiti@Sekolah</div></div>
+    <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
     ${roleSw}
     <div class="sb-section">
       <div class="sb-section-lbl">Menu Pentadbir</div>
@@ -1923,7 +1978,7 @@ function viewSchoolAdmin() {
     <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Analisis Mengikut Peringkat</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       ${(()=>{
-        const lvlColors = {INT:'#7c3aed',NAT:'#2563eb',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
+        const lvlColors = {INT:'#7c3aed',NAT:'#13406e',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
         const barChart = (recs, klasifikasiFn, aspek, chipColor) => {
           const layakRecs = recs.filter(r=>klasifikasiFn(r).layak);
           const total = recs.length;
@@ -1963,7 +2018,7 @@ function viewSchoolAdmin() {
             </div>
           </div>`;
         };
-        return barChart(allTeacherRecs, aiKlasifikasi, 'Pencapaian Guru 5.4.1', '#2563eb')
+        return barChart(allTeacherRecs, aiKlasifikasi, 'Pencapaian Guru 5.4.1', '#13406e')
              + barChart(sRecs, aiKlasifikasiSekolah, 'Pencapaian Sekolah 5.4.2', '#7c3aed');
       })()}
     </div>
@@ -1976,7 +2031,7 @@ function viewSchoolAdmin() {
       <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.2</span>
     </div>
     ${(()=>{
-      const katColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2','#64748b'];
+      const katColors = ['#13406e','#7c3aed','#059669','#d97706','#db2777','#0891b2','#64748b'];
       const katIcons  = ['&#x1F3C6;','&#x1F393;','&#x26BD;','&#x1F3A8;','&#x1F30D;','&#x1F52C;','&#x1F4CB;'];
       return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
         ${KATEGORI.map((k,ki)=>{
@@ -2019,7 +2074,7 @@ function viewSchoolAdmin() {
     </div>
     ${(()=>{
       const MAX_SLOT = 20;
-      const lvlColors2 = {INT:'#7c3aed',NAT:'#2563eb',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
+      const lvlColors2 = {INT:'#7c3aed',NAT:'#13406e',NEG:'#0891b2',BAH:'#0891b2',DAE:'#059669',SKL:'#94a3b8'};
       const levelOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
       const sorted   = [...sRecs].sort((a,b)=>levelOrder.indexOf(a.level)-levelOrder.indexOf(b.level));
       const counted  = sorted.slice(0,MAX_SLOT);
@@ -2087,7 +2142,7 @@ function viewSchoolAdmin() {
       <span style="font-size:11px;font-weight:500;color:var(--t3);background:var(--chip);padding:2px 8px;border-radius:99px">SKPM 5.4.1</span>
     </div>
     ${(()=>{
-      const perananColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777'];
+      const perananColors = ['#13406e','#7c3aed','#059669','#d97706','#db2777'];
       const perananIcons  = ['&#x1F947;','&#x1F3BD;','&#x1F468;&#x200D;&#x1F3EB;','&#x1F3AF;','&#x1F3C5;'];
       const maxP = Math.max(1,...PERANAN.map(p=>allTeacherRecs.filter(r=>r.peranan===p.val).length));
       const rows = PERANAN.map((p,pi)=>{
@@ -2217,7 +2272,7 @@ function viewSchoolAchievements() {
         const pct = Math.min(count/20*100,100);
         const penuh = count>=20;
         const lebih = count>20;
-        const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #3b82f644">
+        const cadangan = lebih ? `<div style="margin-top:6px;padding:7px 10px;border-radius:7px;background:#dbeafe22;border:1px solid #1d5fa044">
           <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:4px">&#x2728; AI memilih 20 rekod terbaik untuk SKPM (daripada ${count} rekod layak):</div>
           ${top20S.slice(0,3).map((r,i)=>`<div style="font-size:10px;color:var(--t2);padding:1px 0">${i+1}. ${esc(r.program||'Rekod')} &mdash; ${TAHAP_MAP[r.tahap]?.short||r.tahap}</div>`).join('')}
           ${count>23?`<div style="font-size:10px;color:var(--t3);margin-top:2px">... dan ${17} lagi rekod dipilih</div>`:''}
@@ -2225,12 +2280,12 @@ function viewSchoolAchievements() {
         return `<div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
             <span style="font-size:12px;font-weight:700;color:${count>0?col:'var(--t3)'}">${label}</span>
-            <span style="font-size:11px;font-weight:700;color:${lebih?'#3b82f6':penuh?'#22c55e':count>0?col:'var(--t3)'}">
+            <span style="font-size:11px;font-weight:700;color:${lebih?'#1d5fa0':penuh?'#22c55e':count>0?col:'var(--t3)'}">
               ${lebih?`20/${count} (AI pilih)`:count+' / 20'+(penuh?' &#x2713;':'')}
             </span>
           </div>
           <div style="height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${lebih?'#3b82f6':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
+            <div style="height:100%;width:${pct}%;background:${lebih?'#1d5fa0':penuh?'#22c55e':col};border-radius:3px;transition:width .4s"></div>
           </div>
           ${cadangan}
         </div>`;
@@ -2314,7 +2369,7 @@ function viewSchoolAchievementDetail() {
 
   const notLayakNote = !ai.layak
     ? `<div style="margin-top:6px;padding:11px 14px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;gap:8px">
-        <span style="color:#1d4ed8;flex-shrink:0;margin-top:1px">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/>',15)}</span>
+        <span style="color:#0b2a4a;flex-shrink:0;margin-top:1px">${i('<path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/>',15)}</span>
         <span style="font-size:12px;color:#1e40af;line-height:1.5"><b>Cadangan AI:</b> Rekod ini boleh disimpan sebagai dokumentasi pencapaian sekolah secara dalaman. Semak semula peringkat, tahap pencapaian, dan pastikan eviden disertakan sebelum dihantar ke SKPM 5.4.2.</span>
       </div>` : '';
 
@@ -2355,10 +2410,10 @@ function viewSchoolAchievementDetail() {
   const ragSection = ragSklRefs.map((ref, idx) =>
     `<div style="border-radius:9px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:8px">
       <div style="padding:9px 13px;background:var(--surface);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">
-        <span style="width:20px;height:20px;border-radius:5px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:10px;font-weight:700;flex-shrink:0">${idx+1}</span>
+        <span style="width:20px;height:20px;border-radius:5px;background:#eff6ff;display:inline-flex;align-items:center;justify-content:center;color:#0b2a4a;font-size:10px;font-weight:700;flex-shrink:0">${idx+1}</span>
         <div style="min-width:0">
           <div style="font-size:11.5px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(ref.doc)}</div>
-          <div style="font-size:10.5px;color:#1d4ed8;font-weight:600;margin-top:1px">${esc(ref.section)} &middot; ${esc(ref.page)}</div>
+          <div style="font-size:10.5px;color:#0b2a4a;font-weight:600;margin-top:1px">${esc(ref.section)} &middot; ${esc(ref.page)}</div>
         </div>
       </div>
       <div style="padding:9px 13px;font-size:11.5px;color:var(--t2);line-height:1.6;font-style:italic">"${esc(ref.excerpt)}"</div>
@@ -2427,7 +2482,7 @@ function viewSchoolAchievementDetail() {
     ${(()=>{
       const guru = r.guruId ? S.teachers.find(t=>t.id===r.guruId) : null;
       if(!guru) return '';
-      const avColors=['#2563eb','#7c3aed','#059669','#d97706','#db2777'];
+      const avColors=['#13406e','#7c3aed','#059669','#d97706','#db2777'];
       const avC = avColors[S.teachers.indexOf(guru)%avColors.length];
       const pengalaman = guru.tahunMula ? (new Date().getFullYear()-guru.tahunMula)+' tahun' : '--';
       return `<div class="panel">
@@ -2869,7 +2924,7 @@ function viewPPDCharts() {
     return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:32px">
       <div style="font-size:11px;font-weight:700;color:${isMax?'var(--accent)':'var(--t1)'}">${total}</div>
       <div style="width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:80px;gap:1px;border-radius:6px 6px 0 0;overflow:hidden">
-        <div title="Guru: ${tC}" style="width:100%;background:#6366f1;height:${tH}%;min-height:${tC?'3px':'0'};transition:height .5s;border-radius:${sC?'0':'4px 4px 0 0'}"></div>
+        <div title="Guru: ${tC}" style="width:100%;background:#13406e;height:${tH}%;min-height:${tC?'3px':'0'};transition:height .5s;border-radius:${sC?'0':'4px 4px 0 0'}"></div>
         <div title="Sekolah: ${sC}" style="width:100%;background:#06b6d4;height:${sH}%;min-height:${sC?'3px':'0'};transition:height .5s;border-radius:4px 4px 0 0"></div>
       </div>
       <div style="font-size:9px;font-weight:600;color:${isMax?'var(--accent)':'var(--t3)'};white-space:nowrap">${BULAN[+m]||m}</div>
@@ -2897,7 +2952,7 @@ function viewPPDCharts() {
 
   <!-- KPI tiles -->
   <div class="chart-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
-    ${statTile('Jumlah Rekod',totalRecs,'guru + sekolah','linear-gradient(135deg,#6366f1,#4f46e5)','📋')}
+    ${statTile('Jumlah Rekod',totalRecs,'guru + sekolah','linear-gradient(135deg,#13406e,#0b2a4a)','📋')}
     ${statTile('Rekod Guru',allTRecs.length,'SKPM 5.4.1','linear-gradient(135deg,#7c3aed,#6d28d9)','👩‍🏫')}
     ${statTile('Rekod Sekolah',allSRecs.length,'SKPM 5.4.2','linear-gradient(135deg,#0891b2,#0e7490)','🏫')}
     ${statTile('Bilangan Sekolah',totalSchools,'dalam daerah','linear-gradient(135deg,#059669,#047857)','🏆')}
@@ -2911,7 +2966,7 @@ function viewPPDCharts() {
         <div style="font-size:11px;color:var(--t3);margin-top:2px">Bilangan rekod dihantar setiap bulan · ${selectedYear}</div>
       </div>
       <div style="display:flex;gap:14px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:3px;background:#6366f1"></div><span style="font-size:11px;color:var(--t2)">Guru</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:3px;background:#13406e"></div><span style="font-size:11px;color:var(--t2)">Guru</span></div>
         <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:3px;background:#06b6d4"></div><span style="font-size:11px;color:var(--t2)">Sekolah</span></div>
       </div>
     </div>
@@ -2924,7 +2979,7 @@ function viewPPDCharts() {
   <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:4px">
     <div class="card" style="padding:0;overflow:hidden">
       <div style="padding:16px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px">
-        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#6366f1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👩‍🏫</div>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#13406e);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👩‍🏫</div>
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--t1)">Taburan Peringkat Guru</div>
           <div style="font-size:11px;color:var(--t3)">SKPM 5.4.1 · ${tLayakAll.length} rekod layak</div>
@@ -2975,7 +3030,7 @@ function viewPPDUserMgmt() {
     return `<button data-usr-filter="${val}" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
   };
 
-  const avColors = ['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
+  const avColors = ['#13406e','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
 
   const cards = filtered.length === 0
     ? `<div style="text-align:center;padding:48px 20px;color:var(--t3);font-size:14px">Tiada pengguna dijumpai.</div>`
@@ -3037,7 +3092,7 @@ function viewPPDUserMgmt() {
 }
 
 function viewPPDAnnouncements() {
-  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#6366f1';
+  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#13406e';
   const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
   const sasLabel = s => s==='semua'?'Semua':s==='sekolah'?'Sekolah Sahaja':'Guru Sahaja';
   const sasIcon  = s => s==='semua'?'🌐':s==='sekolah'?'🏫':'👩‍🏫';
@@ -3136,7 +3191,7 @@ function viewAnnouncementsInbox(role) {
     .filter(a => validSasaran.includes(a.sasaran))
     .sort((a,b) => new Date(b.tarikh) - new Date(a.tarikh));
 
-  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#6366f1';
+  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#13406e';
   const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
 
   const cards = myAnn.length === 0
@@ -3250,7 +3305,7 @@ function viewPPDAnalysis() {
       </div>
       <div style="min-width:80px;flex:1">
         <div style="font-size:10px;color:var(--t3)">Sekolah: ${sL}/${sR.length}</div>
-        ${bar(sP,'#6366f1')}
+        ${bar(sP,'#13406e')}
       </div>
     </button>`;
   });
@@ -3346,14 +3401,14 @@ function viewPPDAnalysis() {
     <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:6px;padding:16px 18px">
       <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em">5.4.2 Pencapaian Sekolah</div>
       <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
-        <span style="font-size:32px;font-weight:800;color:#6366f1">${sLayakAll.length}</span>
+        <span style="font-size:32px;font-weight:800;color:#13406e">${sLayakAll.length}</span>
         <span style="font-size:13px;color:var(--t3)">/ ${allSRecs.length} rekod</span>
       </div>
       <div style="width:100%;height:6px;border-radius:3px;background:var(--bdr);overflow:hidden">
-        <div style="height:100%;width:${sPct}%;background:#6366f1;border-radius:3px"></div>
+        <div style="height:100%;width:${sPct}%;background:#13406e;border-radius:3px"></div>
       </div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
-        <span style="font-size:12px;font-weight:700;color:#6366f1">${sPct}%</span>
+        <span style="font-size:12px;font-weight:700;color:#13406e">${sPct}%</span>
         <span style="font-size:11px;color:var(--t3)">layak &middot; ${sTidakAll.length} tidak layak</span>
         ${trend(sPct, sPctLastYear)}
       </div>
@@ -3470,7 +3525,7 @@ function viewPPDAnalysis() {
 
 function viewPPDSchools() {
   const jenisBadge = j => {
-    const col = j==='SK'?'#3b82f6':j==='SJKC'?'#f59e0b':'#8b5cf6';
+    const col = j==='SK'?'#1d5fa0':j==='SJKC'?'#f59e0b':'#8b5cf6';
     return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${col}22;color:${col};border:1px solid ${col}44">${j}</span>`;
   };
   const search = (S.ppdSchoolSearch||'').toLowerCase();
@@ -3551,7 +3606,7 @@ function viewPPDSchools() {
             <div style="min-width:70px">
               <div style="font-size:10px;color:var(--t3);white-space:nowrap">Sekolah</div>
               <div style="font-size:13px;font-weight:700;color:${sPct<50?'#ef4444':'var(--t1)'};margin-top:1px">${sLayak}<span style="font-size:11px;color:var(--t3);font-weight:400"> / ${sTotal}</span></div>
-              ${bar(sPct, sPct<50?'#ef4444':sPct>=80?'#22c55e':'#6366f1')}
+              ${bar(sPct, sPct<50?'#ef4444':sPct>=80?'#22c55e':'#13406e')}
             </div>
           </div>
           <div class="ppd-sc-chevron" style="color:var(--t3);flex-shrink:0;font-size:16px">&rsaquo;</div>
@@ -3603,7 +3658,7 @@ function viewPPDSchoolUsers() {
   const filtered = search ? allUsers.filter(u=>u.name.toLowerCase().includes(search)||u.email.toLowerCase().includes(search)) : allUsers;
   const roleLabel = r => r==='school_admin'?'Pentadbir Sekolah':'Guru';
   const roleBadge = r => r==='school_admin'
-    ? `<span style="font-size:13px;font-weight:700;background:#dbeafe;color:#1d4ed8;border-radius:8px;padding:4px 12px">Pentadbir</span>`
+    ? `<span style="font-size:13px;font-weight:700;background:#dbeafe;color:#0b2a4a;border-radius:8px;padding:4px 12px">Pentadbir</span>`
     : `<span style="font-size:13px;font-weight:700;background:#f3e8ff;color:#7c3aed;border-radius:8px;padding:4px 12px">Guru</span>`;
   return `<div style="padding:24px 20px;max-width:800px;margin:0 auto">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap">
@@ -3760,9 +3815,9 @@ function viewPPDSchoolDetail() {
       </div>
       <div class="card" style="padding:14px 16px">
         <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Sekolah (5.4.2)</div>
-        <div style="font-size:28px;font-weight:800;color:#6366f1">${sPct}%</div>
+        <div style="font-size:28px;font-weight:800;color:#13406e">${sPct}%</div>
         <div style="font-size:11px;color:var(--t3);margin-top:1px">${sLayak.length} / ${sTotal} layak</div>
-        ${progBar(sPct,'#6366f1')}
+        ${progBar(sPct,'#13406e')}
         ${Object.keys(sByLevel).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${lvlChips(sByLevel)}</div>` : ''}
       </div>
     </div>
@@ -3777,7 +3832,7 @@ function viewPPDResetPassword() {
   const rows = DEMO_SCHOOLS.map(sch => {
     const done = (S.resetDone||[]).includes(sch.id);
     return '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:14px 16px;border-radius:10px;border:1px solid var(--bdr);background:var(--card)">'
-      + (()=>{const avC=['#2563eb','#7c3aed','#059669','#d97706','#db2777'];const c=avC[DEMO_SCHOOLS.indexOf(sch)%avC.length];return '<div style="width:42px;height:42px;border-radius:12px;background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px '+c+'55">'+esc(sch.av)+'</div>';})()
+      + (()=>{const avC=['#13406e','#7c3aed','#059669','#d97706','#db2777'];const c=avC[DEMO_SCHOOLS.indexOf(sch)%avC.length];return '<div style="width:42px;height:42px;border-radius:12px;background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px '+c+'55">'+esc(sch.av)+'</div>';})()
       + '<div style="flex:1;min-width:0">'
       +   '<div style="font-size:13.5px;font-weight:700;color:var(--t1)">' + esc(sch.name) + '</div>'
       +   '<div style="font-size:11.5px;color:var(--t3);margin-top:1px">' + esc(sch.kod) + ' &middot; ' + esc(sch.jenis) + '</div>'
@@ -4121,7 +4176,7 @@ function bind() {
     ov=document.createElement('div');
     ov.id='reset-modal-overlay';
     ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    ov.innerHTML='<div style="background:linear-gradient(135deg,#1e40af,#2563eb);border-radius:20px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6)">'
+    ov.innerHTML='<div style="background:linear-gradient(135deg,#1e40af,#13406e);border-radius:20px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6)">'
       +'<div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:20px">'
       +'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
       +'</div>'
@@ -4711,7 +4766,7 @@ function bind() {
   );
 
   // ppd user role assignment modal
-  const avColors=['#2563eb','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
+  const avColors=['#13406e','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
   document.querySelectorAll('[data-usr-assign]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const uid=btn.dataset.usrAssign;

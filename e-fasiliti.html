@@ -1,31 +1,230 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>e-Fasiliti PPD</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #1e293b; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-    .modal-enter { animation: fadeIn .18s ease; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    .toast-anim { animation: slideIn .25s ease; }
-    @keyframes slideIn { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
-    .timeline-line::before { content:''; position:absolute; left:11px; top:24px; bottom:0; width:2px; background:#334155; }
-    .tab-active { border-bottom: 2px solid #3b82f6; color: #f1f5f9; }
-    .tab-inactive { border-bottom: 2px solid transparent; color: #94a3b8; }
-    select, input, textarea { color-scheme: dark; }
-    .role-active { background: #3b82f6 !important; color: #fff !important; }
-    .role-btn { transition: background .15s; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-Fasiliti PPD Dalat</title>
+<link rel="stylesheet" href="assets/ppd-theme.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--ppd-font); font-size: 14px; line-height: 1.5; background: var(--ppd-bg); color: var(--ppd-t1); min-height: 100vh; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:root { --ef-c: #1d5fa0; }
+
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Header */
+.ef-head { background: var(--ppd-surface); border-bottom: 1px solid var(--ppd-border); box-shadow: var(--ppd-shadow); position: sticky; top: 0; z-index: 30; }
+.ef-head .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-block: 12px; }
+.ef-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ef-logo { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--ef-c) 13%, var(--ppd-surface)); color: var(--ef-c); flex-shrink: 0; }
+.ef-logo svg { width: 22px; height: 22px; }
+.ef-title { font-size: 17px; font-weight: 800; line-height: 1.2; }
+.ef-sub { font-size: 12px; color: var(--ppd-t3); }
+
+.seg { display: flex; gap: 2px; padding: 3px; background: var(--ppd-surface-2); border: 1px solid var(--ppd-border); border-radius: 10px; overflow-x: auto; max-width: 100%; }
+.seg button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--ppd-t2); font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; position: relative; }
+.seg button:hover { color: var(--ppd-t1); background: var(--ppd-surface); }
+.seg button.on { background: var(--ppd-navy); color: #fff; box-shadow: inset 0 -3px 0 var(--ppd-gold); }
+.seg svg { width: 16px; height: 16px; }
+
+/* Icons */
+.i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Page */
+.page { padding-block: 24px 48px; display: grid; gap: 20px; }
+.pg-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.pg-title { font-size: 21px; font-weight: 800; letter-spacing: -.01em; text-wrap: balance; }
+.pg-desc { color: var(--ppd-t2); font-size: 13px; max-width: 62ch; margin-top: 2px; }
+
+/* Workflow */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); background: var(--ppd-surface); border: 1px solid var(--ppd-border); border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); overflow: hidden; }
+.flow-step { display: flex; align-items: center; gap: 10px; padding: 12px 14px; min-width: 0; position: relative; }
+.flow-step + .flow-step { border-left: 1px solid var(--ppd-border); }
+.flow-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; background: var(--ppd-surface-2); border: 1.5px solid var(--ppd-border); color: var(--ppd-t3); }
+.flow-step.me .flow-n { background: var(--ppd-navy); border-color: var(--ppd-navy); color: #fff; }
+.flow-step.me { background: color-mix(in srgb, var(--ppd-gold) 8%, var(--ppd-surface)); box-shadow: inset 0 -3px 0 var(--ppd-gold); }
+.flow-t { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+.flow-s { font-size: 11px; color: var(--ppd-t3); line-height: 1.3; }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+.kpis.k3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.kpi { background: var(--ppd-surface); border: 1px solid var(--ppd-border); border-radius: var(--ppd-radius); padding: 14px 16px; box-shadow: var(--ppd-shadow); display: flex; align-items: center; gap: 12px; min-width: 0; }
+.kpi-ic { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: var(--k); background: color-mix(in srgb, var(--k) 13%, var(--ppd-surface)); }
+.kpi-ic svg { width: 20px; height: 20px; }
+.kpi-num { font-size: 24px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi-lbl { font-size: 12px; color: var(--ppd-t2); font-weight: 600; }
+.kpi-sub { font-size: 11px; color: var(--ppd-t3); }
+
+/* Panel */
+.panel { background: var(--ppd-surface); border: 1px solid var(--ppd-border); border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); overflow: hidden; }
+.panel-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--ppd-border); }
+.panel-b { padding: 18px; }
+.sec-t { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; }
+.sec-t::before { content: ''; width: 4px; height: 18px; border-radius: 2px; background: var(--ppd-gold); flex-shrink: 0; }
+.muted { color: var(--ppd-t3); font-size: 12px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ppd-border); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.tabs button { min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--ppd-t2); border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; }
+.tabs button:hover { color: var(--ppd-accent); }
+.tabs button.on { color: var(--ppd-accent); border-bottom-color: var(--ppd-gold); }
+.tabs .count { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; background: var(--ppd-surface-2); border: 1px solid var(--ppd-border); color: var(--ppd-t2); }
+
+/* Form */
+.form { display: grid; gap: 16px; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.fl { font-size: 13px; font-weight: 700; color: var(--ppd-t1); }
+.fl .req { color: var(--ppd-danger); margin-left: 2px; }
+.fh { font-size: 11.5px; color: var(--ppd-t3); }
+.fi { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--ppd-border); border-radius: 8px; background: var(--ppd-surface); font-size: 14px; transition: border-color .15s, box-shadow .15s; }
+textarea.fi { resize: vertical; min-height: 104px; line-height: 1.55; }
+.fi::placeholder { color: var(--ppd-t3); }
+.fi:hover { border-color: color-mix(in srgb, var(--ppd-accent) 40%, var(--ppd-border)); }
+.fi.err { border-color: var(--ppd-danger); }
+:is(button, a, .fi, select):focus-visible { outline: 3px solid var(--ppd-gold); outline-offset: 2px; }
+.fi:focus { outline: none; border-color: var(--ppd-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ppd-gold) 45%, transparent); }
+.drop { border: 2px dashed var(--ppd-border); border-radius: 10px; padding: 26px 16px; text-align: center; background: var(--ppd-surface-2); cursor: pointer; transition: border-color .15s, background .15s; display: grid; justify-items: center; gap: 6px; }
+.drop:hover { border-color: var(--ppd-accent); background: var(--ppd-accent-l); }
+.drop svg { width: 30px; height: 30px; color: var(--ppd-accent); }
+.drop b { font-size: 13.5px; }
+.form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--ppd-border); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 0 16px; border-radius: 8px; border: 1px solid transparent; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; text-decoration: none; }
+.btn svg { width: 16px; height: 16px; }
+.btn-lg { min-height: 46px; padding: 0 22px; font-size: 14px; }
+.btn-pri { background: var(--ppd-navy); color: #fff; }
+.btn-pri:hover { background: var(--ppd-navy-2); }
+.btn-ok { background: #067647; color: #fff; }
+.btn-ok:hover { background: #05603a; }
+.btn-no { background: var(--ppd-surface); color: var(--ppd-danger); border-color: color-mix(in srgb, var(--ppd-danger) 55%, var(--ppd-border)); }
+.btn-no:hover { background: var(--ppd-danger-l); }
+.btn-pur { background: #6941c6; color: #fff; }
+.btn-pur:hover { background: #5631b0; }
+.btn-gh { background: var(--ppd-surface); color: var(--ppd-t1); border-color: var(--ppd-border); }
+.btn-gh:hover { border-color: var(--ppd-accent); color: var(--ppd-accent); background: var(--ppd-accent-l); }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 12.5px; }
+
+/* Pills */
+.pill { --c: #667085; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 700; white-space: nowrap; color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--ppd-surface)); border: 1px solid color-mix(in srgb, var(--c) 28%, transparent); }
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.k::before { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill { color: color-mix(in srgb, var(--c) 50%, #fff); background: color-mix(in srgb, var(--c) 22%, var(--ppd-surface)); } }
+:root[data-theme="dark"] .pill { color: color-mix(in srgb, var(--c) 50%, #fff); background: color-mix(in srgb, var(--c) 22%, var(--ppd-surface)); }
+
+/* Table */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ppd-t3); background: var(--ppd-surface-2); padding: 10px 14px; border-bottom: 1px solid var(--ppd-border); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--ppd-border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: color-mix(in srgb, var(--ppd-accent) 4%, var(--ppd-surface)); }
+.mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 12px; color: var(--ppd-t2); white-space: nowrap; }
+.t-strong { font-weight: 600; min-width: 170px; }
+.nowrap { white-space: nowrap; }
+.acts { display: flex; gap: 6px; flex-wrap: wrap; min-width: 120px; }
+
+/* Ticket cards (PJ) */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.tcard { background: var(--ppd-surface); border: 1px solid var(--ppd-border); border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); padding: 16px; display: grid; gap: 10px; border-left: 4px solid var(--kc, var(--ppd-border)); }
+.tcard-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tcard h3 { font-size: 15px; font-weight: 700; line-height: 1.35; }
+.meta { display: grid; gap: 4px; font-size: 12.5px; color: var(--ppd-t2); }
+.meta span { display: flex; align-items: center; gap: 7px; }
+.meta svg { width: 14px; height: 14px; color: var(--ppd-t3); flex-shrink: 0; }
+.tcard-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid var(--ppd-border); }
+.tcard-foot .btn { min-height: 44px; }
+
+/* Status summary */
+.legend { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Empty */
+.empty { text-align: center; padding: 44px 16px; color: var(--ppd-t3); display: grid; justify-items: center; gap: 8px; }
+.empty svg { width: 40px; height: 40px; color: var(--ppd-border); }
+.empty b { color: var(--ppd-t2); font-size: 14px; }
+
+/* Modal */
+.ov { position: fixed; inset: 0; z-index: 80; background: rgba(7,28,51,.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { width: 100%; max-width: 720px; max-height: 92vh; overflow-y: auto; background: var(--ppd-surface); border: 1px solid var(--ppd-border); border-top: 4px solid var(--ppd-gold); border-radius: var(--ppd-radius); box-shadow: 0 24px 64px rgba(0,0,0,.3); animation: up .18s ease; }
+@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.m-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--ppd-border); position: sticky; top: 0; background: var(--ppd-surface); z-index: 1; }
+.m-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
+.m-title { font-size: 18px; font-weight: 800; line-height: 1.3; }
+.x { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--ppd-border); background: var(--ppd-surface); cursor: pointer; display: grid; place-items: center; color: var(--ppd-t2); flex-shrink: 0; }
+.x:hover { background: var(--ppd-surface-2); color: var(--ppd-t1); }
+.x svg { width: 18px; height: 18px; }
+.m-body { padding: 18px 20px 22px; display: grid; gap: 16px; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); border: 1px solid var(--ppd-border); border-radius: 8px; overflow: hidden; }
+.fact { padding: 10px 12px; min-width: 0; }
+.fact + .fact { border-left: 1px solid var(--ppd-border); }
+.fact small { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ppd-t3); }
+.fact div { font-size: 13px; font-weight: 600; }
+.box { border: 1px solid var(--ppd-border); border-radius: 8px; padding: 12px 14px; background: var(--ppd-surface-2); }
+.box h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ppd-t3); margin-bottom: 4px; }
+.box p { font-size: 13.5px; color: var(--ppd-t1); }
+.box.pj { background: color-mix(in srgb, #b54708 7%, var(--ppd-surface)); border-color: color-mix(in srgb, #b54708 30%, var(--ppd-border)); }
+.box.pj h4 { color: var(--ppd-warn); }
+.act-box { border: 1px solid color-mix(in srgb, var(--ppd-accent) 30%, var(--ppd-border)); background: var(--ppd-accent-l); border-radius: 10px; padding: 14px; display: grid; gap: 10px; }
+.act-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.act-row .btn { min-height: 48px; }
+
+/* Timeline */
+.tl { list-style: none; display: grid; }
+.tl li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; position: relative; padding-bottom: 16px; }
+.tl li:last-child { padding-bottom: 0; }
+.tl li::before { content: ''; position: absolute; left: 13px; top: 28px; bottom: 0; width: 2px; background: var(--ppd-border); }
+.tl li:last-child::before { display: none; }
+.tl-dot { --c: #667085; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 14%, var(--ppd-surface)); color: var(--c); border: 2px solid var(--c); }
+.tl-dot svg { width: 13px; height: 13px; stroke-width: 3; }
+.tl li:last-child .tl-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
+.tl-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tl-d { font-size: 12px; color: var(--ppd-t3); font-variant-numeric: tabular-nums; }
+.tl-t { font-size: 13.5px; margin-top: 3px; }
+.tl-o { font-size: 12px; color: var(--ppd-t3); }
+
+/* Toast */
+#toast-container { position: fixed; z-index: 90; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; }
+.toast { display: flex; align-items: center; gap: 10px; max-width: 340px; padding: 12px 14px; border-radius: 8px; background: var(--ppd-surface); color: var(--ppd-t1); border: 1px solid var(--ppd-border); border-left: 4px solid var(--tc); box-shadow: var(--ppd-shadow-lg); font-size: 13px; font-weight: 600; animation: up .2s ease; }
+.toast svg { width: 18px; height: 18px; color: var(--tc); flex-shrink: 0; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .flow { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .flow-step:nth-child(3) { border-left: 0; }
+  .flow-step:nth-child(n+3) { border-top: 1px solid var(--ppd-border); }
+  .facts { grid-template-columns: 1fr 1fr; }
+  .fact:nth-child(3) { border-left: 0; }
+  .fact:nth-child(n+3) { border-top: 1px solid var(--ppd-border); }
+}
+@media (max-width: 640px) {
+  .ef-head .wrap { padding-block: 10px; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; justify-content: center; padding: 0 8px; min-height: 44px; }
+  .frow { grid-template-columns: 1fr; }
+  .kpis.k3 { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .kpis.k3 .kpi { flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; }
+  .kpi-ic { width: 36px; height: 36px; }
+  .kpi-num { font-size: 20px; }
+  .flow-s { display: none; }
+  .cards { grid-template-columns: 1fr; }
+  .act-row { grid-template-columns: 1fr; }
+  .ov { padding: 0; align-items: flex-end; }
+  .modal { max-height: 94vh; border-radius: 14px 14px 0 0; }
+  .m-head, .m-body { padding-left: 16px; padding-right: 16px; }
+  .form-foot .btn { width: 100%; }
+}
+.seg-lbl-short { display: none; }
+@media (max-width: 420px) { .seg-lbl-long { display: none; } .seg-lbl-short { display: inline; } }
+</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
+<body>
+<div class="ppd-strip"><div class="ppd-strip-l"><a href="ppd-dalat.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a><span class="ppd-strip-sep">|</span><span class="ppd-strip-app">e-Fasiliti · Pengurusan Fasiliti</span></div><div class="ppd-strip-r"><span class="ppd-flag"></span><span>Portal rasmi KPM</span></div></div>
 <div id="app"></div>
-<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+<div id="toast-container" aria-live="polite"></div>
 <div id="modal-root"></div>
 
 <script>
@@ -102,125 +301,131 @@ const TIKET_DATA = [
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
+const ROLE_FROM_URL = { sekolah:'sekolah', school_admin:'sekolah', teacher:'sekolah', pj:'pj', ppd:'ppd', ppd_admin:'ppd' };
 let state = {
-  role: 'sekolah',        // 'sekolah' | 'pj' | 'ppd'
-  subTab: 'baru',         // 'baru' | 'saya' (sekolah)
+  role: ROLE_FROM_URL[new URLSearchParams(location.search).get('role')] || 'sekolah',
+  subTab: 'baru',
   sekolahFilter: 'SMK Dalat',
   zonFilter: 'Semua',
-  tiketId: null,          // next ticket counter
 };
 let tiketCounter = 6;
 
 // ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
-const STATUS_BADGE = {
-  'Baru':        'bg-blue-600',
-  'Disemak PJ':  'bg-orange-500',
-  'Lulus Bajet': 'bg-purple-600',
-  'Dalam Kerja': 'bg-yellow-500 text-slate-900',
-  'Selesai':     'bg-green-600',
-  'Ditolak':     'bg-red-600',
-};
-const STATUS_ICON = {
-  'Baru':'🔵','Disemak PJ':'🟠','Lulus Bajet':'🟣','Dalam Kerja':'🟡','Selesai':'🟢','Ditolak':'🔴',
-};
-const KEU_COLOR = {
-  'Kritikal': 'bg-red-600',
-  'Tinggi':   'bg-orange-500',
-  'Sederhana':'bg-yellow-500 text-slate-900',
-  'Rendah':   'bg-green-600',
-};
+const SEKOLAH = ['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'];
+const STATUS_C = { 'Baru':'#1d5fa0', 'Disemak PJ':'#b54708', 'Lulus Bajet':'#6941c6', 'Dalam Kerja':'#a15c07', 'Selesai':'#067647', 'Ditolak':'#b42318' };
+const KEU_C    = { 'Kritikal':'#b42318', 'Tinggi':'#c4520f', 'Sederhana':'#a15c07', 'Rendah':'#067647' };
 
-function badge(text, extra='') {
-  const cls = STATUS_BADGE[text] || 'bg-slate-600';
-  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls} ${extra}">${text}</span>`;
-}
-function keuBadge(k) {
-  return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${KEU_COLOR[k]||'bg-slate-600'}">${k}</span>`;
-}
+const ICON = {
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  school: '<path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/>',
+  helmet: '<path d="M2 18h20"/><path d="M4 18v-3a8 8 0 0 1 16 0v3"/><path d="M10 7V4h4v3"/>',
+  gov:    '<path d="M3 21h18"/><path d="M4 10h16"/><path d="M12 3 4 7v3h16V7z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+  inbox:  '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  check:  '<polyline points="20 6 9 17 4 12"/>',
+  x:      '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  clock:  '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  alert:  '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  list:   '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+  plus:   '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  send:   '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  pin:    '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  folder: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  cal:    '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  eye:    '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  money:  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+};
+const ic = (n, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24">${ICON[n]}</svg>`;
+const TL_ICON = { 'Baru':'plus', 'Disemak PJ':'search', 'Lulus Bajet':'money', 'Dalam Kerja':'wrench', 'Selesai':'check', 'Ditolak':'x' };
+
+function badge(text) { return `<span class="pill" style="--c:${STATUS_C[text]||'#667085'}">${text}</span>`; }
+function keuBadge(k) { return `<span class="pill k" style="--c:${KEU_C[k]||'#667085'}">${k}</span>`; }
 function now() {
   return new Date().toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(',','');
 }
-function nextId() {
-  return `TKT-2024-00${tiketCounter++}`;
-}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function showToast(msg, type='ok') {
   const el = document.createElement('div');
-  const clr = type==='ok' ? 'bg-green-700 border-green-500' : 'bg-red-800 border-red-600';
-  el.className = `toast-anim px-4 py-3 rounded-lg border text-sm font-medium shadow-xl ${clr} text-white max-w-xs`;
-  el.textContent = msg;
+  el.className = 'toast';
+  el.style.setProperty('--tc', type==='ok' ? '#067647' : '#b42318');
+  el.innerHTML = ic(type==='ok' ? 'check' : 'alert') + `<span>${esc(msg)}</span>`;
   document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(() => el.remove(), 3400);
 }
 
 function openModal(html) {
   const root = document.getElementById('modal-root');
-  root.innerHTML = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4" style="backdrop-filter:blur(2px)">
-      <div class="modal-enter bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        ${html}
-      </div>
-    </div>`;
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target.id === 'modal-overlay') closeModal();
-  });
+  root.innerHTML = `<div id="modal-overlay" class="ov"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target.id === 'modal-overlay') closeModal(); });
+  document.addEventListener('keydown', escClose);
 }
+function escClose(e) { if (e.key === 'Escape') closeModal(); }
 function closeModal() {
   document.getElementById('modal-root').innerHTML = '';
+  document.removeEventListener('keydown', escClose);
 }
 
 function timelineHTML(tl) {
-  if (!tl || !tl.length) return '<p class="text-slate-500 text-sm">Tiada rekod.</p>';
-  return `<div class="space-y-0">` + tl.map((t,i) => `
-    <div class="relative pl-8 pb-5 timeline-line">
-      <div class="absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center text-xs border-2 border-slate-600 bg-slate-800">${STATUS_ICON[t.status]||'⚪'}</div>
-      <div class="bg-slate-700/50 rounded-lg p-3">
-        <div class="flex flex-wrap items-center gap-2 mb-1">
-          ${badge(t.status)}
-          <span class="text-xs text-slate-400">${t.tarikh}</span>
-        </div>
-        <p class="text-sm text-slate-200">${t.tindakan}</p>
-        <p class="text-xs text-slate-400 mt-1">oleh: ${t.oleh}</p>
+  if (!tl || !tl.length) return '<p class="muted">Tiada rekod.</p>';
+  return `<ol class="tl">` + tl.map(t => `
+    <li>
+      <span class="tl-dot" style="--c:${STATUS_C[t.status]||'#667085'}">${ic(TL_ICON[t.status]||'clock')}</span>
+      <div>
+        <div class="tl-h">${badge(t.status)}<span class="tl-d">${esc(t.tarikh)}</span></div>
+        <p class="tl-t">${esc(t.tindakan)}</p>
+        <p class="tl-o">oleh ${esc(t.oleh)}</p>
       </div>
-    </div>`).join('') + `</div>`;
+    </li>`).join('') + `</ol>`;
 }
 
 function ticketDetailHTML(t, showActions='') {
   return `
-    <div class="p-6">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs text-slate-400 font-mono">${t.id}</span>
-            ${keuBadge(t.keutamaan)}
-            ${badge(t.status)}
-          </div>
-          <h2 class="text-lg font-bold text-slate-100">${t.tajuk}</h2>
-        </div>
-        <button id="close-modal-btn" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+    <div class="m-head">
+      <div>
+        <div class="m-tags"><span class="mono">${t.id}</span>${keuBadge(t.keutamaan)}${badge(t.status)}</div>
+        <h2 class="m-title">${esc(t.tajuk)}</h2>
       </div>
-      <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
-        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Sekolah</span>${t.sekolah}</div>
-        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Zon</span>${t.zon}</div>
-        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Kategori</span>${t.kategori}</div>
-        <div class="bg-slate-700/40 rounded-lg p-3"><span class="text-slate-400 block text-xs mb-0.5">Tarikh Aduan</span>${t.tarikh}</div>
+      <button id="close-modal-btn" class="x" aria-label="Tutup">${ic('x')}</button>
+    </div>
+    <div class="m-body">
+      <div class="facts">
+        <div class="fact"><small>Sekolah</small><div>${esc(t.sekolah)}</div></div>
+        <div class="fact"><small>Zon</small><div>${esc(t.zon)}</div></div>
+        <div class="fact"><small>Kategori</small><div>${esc(t.kategori)}</div></div>
+        <div class="fact"><small>Tarikh Aduan</small><div>${esc(t.tarikh)}</div></div>
       </div>
-      <div class="bg-slate-700/40 rounded-lg p-3 mb-4">
-        <span class="text-slate-400 text-xs block mb-1">Butiran Kerosakan</span>
-        <p class="text-sm text-slate-200">${t.butiran}</p>
-      </div>
-      ${t.notaPJ ? `<div class="bg-orange-900/30 border border-orange-700/40 rounded-lg p-3 mb-4">
-        <span class="text-orange-400 text-xs font-semibold block mb-1">📋 Nota PJ</span>
-        <p class="text-sm text-slate-200">${t.notaPJ}</p>
-      </div>` : ''}
+      <div class="box"><h4>Butiran Kerosakan</h4><p>${esc(t.butiran)}</p></div>
+      ${t.notaPJ && !showActions ? `<div class="box pj"><h4>Nota Siasatan Penolong Jurutera</h4><p>${esc(t.notaPJ)}</p></div>` : ''}
       ${showActions}
-      <div class="mt-5">
-        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">📅 Garis Masa</h3>
+      <div>
+        <h3 class="sec-t" style="margin-bottom:12px">Garis Masa Tiket</h3>
         ${timelineHTML(t.timeline)}
       </div>
     </div>`;
+}
+
+function emptyState(title, sub='') {
+  return `<div class="empty">${ic('inbox')}<b>${title}</b>${sub?`<span>${sub}</span>`:''}</div>`;
+}
+
+function kpi(label, val, sub, color, icon) {
+  return `<div class="kpi"><div class="kpi-ic" style="--k:${color}">${ic(icon)}</div>
+    <div style="min-width:0"><div class="kpi-num">${val}</div><div class="kpi-lbl">${label}</div>${sub?`<div class="kpi-sub">${sub}</div>`:''}</div></div>`;
+}
+
+function flowHTML() {
+  const steps = [
+    ['sekolah','Sekolah','Hantar aduan kerosakan'],
+    ['pj','Penolong Jurutera','Lawat tapak & sahkan'],
+    ['ppd','Pengurusan PPD','Luluskan bajet'],
+    ['done','Selesai','Kerja pembaikan siap'],
+  ];
+  return `<div class="flow" aria-label="Aliran kerja aduan">${steps.map(([id,t,s],i)=>`
+    <div class="flow-step ${state.role===id?'me':''}"><span class="flow-n">${i+1}</span><div style="min-width:0"><div class="flow-t">${t}</div><div class="flow-s">${s}</div></div></div>`).join('')}</div>`;
 }
 
 // ══════════════════════════════════════════════
@@ -228,24 +433,19 @@ function ticketDetailHTML(t, showActions='') {
 // ══════════════════════════════════════════════
 function renderHeader() {
   const roles = [
-    { id:'sekolah', label:'🏫 Sekolah' },
-    { id:'pj',      label:'👷 Pej. Jurutera' },
-    { id:'ppd',     label:'🏛 Admin PPD' },
+    { id:'sekolah', icon:'school', label:'Sekolah' },
+    { id:'pj',      icon:'helmet', label:'Penolong Jurutera', short:'PJ' },
+    { id:'ppd',     icon:'gov',    label:'Pengurusan PPD',   short:'PPD' },
   ];
   return `
-    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-30">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <a href="index.html" class="text-xs text-slate-400 hover:text-blue-400 transition-colors">← Portal PPD Dalat</a>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span class="text-lg">🔧</span>
-            <span class="font-bold text-white text-base">e-Fasiliti PPD Dalat</span>
-          </div>
+    <header class="ef-head">
+      <div class="wrap">
+        <div class="ef-brand">
+          <div class="ef-logo">${ic('wrench')}</div>
+          <div><div class="ef-title">e-Fasiliti</div><div class="ef-sub">Sistem Aduan &amp; Pemantauan Fasiliti Sekolah</div></div>
         </div>
-        <div class="flex gap-1 bg-slate-900 p-1 rounded-xl">
-          ${roles.map(r => `
-            <button data-role="${r.id}" class="role-btn px-3 py-1.5 rounded-lg text-sm font-medium ${state.role===r.id?'role-active':'text-slate-400 hover:text-white hover:bg-slate-700'}">${r.label}</button>
-          `).join('')}
+        <div class="seg" role="tablist" aria-label="Pilih paparan">
+          ${roles.map(r => `<button data-role="${r.id}" role="tab" aria-selected="${state.role===r.id}" class="${state.role===r.id?'on':''}">${ic(r.icon)}${r.short?`<span class="seg-lbl-long">${r.label}</span><span class="seg-lbl-short">${r.short}</span>`:r.label}</button>`).join('')}
         </div>
       </div>
     </header>`;
@@ -255,116 +455,98 @@ function renderHeader() {
 // RENDER: SEKOLAH VIEW
 // ══════════════════════════════════════════════
 function renderSekolah() {
-  const tabs = [
-    { id:'baru', label:'📋 Aduan Baharu' },
-    { id:'saya', label:'📄 Aduan Saya' },
-  ];
+  const mine = TIKET_DATA.filter(t => t.sekolah === state.sekolahFilter);
   return `
-    <div class="max-w-4xl mx-auto px-4 py-6">
-      <div class="flex gap-1 border-b border-slate-700 mb-6">
-        ${tabs.map(t => `
-          <button data-subtab="${t.id}" class="px-4 py-2 text-sm font-medium transition-colors ${state.subTab===t.id?'tab-active':'tab-inactive hover:text-slate-300'}">${t.label}</button>
-        `).join('')}
+    <main class="wrap page">
+      <div class="pg-head"><div>
+        <h1 class="pg-title">Aduan Kerosakan Sekolah</h1>
+        <p class="pg-desc">Laporkan kerosakan infrastruktur dan jejak status tindakan dari semakan Penolong Jurutera hingga pembaikan selesai.</p>
+      </div></div>
+      ${flowHTML()}
+      <div class="panel">
+        <div class="tabs" role="tablist" style="padding:0 10px">
+          <button data-subtab="baru" class="${state.subTab==='baru'?'on':''}">${ic('plus')}Aduan Baharu</button>
+          <button data-subtab="saya" class="${state.subTab==='saya'?'on':''}">${ic('list')}Rekod Aduan <span class="count">${mine.length}</span></button>
+        </div>
+        ${state.subTab==='baru' ? renderFormAduan() : renderAduanSaya(mine)}
       </div>
-      ${state.subTab==='baru' ? renderFormAduan() : renderAduanSaya()}
-    </div>`;
+    </main>`;
 }
 
 function renderFormAduan() {
   return `
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6">
-      <h2 class="text-base font-bold mb-5 text-slate-100">Borang Aduan Kerosakan</h2>
-      <div class="space-y-4">
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Nama Sekolah *</label>
-            <select id="f-sekolah" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-              <option value="">-- Pilih Sekolah --</option>
-              ${['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'].map(s=>`<option>${s}</option>`).join('')}
+    <div class="panel-b">
+      <div class="form">
+        <div class="frow">
+          <div class="fg">
+            <label class="fl" for="f-sekolah">Nama Sekolah<span class="req">*</span></label>
+            <select id="f-sekolah" class="fi">
+              <option value="">Pilih sekolah</option>
+              ${SEKOLAH.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
             </select>
           </div>
-          <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Tajuk Aduan *</label>
-            <input id="f-tajuk" type="text" placeholder="Contoh: Paip bocor di makmal sains" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+          <div class="fg">
+            <label class="fl" for="f-tajuk">Tajuk Aduan<span class="req">*</span></label>
+            <input id="f-tajuk" type="text" class="fi" placeholder="Contoh: Paip bocor di makmal sains" maxlength="100">
           </div>
-          <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Kategori Kerosakan *</label>
-            <select id="f-kategori" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-              <option value="">-- Pilih Kategori --</option>
+          <div class="fg">
+            <label class="fl" for="f-kategori">Kategori Kerosakan<span class="req">*</span></label>
+            <select id="f-kategori" class="fi">
+              <option value="">Pilih kategori</option>
               ${['Elektrik','Paip & Sanitasi','Bumbung','Struktur & Pagar','Cat & Kemasan','Tandas','Lain-lain'].map(k=>`<option>${k}</option>`).join('')}
             </select>
           </div>
-          <div>
-            <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Tahap Keutamaan *</label>
-            <select id="f-keutamaan" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-              <option value="">-- Pilih Keutamaan --</option>
+          <div class="fg">
+            <label class="fl" for="f-keutamaan">Tahap Keutamaan<span class="req">*</span></label>
+            <select id="f-keutamaan" class="fi">
+              <option value="">Pilih keutamaan</option>
               ${['Kritikal','Tinggi','Sederhana','Rendah'].map(k=>`<option>${k}</option>`).join('')}
             </select>
+            <span class="fh">Kritikal: membahayakan keselamatan murid atau menghentikan PdP.</span>
           </div>
         </div>
-        <div>
-          <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Butiran Kerosakan *</label>
-          <textarea id="f-butiran" rows="4" placeholder="Huraikan kerosakan dengan terperinci. Nyatakan lokasi tepat, tempoh berlaku, dan kesan kepada sekolah..." class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
+        <div class="fg">
+          <label class="fl" for="f-butiran">Butiran Kerosakan<span class="req">*</span></label>
+          <textarea id="f-butiran" class="fi" rows="4" placeholder="Nyatakan lokasi tepat (blok, aras, bilik), bila mula berlaku, dan kesan kepada murid atau PdP."></textarea>
         </div>
-        <div>
-          <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">Gambar Kerosakan</label>
-          <div class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer">
-            <div class="text-3xl mb-2">📷</div>
-            <p class="text-sm text-slate-400">Klik atau seret gambar ke sini</p>
-            <p class="text-xs text-slate-500 mt-1">PNG, JPG sehingga 10MB</p>
-          </div>
+        <div class="fg">
+          <span class="fl">Gambar Kerosakan <span class="muted" style="font-weight:500">(pilihan)</span></span>
+          <div class="drop" role="button" tabindex="0">${ic('camera')}<b>Klik atau seret gambar ke sini</b><span class="muted">PNG atau JPG, sehingga 10MB</span></div>
         </div>
-        <div class="flex justify-end pt-2">
-          <button id="btn-hantar" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition-colors">📤 Hantar Laporan</button>
+        <div class="form-foot">
+          <span class="muted">Medan bertanda <span style="color:var(--ppd-danger)">*</span> wajib diisi.</span>
+          <button id="btn-hantar" class="btn btn-pri btn-lg">${ic('send')}Hantar Laporan</button>
         </div>
       </div>
     </div>`;
 }
 
-function renderAduanSaya() {
-  const sekolahOpts = ['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'];
-  const filtered = TIKET_DATA.filter(t => t.sekolah === state.sekolahFilter);
+function renderAduanSaya(filtered) {
   return `
-    <div>
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 class="text-base font-bold text-slate-100">Rekod Aduan Sekolah</h2>
-        <select id="filter-sekolah" class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-          ${sekolahOpts.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
-        </select>
-      </div>
-      ${filtered.length===0 ? emptyState('Tiada aduan untuk sekolah ini') : `
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
-              <tr>
-                <th class="px-4 py-3 text-left">ID Tiket</th>
-                <th class="px-4 py-3 text-left">Tajuk</th>
-                <th class="px-4 py-3 text-left">Kategori</th>
-                <th class="px-4 py-3 text-left">Tarikh</th>
-                <th class="px-4 py-3 text-left">Keutamaan</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-700/50">
-              ${filtered.map(t=>`
-                <tr class="hover:bg-slate-700/30 transition-colors">
-                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
-                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
-                  <td class="px-4 py-3 text-slate-300">${t.kategori}</td>
-                  <td class="px-4 py-3 text-slate-400">${t.tarikh}</td>
-                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
-                  <td class="px-4 py-3">${badge(t.status)}</td>
-                  <td class="px-4 py-3">
-                    <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">📋 Butiran</button>
-                  </td>
-                </tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>`}
-    </div>`;
+    <div class="panel-h" style="border-top:0">
+      <span class="muted">Paparan rekod untuk sekolah:</span>
+      <select id="filter-sekolah" class="fi" style="width:auto;min-width:200px">
+        ${SEKOLAH.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    ${filtered.length===0 ? emptyState('Tiada aduan untuk sekolah ini', 'Aduan yang dihantar akan dipaparkan di sini.') : `
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>ID Tiket</th><th>Tajuk</th><th>Kategori</th><th>Tarikh</th><th>Keutamaan</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${filtered.map(t=>`
+            <tr>
+              <td class="mono">${t.id}</td>
+              <td class="t-strong">${esc(t.tajuk)}</td>
+              <td class="nowrap">${esc(t.kategori)}</td>
+              <td class="nowrap">${t.tarikh}</td>
+              <td>${keuBadge(t.keutamaan)}</td>
+              <td>${badge(t.status)}</td>
+              <td><button data-view-tiket="${t.id}" class="btn btn-gh btn-sm">${ic('eye')}Butiran</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}`;
 }
 
 // ══════════════════════════════════════════════
@@ -375,50 +557,47 @@ function renderPJ() {
   const disemak = TIKET_DATA.filter(t=>t.status==='Disemak PJ').length;
   const selesai = TIKET_DATA.filter(t=>t.status==='Selesai').length;
   const zones = ['Semua','Zon 1','Zon 2','Zon 3'];
-  const filtered = TIKET_DATA.filter(t => state.zonFilter==='Semua' || t.zon===state.zonFilter);
+  const filtered = TIKET_DATA.filter(t => state.zonFilter==='Semua' || t.zon===state.zonFilter)
+    .sort((a,b) => (a.status==='Baru'?0:1) - (b.status==='Baru'?0:1));
 
   return `
-    <div class="max-w-5xl mx-auto px-4 py-6">
-      <div class="flex flex-wrap gap-3 mb-5">
-        <div class="bg-blue-900/40 border border-blue-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
-          <span class="text-2xl font-bold text-blue-400">${baru}</span>
-          <span class="text-sm text-slate-400">Aduan Baru</span>
-        </div>
-        <div class="bg-orange-900/30 border border-orange-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
-          <span class="text-2xl font-bold text-orange-400">${disemak}</span>
-          <span class="text-sm text-slate-400">Disemak PJ</span>
-        </div>
-        <div class="bg-green-900/30 border border-green-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
-          <span class="text-2xl font-bold text-green-400">${selesai}</span>
-          <span class="text-sm text-slate-400">Selesai</span>
-        </div>
+    <main class="wrap page">
+      <div class="pg-head"><div>
+        <h1 class="pg-title">Papan Tugasan Penolong Jurutera</h1>
+        <p class="pg-desc">Aduan berstatus <b>Baru</b> dipaparkan dahulu. Buka aduan, rekod nota siasatan dan anggaran kos, kemudian sahkan atau tolak.</p>
+      </div></div>
+      ${flowHTML()}
+      <div class="kpis k3">
+        ${kpi('Perlu Disemak', baru, 'Status Baru', '#1d5fa0', 'inbox')}
+        ${kpi('Telah Disahkan', disemak, 'Menunggu PPD', '#b54708', 'search')}
+        ${kpi('Selesai', selesai, 'Kerja siap', '#067647', 'check')}
       </div>
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <h2 class="text-base font-bold text-slate-100">Papan Pemuka Tugasan</h2>
-        <div class="flex gap-1 bg-slate-800 border border-slate-700 p-1 rounded-xl">
-          ${zones.map(z=>`<button data-zon="${z}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${state.zonFilter===z?'bg-blue-600 text-white':'text-slate-400 hover:text-white hover:bg-slate-700'}">${z}</button>`).join('')}
+      <section>
+        <div class="pg-head" style="margin-bottom:12px">
+          <h2 class="sec-t">Senarai Aduan</h2>
+          <div class="seg" role="tablist" aria-label="Tapis zon" style="width:auto">
+            ${zones.map(z=>`<button data-zon="${z}" class="${state.zonFilter===z?'on':''}">${z}</button>`).join('')}
+          </div>
         </div>
-      </div>
-      ${filtered.length===0 ? emptyState('Tiada aduan untuk zon ini') : `
-      <div class="grid sm:grid-cols-2 gap-4">
-        ${filtered.map(t=>`
-          <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 hover:border-slate-500 transition-colors">
-            <div class="flex items-start justify-between mb-2">
-              <span class="font-mono text-xs text-slate-500">${t.id}</span>
-              ${keuBadge(t.keutamaan)}
-            </div>
-            <h3 class="font-semibold text-slate-100 mb-2 leading-snug">${t.tajuk}</h3>
-            <div class="space-y-1 mb-3">
-              <p class="text-xs text-slate-400">🏫 ${t.sekolah} · ${t.zon}</p>
-              <p class="text-xs text-slate-400">📂 ${t.kategori} · 📅 ${t.tarikh}</p>
-            </div>
-            <div class="flex items-center justify-between">
-              ${badge(t.status)}
-              <button data-pj-semak="${t.id}" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-xs font-semibold transition-colors">🔍 Semak Aduan</button>
-            </div>
-          </div>`).join('')}
-      </div>`}
-    </div>`;
+        ${filtered.length===0 ? `<div class="panel">${emptyState('Tiada aduan untuk zon ini')}</div>` : `
+        <div class="cards">
+          ${filtered.map(t=>`
+            <article class="tcard" style="--kc:${KEU_C[t.keutamaan]||'var(--ppd-border)'}">
+              <div class="tcard-top"><span class="mono">${t.id}</span>${keuBadge(t.keutamaan)}</div>
+              <h3>${esc(t.tajuk)}</h3>
+              <div class="meta">
+                <span>${ic('pin')}${esc(t.sekolah)} · ${t.zon}</span>
+                <span>${ic('folder')}${esc(t.kategori)}</span>
+                <span>${ic('cal')}${t.tarikh}</span>
+              </div>
+              <div class="tcard-foot">
+                ${badge(t.status)}
+                <button data-pj-semak="${t.id}" class="btn ${t.status==='Baru'?'btn-pri':'btn-gh'}">${ic(t.status==='Baru'?'search':'eye')}${t.status==='Baru'?'Semak Aduan':'Lihat'}</button>
+              </div>
+            </article>`).join('')}
+        </div>`}
+      </section>
+    </main>`;
 }
 
 // ══════════════════════════════════════════════
@@ -428,118 +607,79 @@ function renderPPD() {
   const aktif = TIKET_DATA.filter(t=>!['Selesai','Ditolak'].includes(t.status)).length;
   const tunggu = TIKET_DATA.filter(t=>t.status==='Disemak PJ').length;
   const selesai = TIKET_DATA.filter(t=>t.status==='Selesai').length;
-  const kritikal = TIKET_DATA.filter(t=>t.keutamaan==='Kritikal').length;
+  const kritikal = TIKET_DATA.filter(t=>t.keutamaan==='Kritikal' && !['Selesai','Ditolak'].includes(t.status)).length;
   const arahKelulusan = TIKET_DATA.filter(t=>t.status==='Disemak PJ');
   const statusCounts = {};
   TIKET_DATA.forEach(t=>{ statusCounts[t.status]=(statusCounts[t.status]||0)+1; });
 
   return `
-    <div class="max-w-6xl mx-auto px-4 py-6">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        ${[
-          ['Aduan Aktif', aktif, 'Belum selesai', 'text-blue-400', 'bg-blue-900/30 border-blue-700/40'],
-          ['Tunggu Kelulusan', tunggu, 'Disemak PJ', 'text-orange-400', 'bg-orange-900/30 border-orange-700/40'],
-          ['Selesai', selesai, 'Bulan ini', 'text-green-400', 'bg-green-900/30 border-green-700/40'],
-          ['Kritikal', kritikal, 'Perlu perhatian', 'text-red-400', 'bg-red-900/30 border-red-700/40'],
-        ].map(([lbl,val,sub,tc,bc])=>`
-          <div class="border rounded-2xl px-5 py-4 ${bc}">
-            <p class="text-xs text-slate-400 mb-1">${lbl}</p>
-            <p class="text-3xl font-bold ${tc}">${val}</p>
-            <p class="text-xs text-slate-500 mt-1">${sub}</p>
-          </div>`).join('')}
+    <main class="wrap page">
+      <div class="pg-head"><div>
+        <h1 class="pg-title">Pengurusan Fasiliti Daerah</h1>
+        <p class="pg-desc">Luluskan bajet bagi aduan yang telah disahkan Penolong Jurutera dan tandakan selesai apabila kerja pembaikan siap.</p>
+      </div></div>
+      ${flowHTML()}
+      <div class="kpis">
+        ${kpi('Aduan Aktif', aktif, 'Belum selesai', '#1d5fa0', 'list')}
+        ${kpi('Menunggu Kelulusan', tunggu, 'Disahkan PJ', '#b54708', 'clock')}
+        ${kpi('Selesai', selesai, 'Kerja siap', '#067647', 'check')}
+        ${kpi('Kritikal Aktif', kritikal, 'Perlu perhatian segera', '#b42318', 'alert')}
       </div>
 
-      <div class="flex flex-wrap gap-2 mb-6">
-        ${Object.entries(statusCounts).map(([s,c])=>`
-          <span class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${STATUS_BADGE[s]||'bg-slate-600'}">${STATUS_ICON[s]||'⚪'} ${s} <span class="opacity-75">(${c})</span></span>
-        `).join('')}
-      </div>
-
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden mb-6">
-        <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
-          <h2 class="font-bold text-slate-100">⏳ Senarai Menunggu Kelulusan Bajet</h2>
-          <span class="text-xs text-orange-400 font-semibold">${tunggu} tiket</span>
+      <div class="panel">
+        <div class="panel-h">
+          <h2 class="sec-t">Menunggu Kelulusan Bajet</h2>
+          <span class="pill k" style="--c:#b54708">${tunggu} tiket</span>
         </div>
-        ${arahKelulusan.length===0 ? `<div class="px-5 py-8 text-center text-slate-500 text-sm">Tiada tiket menunggu kelulusan.</div>` : `
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
-              <tr>
-                <th class="px-4 py-3 text-left">ID</th>
-                <th class="px-4 py-3 text-left">Sekolah</th>
-                <th class="px-4 py-3 text-left">Tajuk</th>
-                <th class="px-4 py-3 text-left">Kategori</th>
-                <th class="px-4 py-3 text-left">Keutamaan</th>
-                <th class="px-4 py-3 text-left">Nota PJ</th>
-                <th class="px-4 py-3 text-left">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-700/50">
+        ${arahKelulusan.length===0 ? emptyState('Tiada tiket menunggu kelulusan', 'Semua aduan yang disahkan PJ telah diproses.') : `
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Sekolah</th><th>Tajuk</th><th>Keutamaan</th><th>Nota PJ &amp; Anggaran</th><th>Tindakan</th></tr></thead>
+            <tbody>
               ${arahKelulusan.map(t=>`
-                <tr class="hover:bg-slate-700/30 transition-colors">
-                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
-                  <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${t.sekolah}</td>
-                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
-                  <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${t.kategori}</td>
-                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
-                  <td class="px-4 py-3 text-slate-400 text-xs max-w-xs truncate">${t.notaPJ||'—'}</td>
-                  <td class="px-4 py-3">
-                    <div class="flex gap-2">
-                      <button data-lulus-bajet="${t.id}" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 rounded-lg text-xs font-semibold text-white transition-colors whitespace-nowrap">✅ Lulus Bajet</button>
-                      <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">🔍 Lihat</button>
-                    </div>
-                  </td>
+                <tr>
+                  <td class="mono">${t.id}</td>
+                  <td class="nowrap">${esc(t.sekolah)}</td>
+                  <td class="t-strong">${esc(t.tajuk)}</td>
+                  <td>${keuBadge(t.keutamaan)}</td>
+                  <td style="min-width:180px;max-width:300px;color:var(--ppd-t2);font-size:12.5px">${esc(t.notaPJ||'—')}</td>
+                  <td><div class="acts">
+                    <button data-lulus-bajet="${t.id}" class="btn btn-pur btn-sm">${ic('check')}Luluskan Bajet</button>
+                    <button data-view-tiket="${t.id}" class="btn btn-gh btn-sm">${ic('eye')}Lihat</button>
+                  </div></td>
                 </tr>`).join('')}
             </tbody>
           </table>
         </div>`}
       </div>
 
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-700">
-          <h2 class="font-bold text-slate-100">📋 Semua Aduan</h2>
+      <div class="panel">
+        <div class="panel-h">
+          <h2 class="sec-t">Semua Aduan</h2>
+          <div class="legend">${Object.entries(statusCounts).map(([s,c])=>`<span class="pill" style="--c:${STATUS_C[s]||'#667085'}">${s} · ${c}</span>`).join('')}</div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-700/50 text-xs text-slate-400 uppercase tracking-wider">
-              <tr>
-                <th class="px-4 py-3 text-left">ID</th>
-                <th class="px-4 py-3 text-left">Sekolah</th>
-                <th class="px-4 py-3 text-left">Tajuk</th>
-                <th class="px-4 py-3 text-left">Tarikh</th>
-                <th class="px-4 py-3 text-left">Keutamaan</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-700/50">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Sekolah</th><th>Tajuk</th><th>Tarikh</th><th>Keutamaan</th><th>Status</th><th>Tindakan</th></tr></thead>
+            <tbody>
               ${TIKET_DATA.map(t=>`
-                <tr class="hover:bg-slate-700/30 transition-colors cursor-pointer">
-                  <td class="px-4 py-3 font-mono text-xs text-slate-300">${t.id}</td>
-                  <td class="px-4 py-3 text-slate-300 whitespace-nowrap">${t.sekolah}</td>
-                  <td class="px-4 py-3 font-medium max-w-xs">${t.tajuk}</td>
-                  <td class="px-4 py-3 text-slate-400">${t.tarikh}</td>
-                  <td class="px-4 py-3">${keuBadge(t.keutamaan)}</td>
-                  <td class="px-4 py-3">${badge(t.status)}</td>
-                  <td class="px-4 py-3">
-                    <div class="flex gap-2">
-                      <button data-view-tiket="${t.id}" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-medium transition-colors">🔍 Lihat</button>
-                      ${t.status==='Lulus Bajet'?`<button data-selesai="${t.id}" class="px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded-lg text-xs font-semibold text-white transition-colors whitespace-nowrap">✅ Tandakan Selesai</button>`:''}
-                    </div>
-                  </td>
+                <tr>
+                  <td class="mono">${t.id}</td>
+                  <td class="nowrap">${esc(t.sekolah)}</td>
+                  <td class="t-strong">${esc(t.tajuk)}</td>
+                  <td class="nowrap">${t.tarikh}</td>
+                  <td>${keuBadge(t.keutamaan)}</td>
+                  <td>${badge(t.status)}</td>
+                  <td><div class="acts">
+                    <button data-view-tiket="${t.id}" class="btn btn-gh btn-sm">${ic('eye')}Lihat</button>
+                    ${t.status==='Lulus Bajet'?`<button data-selesai="${t.id}" class="btn btn-ok btn-sm">${ic('check')}Tandakan Selesai</button>`:''}
+                  </div></td>
                 </tr>`).join('')}
             </tbody>
           </table>
         </div>
       </div>
-    </div>`;
-}
-
-function emptyState(msg) {
-  return `<div class="text-center py-16 text-slate-500">
-    <div class="text-5xl mb-3">📭</div>
-    <p class="text-sm">${msg}</p>
-  </div>`;
+    </main>`;
 }
 
 // ══════════════════════════════════════════════
@@ -550,7 +690,6 @@ function render() {
   if (state.role==='sekolah') content = renderSekolah();
   else if (state.role==='pj') content = renderPJ();
   else content = renderPPD();
-
   document.getElementById('app').innerHTML = renderHeader() + content;
   bindEvents();
 }
@@ -559,57 +698,28 @@ function render() {
 // EVENT BINDING
 // ══════════════════════════════════════════════
 function bindEvents() {
-  // Role switch
   document.querySelectorAll('[data-role]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.role = btn.dataset.role;
-      state.subTab = 'baru';
-      render();
-    });
+    btn.addEventListener('click', () => { state.role = btn.dataset.role; state.subTab = 'baru'; render(); window.scrollTo(0,0); });
   });
-
-  // Sub-tabs (sekolah)
   document.querySelectorAll('[data-subtab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.subTab = btn.dataset.subtab;
-      render();
-    });
+    btn.addEventListener('click', () => { state.subTab = btn.dataset.subtab; render(); });
   });
-
-  // Sekolah filter
   const sf = document.getElementById('filter-sekolah');
   if (sf) sf.addEventListener('change', () => { state.sekolahFilter=sf.value; render(); });
-
-  // Zon filter (PJ)
   document.querySelectorAll('[data-zon]').forEach(btn => {
     btn.addEventListener('click', () => { state.zonFilter=btn.dataset.zon; render(); });
   });
-
-  // Form submit (sekolah)
   const btnHantar = document.getElementById('btn-hantar');
   if (btnHantar) btnHantar.addEventListener('click', handleHantarAduan);
-
-  // View tiket detail
   document.querySelectorAll('[data-view-tiket]').forEach(btn => {
     btn.addEventListener('click', () => openTiketDetail(btn.dataset.viewTiket));
   });
-
-  // PJ semak
   document.querySelectorAll('[data-pj-semak]').forEach(btn => {
     btn.addEventListener('click', () => openPJSemak(btn.dataset.pjSemak));
   });
-
-  // Lulus bajet (PPD)
   document.querySelectorAll('[data-lulus-bajet]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const t = TIKET_DATA.find(x=>x.id===btn.dataset.lulusBasjet||x.id===btn.dataset.lulusBasjet);
-      // handle attribute name correctly
-      const id = btn.getAttribute('data-lulus-bajet');
-      lulusBasjet(id);
-    });
+    btn.addEventListener('click', () => lulusBajet(btn.getAttribute('data-lulus-bajet')));
   });
-
-  // Tandakan selesai (PPD)
   document.querySelectorAll('[data-selesai]').forEach(btn => {
     btn.addEventListener('click', () => tandaSelesai(btn.dataset.selesai));
   });
@@ -619,16 +729,11 @@ function bindEvents() {
 // ACTIONS
 // ══════════════════════════════════════════════
 function handleHantarAduan() {
-  const sekolah = document.getElementById('f-sekolah').value;
-  const tajuk = document.getElementById('f-tajuk').value.trim();
-  const kategori = document.getElementById('f-kategori').value;
-  const keutamaan = document.getElementById('f-keutamaan').value;
-  const butiran = document.getElementById('f-butiran').value.trim();
-
-  if (!sekolah||!tajuk||!kategori||!keutamaan||!butiran) {
-    showToast('Sila lengkapkan semua medan bertanda *', 'err');
-    return;
-  }
+  const fields = ['f-sekolah','f-tajuk','f-kategori','f-keutamaan','f-butiran'].map(id => document.getElementById(id));
+  fields.forEach(f => f.classList.toggle('err', !f.value.trim()));
+  const missing = fields.find(f => !f.value.trim());
+  if (missing) { showToast('Sila lengkapkan semua medan bertanda *', 'err'); missing.focus(); return; }
+  const [sekolah, tajuk, kategori, keutamaan, butiran] = fields.map(f => f.value.trim());
   const zon = sekolah==='SMK Dalat'?'Zon 1':sekolah==='SMK Batang Igan'?'Zon 3':'Zon 2';
   const tarikh = new Date().toISOString().slice(0,10);
   const id = `TKT-2024-00${tiketCounter++}`;
@@ -637,7 +742,7 @@ function handleHantarAduan() {
     status:'Baru', keutamaan, gambar:null, notaPJ:null, notaPPD:null,
     timeline:[{ tarikh:now(), tindakan:'Aduan dihantar oleh sekolah', oleh:sekolah, status:'Baru' }]
   });
-  showToast(`✅ Aduan ${id} berjaya dihantar!`);
+  showToast(`Aduan ${id} berjaya dihantar.`);
   state.sekolahFilter = sekolah;
   state.subTab = 'saya';
   render();
@@ -653,38 +758,35 @@ function openTiketDetail(id) {
 function openPJSemak(id) {
   const t = TIKET_DATA.find(x=>x.id===id);
   if (!t) return;
-
   let actions = '';
   if (t.status==='Baru') {
     actions = `
-      <div class="bg-slate-700/40 rounded-xl p-4 mb-4">
-        <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-2">📋 Nota Siasatan Teknikal & Anggaran Kos</label>
-        <textarea id="nota-pj-input" rows="3" placeholder="Contoh: Paip PVC 4 inci perlu diganti. Anggaran kos RM 850. Kerja boleh siap dalam 2 hari." class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 resize-none">${t.notaPJ||''}</textarea>
-        <div class="flex gap-3 mt-3">
-          <button id="btn-sah" class="flex-1 py-2.5 bg-green-700 hover:bg-green-600 text-white font-semibold rounded-xl text-sm transition-colors">✅ Sah &amp; Sokong Pembaikan</button>
-          <button id="btn-tolak" class="flex-1 py-2.5 bg-red-700 hover:bg-red-600 text-white font-semibold rounded-xl text-sm transition-colors">❌ Tolak Aduan</button>
+      <div class="act-box">
+        <label class="fl" for="nota-pj-input">Nota Siasatan Teknikal &amp; Anggaran Kos<span class="req">*</span></label>
+        <textarea id="nota-pj-input" class="fi" rows="3" placeholder="Contoh: Paip PVC 4 inci perlu diganti. Anggaran kos RM 850. Kerja boleh siap dalam 2 hari.">${esc(t.notaPJ||'')}</textarea>
+        <span class="fh">Wajib untuk pengesahan. Untuk penolakan, nyatakan sebab di sini.</span>
+        <div class="act-row">
+          <button id="btn-sah" class="btn btn-ok">${ic('check')}Sah &amp; Sokong Pembaikan</button>
+          <button id="btn-tolak" class="btn btn-no">${ic('x')}Tolak Aduan</button>
         </div>
       </div>`;
   } else if (t.notaPJ) {
-    actions = `<div class="bg-orange-900/30 border border-orange-700/40 rounded-xl p-4 mb-4">
-      <p class="text-xs text-orange-400 font-semibold mb-1">📋 Nota PJ (Selesai)</p>
-      <p class="text-sm text-slate-200">${t.notaPJ}</p>
-    </div>`;
+    actions = `<div class="box pj"><h4>Nota Siasatan Penolong Jurutera</h4><p>${esc(t.notaPJ)}</p></div>`;
   }
-
   openModal(ticketDetailHTML(t, actions));
   document.getElementById('close-modal-btn').addEventListener('click', closeModal);
 
   const btnSah = document.getElementById('btn-sah');
   const btnTolak = document.getElementById('btn-tolak');
   if (btnSah) btnSah.addEventListener('click', () => {
-    const nota = document.getElementById('nota-pj-input').value.trim();
-    if (!nota) { showToast('Sila masukkan nota siasatan teknikal', 'err'); return; }
+    const inp = document.getElementById('nota-pj-input');
+    const nota = inp.value.trim();
+    if (!nota) { inp.classList.add('err'); inp.focus(); showToast('Sila masukkan nota siasatan teknikal', 'err'); return; }
     t.notaPJ = nota;
     t.status = 'Disemak PJ';
     t.timeline.push({ tarikh:now(), tindakan:'Aduan disahkan oleh PJ. '+nota, oleh:'Penolong Jurutera', status:'Disemak PJ' });
     closeModal();
-    showToast(`✅ Aduan ${t.id} disahkan dan dihantar ke PPD.`);
+    showToast(`Aduan ${t.id} disahkan dan dihantar ke PPD.`);
     render();
   });
   if (btnTolak) btnTolak.addEventListener('click', () => {
@@ -697,12 +799,12 @@ function openPJSemak(id) {
   });
 }
 
-function lulusBasjet(id) {
+function lulusBajet(id) {
   const t = TIKET_DATA.find(x=>x.id===id);
   if (!t) return;
   t.status = 'Lulus Bajet';
   t.timeline.push({ tarikh:now(), tindakan:'Bajet diluluskan oleh PPD Dalat.', oleh:'PPD Dalat', status:'Lulus Bajet' });
-  showToast(`✅ Bajet untuk ${t.id} diluluskan.`);
+  showToast(`Bajet untuk ${t.id} diluluskan.`);
   render();
 }
 
@@ -711,7 +813,7 @@ function tandaSelesai(id) {
   if (!t) return;
   t.status = 'Selesai';
   t.timeline.push({ tarikh:now(), tindakan:'Kerja pembaikan disahkan selesai oleh PPD.', oleh:'PPD Dalat', status:'Selesai' });
-  showToast(`✅ Aduan ${t.id} ditandakan Selesai.`);
+  showToast(`Aduan ${t.id} ditandakan Selesai.`);
   render();
 }
 

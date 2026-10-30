@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analitik SPM</title>
+<title>Analitik SPM · PPD Dalat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/ppd-theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -422,9 +422,154 @@ section.active { display: block; overflow: visible; }
 .mark-trend-lbl { font-size:10px; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
 .mark-trend-val { font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; }
 .mark-trend-gred { font-size:11px; margin-top:3px; }
+
+/* ══ Tema rasmi PPD Dalat ══════════════════════════════ */
+:root {
+  --bg: var(--ppd-bg); --surface: var(--ppd-surface); --surface2: var(--ppd-surface-2);
+  --border: var(--ppd-border); --t1: var(--ppd-t1); --t2: var(--ppd-t2); --t3: var(--ppd-t3);
+  --accent: var(--ppd-accent); --green: var(--ppd-ok); --red: var(--ppd-danger); --yellow: var(--ppd-warn);
+  --violet: #6941c6;
+  --btn: #13406e; --btn-h: #0b2a4a;
+  --chart-grid: rgba(16,24,40,.08); --chart-tick: #6b7686; --chart-lbl: #475467;
+  --tint: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  --tint-b: color-mix(in srgb, var(--accent) 22%, var(--border));
+  color-scheme: light;
+  font-family: var(--ppd-font);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --violet: #b69cf5; --btn: #2f6fb3; --btn-h: #3a7cc2;
+    --chart-grid: rgba(255,255,255,.07); --chart-tick: #8492a4; --chart-lbl: #b3bfcd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --violet: #b69cf5; --btn: #2f6fb3; --btn-h: #3a7cc2;
+  --chart-grid: rgba(255,255,255,.07); --chart-tick: #8492a4; --chart-lbl: #b3bfcd;
+  color-scheme: dark;
+}
+body { font-family: var(--ppd-font); }
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid var(--ppd-gold); outline-offset: 2px; }
+
+/* Demo bar */
+.demo-bar { background: color-mix(in srgb, var(--ppd-gold) 12%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--ppd-gold) 35%, var(--border)); color: var(--t1); }
+.demo-btn { min-height: 32px; padding: 4px 14px; background: var(--surface); }
+.demo-btn.guru      { color: var(--ppd-ok);  border-color: var(--ppd-ok); }
+.demo-btn.pentadbir { color: var(--violet);  border-color: var(--violet); }
+.demo-btn.ppd       { color: var(--accent);  border-color: var(--accent); }
+
+/* Topbar */
+.topbar { height: 64px; box-shadow: var(--ppd-shadow); }
+.topbar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar-ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; background: color-mix(in srgb, #b7791f 14%, var(--surface)); color: #b7791f; }
+.topbar-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.topbar-title { display: block; font-size: 17px; font-weight: 800; line-height: 1.2; }
+.topbar-sub { display: block; font-size: 11.5px; color: var(--t3); font-weight: 500; }
+.role-chip { text-transform: none; letter-spacing: .01em; font-size: 12px; padding: 5px 12px; }
+.role-chip.guru      { background: color-mix(in srgb, var(--ppd-ok) 12%, var(--surface)); color: var(--ppd-ok); border: 1px solid color-mix(in srgb, var(--ppd-ok) 35%, var(--border)); }
+.role-chip.pentadbir { background: color-mix(in srgb, var(--violet) 12%, var(--surface)); color: var(--violet); border: 1px solid color-mix(in srgb, var(--violet) 35%, var(--border)); }
+.role-chip.ppd       { background: var(--tint); color: var(--accent); border: 1px solid var(--tint-b); }
+
+/* Navy tab navigation with gold indicator */
+.tab-bar { position: sticky; top: 64px; z-index: 90; background: var(--ppd-navy); border-bottom: 0; scrollbar-width: none; }
+.tab-btn { min-height: 46px; padding: 12px 18px; color: #b9c7d8; border-bottom-width: 3px; }
+.tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,.06); }
+.tab-btn.active { color: #fff; border-bottom-color: var(--ppd-gold); }
+
+/* Section titles with gold bar */
+.main { padding-block: 28px; }
+.sh-title { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+.sh-title::before { content: ''; width: 4px; height: 18px; border-radius: 2px; background: var(--ppd-gold); flex-shrink: 0; }
+.sh-sub { margin-left: 14px; }
+
+/* KPI cards — icon tile + big tabular number */
+.kpi { display: grid; grid-template-columns: 44px minmax(0,1fr); column-gap: 14px; align-content: start; border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); padding: 18px; }
+.kpi::before {
+  content: ''; grid-row: 1 / span 4; width: 44px; height: 44px; border-radius: 10px;
+  background: var(--tint); box-shadow: inset 0 0 0 1px var(--tint-b);
+  -webkit-mask: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fb3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='M7 15l4-4 3 3 5-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center; background-size: 22px;
+}
+.kpi:nth-child(4n+2)::before { background-color: color-mix(in srgb, var(--ppd-gold) 13%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ppd-gold) 30%, var(--border)); }
+.kpi:nth-child(4n+3)::before { background-color: color-mix(in srgb, var(--ppd-ok) 12%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ppd-ok) 28%, var(--border)); }
+.kpi:nth-child(4n+4)::before { background-color: color-mix(in srgb, var(--ppd-danger) 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ppd-danger) 25%, var(--border)); }
+.kpi-lbl { font-size: 11.5px; letter-spacing: .04em; margin-bottom: 6px; }
+.kpi-val { font-size: 28px; }
+
+/* Panels / cards */
+.chart-card, .kelas-card, .rekod-header, .setup-card, .prog-row, .student-row, .ujian-card { border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); }
+.chart-title { font-size: 14px; }
+.tbl-wrap { border-radius: var(--ppd-radius); background: var(--surface); box-shadow: var(--ppd-shadow); }
+.tbl th { color: var(--t2); border-bottom: 1px solid var(--border); }
+.tbl tr:hover td { background: var(--tint); }
+.kelas-card:hover, .ujian-card:hover { border-color: var(--tint-b); box-shadow: var(--ppd-shadow-lg); }
+.ujian-active { border-color: var(--accent) !important; background: var(--tint) !important; }
+.ujian-active-badge, .rekod-kelas-badge, .kelas-av, .pelajar-av-lg { background: var(--tint); color: var(--accent); border-color: var(--tint-b); }
+.rank-num.top { color: var(--ppd-gold); }
+
+/* Chips & status */
+.chip-green  { background: color-mix(in srgb, var(--ppd-ok) 13%, var(--surface));     color: var(--ppd-ok); }
+.chip-yellow { background: color-mix(in srgb, var(--ppd-warn) 13%, var(--surface));   color: var(--ppd-warn); }
+.chip-red    { background: color-mix(in srgb, var(--ppd-danger) 12%, var(--surface)); color: var(--ppd-danger); }
+.chip-blue   { background: var(--tint); color: var(--accent); }
+.chip-purple { background: color-mix(in srgb, var(--violet) 12%, var(--surface)); color: var(--violet); }
+.dot-ok   { background: color-mix(in srgb, var(--ppd-ok) 14%, var(--surface));     color: var(--ppd-ok); }
+.dot-miss { background: color-mix(in srgb, var(--ppd-danger) 12%, var(--surface)); color: var(--ppd-danger); }
+.dot-sep  { background: color-mix(in srgb, var(--ppd-warn) 14%, var(--surface));   color: var(--ppd-warn); }
+.student-row.at-risk .s-av { background: color-mix(in srgb, var(--ppd-danger) 12%, var(--surface)); }
+.success-msg { background: color-mix(in srgb, var(--ppd-ok) 10%, var(--surface)); border-color: color-mix(in srgb, var(--ppd-ok) 35%, var(--border)); }
+
+/* Banners & AI insight boxes */
+.alert-banner { background: color-mix(in srgb, var(--ppd-danger) 8%, var(--surface)); border-color: color-mix(in srgb, var(--ppd-danger) 30%, var(--border)); border-left: 4px solid var(--ppd-danger); color: var(--t1); }
+.info-banner, .jurang-ai, .ai-card, .rekod-ujian-header { background: var(--tint); border-color: var(--tint-b); color: var(--t2); }
+.info-banner { border-left: 4px solid var(--accent); color: var(--t1); }
+.ai-card { border-left: 4px solid var(--ppd-gold); border-radius: var(--ppd-radius); }
+.upload-zone { border-radius: var(--ppd-radius); }
+.upload-zone:hover { background: var(--tint); }
+
+/* Buttons — solid navy, ≥40px targets */
+.btn-primary, .btn-secondary { min-height: 40px; border-radius: 8px; padding: 9px 18px; }
+.btn-primary, .btn-save { background: var(--btn); color: #fff; }
+.btn-primary:hover, .btn-save:hover { opacity: 1; background: var(--btn-h); }
+.btn-secondary:hover { border-color: var(--tint-b); }
+.btn-sm, .btn-save { min-height: 32px; border-radius: 6px; }
+.jurang-tab-btn { min-height: 36px; padding: 6px 16px; }
+.jurang-tab-btn.active { background: var(--btn); border-color: var(--btn); }
+.progress-fill { background: var(--btn); }
+.sel, .form-input, .mark-input { min-height: 40px; }
+.mark-input { min-height: 36px; }
+.sel:focus, .form-input:focus, .mark-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint-b); }
+.toast { background: #067647; border-radius: var(--ppd-radius); }
+.breadcrumb-back { min-height: 32px; }
+
+/* Modals */
+.modal { border-radius: var(--ppd-radius); border-top: 4px solid var(--ppd-gold); box-shadow: 0 24px 64px rgba(7,28,51,.35); }
+.modal-overlay { background: rgba(7,28,51,.55); }
+
+/* Report list — grouped cards */
+.laporan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.lap-item { cursor: pointer; margin-bottom: 0; transition: border-color .15s, box-shadow .15s; }
+.lap-item:hover { border-color: var(--tint-b); box-shadow: var(--ppd-shadow-lg); }
+.lap-item .prog-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--tint); font-size: 18px; }
+.lap-item .btn-sm { background: var(--btn); color: #fff; border-color: var(--btn); min-height: 34px; }
+
+@media (max-width: 600px) {
+  .topbar { height: 58px; gap: 8px; }
+  .tab-bar { top: 58px; }
+  .topbar-sub, .topbar-user { display: none; }
+  .topbar-ic { width: 34px; height: 34px; }
+  .role-chip { font-size: 11px; padding: 4px 10px; }
+  .kpi { grid-template-columns: 38px minmax(0,1fr); padding: 14px; }
+  .kpi::before { width: 38px; height: 38px; background-size: 18px; }
+  .kpi-val { font-size: 24px; }
+  .sh-sub { margin-left: 0; }
+}
 </style>
 </head>
 <body>
+<div class="ppd-strip"><div class="ppd-strip-l"><a href="ppd-dalat.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a><span class="ppd-strip-sep">|</span><span class="ppd-strip-app">Analitik SPM</span></div><div class="ppd-strip-r"><span class="ppd-flag"></span><span>Portal rasmi KPM</span></div></div>
 
 <!-- Demo role switcher (shown when no role in URL) -->
 <div class="demo-bar" id="demo-bar" hidden>
@@ -437,12 +582,10 @@ section.active { display: block; overflow: visible; }
 </div>
 
 <header class="topbar">
-  <a href="ppd-dalat.html" class="back-btn">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Portal PPD Dalat
-  </a>
-  <div class="topbar-sep"></div>
-  <span class="topbar-title">Analitik SPM</span>
+  <div class="topbar-brand">
+    <span class="topbar-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span>
+    <span><span class="topbar-title">Analitik SPM</span><span class="topbar-sub">Sijil Pelajaran Malaysia · Daerah Dalat</span></span>
+  </div>
   <span class="role-chip" id="role-chip">—</span>
   <span class="topbar-user" id="topbar-user">Daerah Dalat, Sarawak</span>
 </header>
@@ -637,7 +780,7 @@ section.active { display: block; overflow: visible; }
       onclick="tambahRowGPSSejarah()">+ Tambah Tahun</button>
 
     <div class="modal-actions" style="margin-top:18px">
-      <button onclick="simpanGPSSejarah()" style="background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer">Simpan</button>
+      <button onclick="simpanGPSSejarah()" style="background:var(--btn);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer">Simpan</button>
       <button onclick="tutupModalGPSSejarah()">Batal</button>
     </div>
   </div>
@@ -2042,8 +2185,8 @@ function initAnalisisChart() {
         responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false} },
         scales:{
-          y:{ min:0, max:100, grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b'} },
-          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+          y:{ min:0, max:100, grid:{color:CHART_GRID}, ticks:{color:CHART_TICK} },
+          x:{ grid:{display:false}, ticks:{color:CHART_TICK} }
         }
       }
     });
@@ -2079,8 +2222,8 @@ function initAnalisisChart() {
           tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} murid (${GRED_SPM[ctx.dataIndex].kategori})` } }
         },
         scales:{
-          y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b', stepSize:1} },
-          x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{weight:'700'}} }
+          y:{ grid:{color:CHART_GRID}, ticks:{color:CHART_TICK, stepSize:1} },
+          x:{ grid:{display:false}, ticks:{color:CHART_TICK,font:{weight:'700'}} }
         }
       }
     });
@@ -2141,8 +2284,8 @@ function bukaPelajarModal(pelajarId) {
         responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false} },
         scales:{
-          y:{ min:0, max:100, grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'#64748b'} },
-          x:{ grid:{display:false}, ticks:{color:'#64748b'} }
+          y:{ min:0, max:100, grid:{color:CHART_GRID}, ticks:{color:CHART_TICK} },
+          x:{ grid:{display:false}, ticks:{color:CHART_TICK} }
         }
       }
     });
@@ -2242,7 +2385,7 @@ function bukaModalSkPelajar(id) {
       }]},
       options:{ responsive:true, maintainAspectRatio:false,
         plugins:{ legend:{display:false} },
-        scales:{ y:{min:0,max:100,grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#64748b'}}, x:{grid:{display:false},ticks:{color:'#64748b'}} }
+        scales:{ y:{min:0,max:100,grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, x:{grid:{display:false},ticks:{color:CHART_TICK}} }
       }
     });
   }, 50);
@@ -2871,7 +3014,7 @@ function buildPentadbir() {
           <div class="sh-title">Rekod GPS & Penetapan Sasaran 2025</div>
           <div class="sh-sub">GPS sebenar tahun lepas · Sasaran dicadangkan berdasarkan trend</div>
         </div>
-        <button onclick="bukaModalGPSSejarah()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✏️ Isi / Kemaskini GPS Sejarah</button>
+        <button onclick="bukaModalGPSSejarah()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--btn);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✏️ Isi / Kemaskini GPS Sejarah</button>
       </div>
 
       <!-- Jadual GPS Sejarah -->
@@ -3058,14 +3201,14 @@ function buildPentadbir() {
     <!-- Tab: Laporan -->
     <section id="sk-laporan">
       <div class="sh"><div><div class="sh-title">Jana Laporan</div><div class="sh-sub">Eksport data sekolah dalam pelbagai format</div></div></div>
-      <div style="display:grid; gap:12px; max-width:560px">
+      <div class="laporan-grid">
         ${[
           ['📊','Laporan GPS Sekolah 2024','Ringkasan pencapaian GPS dan trend tahunan','lap-gps-sk'],
           ['📋','Laporan Panitia Mata Pelajaran','GPMP semua panitia dengan trend dan status','lap-panitia-sk'],
           ['⚠️','Laporan Pelajar Berisiko','Senarai pelajar memerlukan intervensi','lap-berisiko-sk'],
           ['📤','Laporan Pengisian Data','Status pengisian guru panitia','lap-pengisian-sk'],
         ].map(([ic,title,sub,jenis])=>`
-          <div class="prog-row" style="cursor:pointer" onclick="janaLaporan('${jenis}')">
+          <div class="prog-row lap-item" tabindex="0" role="button" onclick="janaLaporan('${jenis}')" onkeydown="if(event.key==='Enter')janaLaporan('${jenis}')">
             <div class="prog-icon">${ic}</div>
             <div class="prog-info"><div class="prog-name">${title}</div><div class="prog-sub">${sub}</div></div>
             <button class="btn-sm" onclick="event.stopPropagation();janaLaporan('${jenis}')">Jana PDF</button>
@@ -3310,10 +3453,10 @@ function renderJurang() {
         },
         options: {
           responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+          plugins: { legend: { labels:{ color:CHART_LBL, font: { size: 11 } } } },
           scales: {
-            x: { min: 3.5, max: 7.5, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8', font: { size: 11 } } },
-            y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12, weight: '600' } } }
+            x: { min: 3.5, max: 7.5, grid:{color:CHART_GRID}, ticks:{ color:CHART_TICK, font: { size: 11 } } },
+            y: { grid: { display: false }, ticks:{ color:CHART_LBL, font: { size: 12, weight: '600' } } }
           }
         }
       });
@@ -3534,7 +3677,7 @@ function filterLMSTable() {
     const kelasBelum = murid.filter(m => getStatus(m) === 'belum').length;
     html += `
       <div style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:6px;cursor:pointer"
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer"
           onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">
           <span style="font-size:12px;font-weight:800;color:var(--t1)">📚 ${kelas}</span>
           <span style="font-size:10px;color:var(--t3)">${murid.length} murid</span>
@@ -3574,7 +3717,7 @@ function renderSKTrend() {
         { label:'2023', data:[6.14,5.93,5.71,5.44], borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
       ]
     },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'#94a3b8', font:{size:12} } } }, scales:{ y:{ min:4.5, max:7, grid:{color:'rgba(255,255,255,.06)'}, ticks:{font:{size:11}} }, x:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{font:{size:12}} } } }
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:CHART_LBL, font:{size:12} } } }, scales:{ y:{ min:4.5, max:7, grid:{color:CHART_GRID}, ticks:{font:{size:11}} }, x:{ grid:{color:CHART_GRID}, ticks:{font:{size:12}} } } }
   });
 }
 
@@ -3753,8 +3896,8 @@ function bukaAnalisisSk(id) {
             tooltip: { callbacks: { label: ctx => ` GPS: ${ctx.raw.toFixed(2)}` } }
           },
           scales: {
-            y: { min: arMin, max: arMax, reverse: false, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => v.toFixed(1) } },
-            x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 12, weight: '600' } } }
+            y: { min: arMin, max: arMax, reverse: false, grid:{color:CHART_GRID}, ticks:{ color:CHART_TICK, font: { size: 10 }, callback: v => v.toFixed(1) } },
+            x: { grid: { display: false }, ticks:{ color:CHART_LBL, font: { size: 12, weight: '600' } } }
           }
         }
       });
@@ -3764,13 +3907,13 @@ function bukaAnalisisSk(id) {
     const tCtx = document.getElementById('modal-sk-trend-chart');
     if (tCtx) { const ex = Chart.getChart(tCtx); if(ex) ex.destroy(); }
     if (tCtx && s.gpsSejarah.length >= 2) {
-      new Chart(tCtx, { type:'line', data:{ labels:s.gpsSejarah.map(r=>r.t), datasets:[{ data:s.gpsSejarah.map(r=>r.g), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#3b82f6' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:Math.min(...s.gpsSejarah.map(r=>r.g))-0.3, grid:{color:'rgba(255,255,255,.06)'}, ticks:{font:{size:10}}}, x:{grid:{display:false}, ticks:{font:{size:11}}} } } });
+      new Chart(tCtx, { type:'line', data:{ labels:s.gpsSejarah.map(r=>r.t), datasets:[{ data:s.gpsSejarah.map(r=>r.g), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#3b82f6' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:Math.min(...s.gpsSejarah.map(r=>r.g))-0.3, grid:{color:CHART_GRID}, ticks:{font:{size:10}}}, x:{grid:{display:false}, ticks:{font:{size:11}}} } } });
     }
     // Lokasi donut
     const lCtx = document.getElementById('modal-sk-lokasi-chart');
     if (lCtx) { const ex = Chart.getChart(lCtx); if(ex) ex.destroy(); }
     if (lCtx) {
-      new Chart(lCtx, { type:'doughnut', data:{ labels:['Bandar','Luar Bandar','Pedalaman'], datasets:[{ data:[s.lokasi.Bandar, s.lokasi.LuarBandar, s.lokasi.Pedalaman], backgroundColor:['rgba(59,130,246,.8)','rgba(234,179,8,.8)','rgba(239,68,68,.8)'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, boxWidth:12 } } } } });
+      new Chart(lCtx, { type:'doughnut', data:{ labels:['Bandar','Luar Bandar','Pedalaman'], datasets:[{ data:[s.lokasi.Bandar, s.lokasi.LuarBandar, s.lokasi.Pedalaman], backgroundColor:['rgba(59,130,246,.8)','rgba(234,179,8,.8)','rgba(239,68,68,.8)'], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:CHART_LBL, font:{size:11}, boxWidth:12 } } } } });
     }
     // Jantina bar chart
     const jCtx = document.getElementById('modal-sk-jantina-chart');
@@ -3786,7 +3929,7 @@ function bukaAnalisisSk(id) {
         data:{ labels:['Perempuan','Lelaki'], datasets:[{ data:janGPS, backgroundColor:['rgba(168,85,247,.75)','rgba(59,130,246,.75)'], borderRadius:6, borderSkipped:false }] },
         options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
           plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` GPS anggaran: ${ctx.raw}` } } },
-          scales:{ x:{ min:Math.min(...janGPS)-0.3, max:Math.max(...janGPS)+0.3, grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'#94a3b8',font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:'#cbd5e1',font:{size:12,weight:'600'}} } }
+          scales:{ x:{ min:Math.min(...janGPS)-0.3, max:Math.max(...janGPS)+0.3, grid:{color:CHART_GRID}, ticks:{color:CHART_TICK,font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:CHART_LBL,font:{size:12,weight:'600'}} } }
         }
       });
     }
@@ -3805,7 +3948,7 @@ function bukaAnalisisSk(id) {
         data: { labels:['B40','M40','T20'], datasets:[{ data: sesGPS, backgroundColor:['rgba(239,68,68,.75)','rgba(234,179,8,.75)','rgba(34,197,94,.75)'], borderRadius:6, borderSkipped:false }] },
         options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
           plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` GPS anggaran: ${ctx.raw}` } } },
-          scales:{ x:{ min: Math.min(...sesGPS)-0.5, max: Math.max(...sesGPS)+0.5, grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'#94a3b8',font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:'#cbd5e1',font:{size:12,weight:'600'}} } }
+          scales:{ x:{ min: Math.min(...sesGPS)-0.5, max: Math.max(...sesGPS)+0.5, grid:{color:CHART_GRID}, ticks:{color:CHART_TICK,font:{size:10}} }, y:{ grid:{display:false}, ticks:{color:CHART_LBL,font:{size:12,weight:'600'}} } }
         }
       });
     }
@@ -4632,8 +4775,8 @@ function initBenchTab() {
       data:{ labels:subjects, datasets },
       options:{
         responsive:true, maintainAspectRatio:false,
-        scales:{ r:{ min:3, max:8, ticks:{ stepSize:1, color:'#64748b', font:{size:10} }, grid:{color:'rgba(255,255,255,.08)'}, pointLabels:{color:'#94a3b8',font:{size:11}} }},
-        plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}} },
+        scales:{ r:{ min:3, max:8, ticks:{ stepSize:1, color:'#64748b', font:{size:10} }, grid:{color:CHART_GRID}, pointLabels:{color:CHART_LBL,font:{size:11}} }},
+        plugins:{ legend:{labels:{color:CHART_LBL,font:{size:11}}} },
       }
     });
   }
@@ -4718,7 +4861,7 @@ function initSubjekTab() {
         backgroundColor:paired.map(p=>p.g>daerahAvg?'rgba(239,68,68,.75)':'rgba(59,130,246,.75)'),
         borderRadius:6 }]},
       options:{ responsive:true,maintainAspectRatio:false,
-        scales:{ y:{min:3,max:8,reverse:false,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,.05)'}}, x:{ticks:{color:'#94a3b8'}} },
+        scales:{ y:{min:3,max:8,reverse:false,ticks:{color:CHART_TICK},grid:{color:CHART_GRID}}, x:{ticks:{color:CHART_TICK}} },
         plugins:{ legend:{display:false}, tooltip:{ callbacks:{ afterLabel:c => c.raw>daerahAvg?'⚠ Melebihi purata daerah':'' } } }
       }
     });
@@ -4878,8 +5021,8 @@ function initRamalTab() {
           { label:'Ramalan 2025', data:predictions.map(p=>p.ramal), backgroundColor:'rgba(251,146,60,.75)', borderRadius:4 },
         ]},
       options:{ responsive:true, maintainAspectRatio:false,
-        scales:{ y:{min:4,max:8,ticks:{color:'#64748b'},grid:{color:'rgba(255,255,255,.05)'}}, x:{ticks:{color:'#94a3b8',font:{size:10}}} },
-        plugins:{ legend:{labels:{color:'#94a3b8'}}, tooltip:{mode:'index',intersect:false} }
+        scales:{ y:{min:4,max:8,ticks:{color:CHART_TICK},grid:{color:CHART_GRID}}, x:{ticks:{color:CHART_TICK,font:{size:10}}} },
+        plugins:{ legend:{labels:{color:CHART_LBL}}, tooltip:{mode:'index',intersect:false} }
       }
     });
   }
@@ -5177,7 +5320,7 @@ function buildPPD() {
 
       <!-- Butang utama -->
       <div style="text-align:center;padding:32px 0">
-        <button onclick="janaLaporan('lap-intensif')" style="background:var(--accent);color:#fff;border:none;padding:16px 40px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 18px rgba(59,130,246,.35);letter-spacing:.02em">
+        <button onclick="janaLaporan('lap-intensif')" style="background:var(--btn);color:#fff;border:none;padding:16px 40px;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:var(--ppd-shadow-lg);letter-spacing:.02em">
           📋 Jana Laporan Intensif Daerah
         </button>
         <div style="font-size:12px;color:var(--t3);margin-top:10px">Merangkumi analisis keseluruhan daerah + analisis lengkap per sekolah dalam satu dokumen</div>
@@ -5195,7 +5338,7 @@ function buildPPD() {
             ['E','🏫','Analisis Per Sekolah','Laporan individu setiap sekolah: GPS, panitia, trend AR1→SPM, SES, jantina, lokasi'],
           ].map(([sek,ic,tajuk,sub])=>`
           <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 10px;background:var(--surface);border-radius:8px">
-            <div style="min-width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${sek}</div>
+            <div style="min-width:24px;height:24px;border-radius:6px;background:var(--btn);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${sek}</div>
             <div style="font-size:16px">${ic}</div>
             <div><div style="font-size:12px;font-weight:700;color:var(--t1)">${tajuk}</div><div style="font-size:10px;color:var(--t3)">${sub}</div></div>
           </div>`).join('')}
@@ -5233,7 +5376,7 @@ function refreshPPDTrend() {
       { label:'2023', data:[6.14,5.93,5.71,5.44], borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
       { label:'2022', data:[6.43,6.21,5.97,5.63], borderColor:'#475569', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
     ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8', font:{size:12}}}}, scales:{ y:{min:4.5,max:7,grid:{color:'rgba(255,255,255,.06)'},ticks:{font:{size:11}}}, x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{font:{size:12}}} } }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:CHART_LBL, font:{size:12}}}}, scales:{ y:{min:4.5,max:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{color:CHART_GRID},ticks:{font:{size:12}}} } }
   });
 }
 
@@ -5244,7 +5387,7 @@ function renderPPDBar(id, labels, data, colors) {
   charts[id] = new Chart(ctx, {
     type:'bar',
     data:{ labels, datasets:[{ data, backgroundColor:colors, borderRadius:6, borderSkipped:false }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:4,max:7,grid:{color:'rgba(255,255,255,.06)'},ticks:{font:{size:11}}}, x:{grid:{display:false},ticks:{font:{size:12}}} } }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:4,max:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{display:false},ticks:{font:{size:12}}} } }
   });
 }
 
@@ -5258,7 +5401,7 @@ function renderGapSummary() {
       labels:['SES (B40–T20)','Jantina (L–P)','Lokasi (L.Bandar–Bandar)','Penginapan (Asrama–Harian)'],
       datasets:[{ data:[1.25,0.46,0.66, Math.abs(JURANG_SK.penginapan[0].gps - JURANG_SK.penginapan[1].gps).toFixed(2)], backgroundColor:['rgba(239,68,68,.8)','rgba(234,179,8,.8)','rgba(234,179,8,.8)','rgba(139,92,246,.8)'], borderRadius:6, borderSkipped:false }]
     },
-    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{min:0,max:1.5,grid:{color:'rgba(255,255,255,.06)'},ticks:{font:{size:11}}}, y:{grid:{display:false},ticks:{font:{size:11}}} } }
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{min:0,max:1.5,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, y:{grid:{display:false},ticks:{font:{size:11}}} } }
   });
 }
 
@@ -5403,9 +5546,15 @@ function bindTabs() {
 }
 
 // ── Init ──────────────────────────────────────────────────
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = '#334155';
-Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, sans-serif";
+const _css = getComputedStyle(document.documentElement);
+const CHART_GRID = _css.getPropertyValue('--chart-grid').trim() || 'rgba(16,24,40,.08)';
+const CHART_TICK = _css.getPropertyValue('--chart-tick').trim() || '#6b7686';
+const CHART_LBL  = _css.getPropertyValue('--chart-lbl').trim()  || '#475467';
+Chart.defaults.color = CHART_TICK;
+Chart.defaults.borderColor = CHART_GRID;
+Chart.defaults.font.family = "'Public Sans', 'Segoe UI', system-ui, sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.elements.bar.borderRadius = 4;
 Chart.defaults.font.size   = 12;
 
 const urlRole = getRole();
