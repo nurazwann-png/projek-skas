@@ -182,6 +182,10 @@ body {
   box-shadow: var(--shadow-lg);
   border-color: var(--accent);
 }
+#skpm-card:hover {
+  border-color: #00d4c8;
+  box-shadow: 0 8px 32px rgba(0,212,200,.25), var(--shadow-lg);
+}
 .app-card.coming-soon {
   cursor: default;
   opacity: .7;
@@ -469,14 +473,33 @@ body {
   <div class="app-grid">
 
     <!-- SKPM Card -->
-    <div class="app-card" id="skpm-card" style="cursor:pointer">
-      <div class="app-card-bg" style="background:#2563eb"></div>
-      <div class="app-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="app-card" id="skpm-card" style="cursor:pointer;border-color:rgba(0,212,200,.35)">
+      <!-- K@S gradient wash -->
+      <div style="position:absolute;inset:0;border-radius:20px;background:linear-gradient(135deg,rgba(0,212,200,.13) 0%,rgba(245,230,66,.10) 100%);pointer-events:none"></div>
+      <!-- decorative top-right circle -->
+      <div class="app-card-bg" style="background:linear-gradient(135deg,#00d4c8,#f5e642);opacity:.18;width:120px;height:120px"></div>
+      <!-- K@S crystal icon -->
+      <div class="app-icon" style="background:linear-gradient(135deg,#00d4c8 0%,#f5e642 100%);box-shadow:0 4px 16px rgba(0,212,200,.4)">
+        <svg viewBox="0 0 40 44" width="30" height="33" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- faceted gem shape mimicking K@S logo -->
+          <polygon points="20,1 32,10 32,22 20,31 8,22 8,10" fill="#ff6eb4" opacity=".95"/>
+          <polygon points="20,1 32,10 20,14" fill="#ff3a8c" opacity=".9"/>
+          <polygon points="20,1 8,10 20,14" fill="#ff9de2" opacity=".85"/>
+          <polygon points="8,10 20,14 8,22" fill="#a855f7" opacity=".9"/>
+          <polygon points="32,10 20,14 32,22" fill="#fb923c" opacity=".9"/>
+          <polygon points="8,22 20,14 20,31" fill="#34d399" opacity=".9"/>
+          <polygon points="32,22 20,14 20,31" fill="#facc15" opacity=".9"/>
+          <!-- lower gem -->
+          <polygon points="20,30 30,37 20,44 10,37" fill="#60a5fa" opacity=".9"/>
+          <polygon points="20,30 30,37 20,36" fill="#3b82f6" opacity=".85"/>
+          <polygon points="20,30 10,37 20,36" fill="#93c5fd" opacity=".85"/>
+          <polygon points="10,37 20,36 20,44" fill="#06b6d4" opacity=".9"/>
+          <polygon points="30,37 20,36 20,44" fill="#f472b6" opacity=".9"/>
+        </svg>
       </div>
       <div class="app-card-body">
-        <div class="app-name">SKPM</div>
-        <div class="app-full-name">Kualiti@Sekolah</div>
+        <div class="app-name" style="background:linear-gradient(90deg,#00b4b0,#c9a800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">K@S</div>
+        <div class="app-full-name" style="color:#00a89e;font-weight:700">SKPM Kualiti@Sekolah</div>
         <div class="app-desc">Pemantauan pencapaian guru dan sekolah berdasarkan Standard Kualiti Pendidikan Malaysia (SKPM 5.4).</div>
       </div>
       <!-- Role strip — rendered by JS -->
