@@ -517,9 +517,14 @@ img { max-width: 100%; }
           </select>
         </div>
         <div>
-          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh</label>
+          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh Pengumuman</label>
           <input type="date" id="pengumuman-tarikh" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;box-sizing:border-box">
         </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh Akhir Paparan</label>
+        <input type="date" id="pengumuman-tamat" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;box-sizing:border-box">
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">Pengumuman akan disimpan sebagai arkib selepas tarikh ini. Kosongkan jika tiada tarikh akhir.</div>
       </div>
       <div style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Kandungan Pengumuman</label>
@@ -576,9 +581,9 @@ const USER_KEY = 'ppd_dalat_user';
 const PENGUMUMAN_KEY = 'ppd_pengumuman';
 const BULAN_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
 const DEFAULT_PENGUMUMAN = [
-  { id:'p1', hari:'28', bulan:'Okt', tag:'SPM', teks:'Pengisian markah Percubaan SPM 2026 dibuka kepada semua guru mata pelajaran.' },
-  { id:'p2', hari:'20', bulan:'Okt', tag:'SK@S', teks:'Pemantauan SKPM Kualiti@Sekolah Fasa 2 bermula minggu hadapan.' },
-  { id:'p3', hari:'15', bulan:'Okt', tag:'Makluman', teks:'Semua aduan kerosakan fasiliti sekolah kini dibuat melalui e-Fasiliti.' },
+  { id:'p1', hari:'28', bulan:'Okt', tag:'SPM', teks:'Pengisian markah Percubaan SPM 2026 dibuka kepada semua guru mata pelajaran.', tarikhAkhir:'2026-11-30' },
+  { id:'p2', hari:'20', bulan:'Okt', tag:'SK@S', teks:'Pemantauan SKPM Kualiti@Sekolah Fasa 2 bermula minggu hadapan.', tarikhAkhir:'2026-11-15' },
+  { id:'p3', hari:'15', bulan:'Okt', tag:'Makluman', teks:'Semua aduan kerosakan fasiliti sekolah kini dibuat melalui e-Fasiliti.', tarikhAkhir:'' },
 ];
 
 function loadPengumuman() {
@@ -595,19 +600,49 @@ function isPpdAdmin() {
   const u = getUser();
   return Object.values(u.appRoles || {}).flat().some(r => r.role === 'ppd_admin');
 }
+function isAktif(n) {
+  if (!n.tarikhAkhir) return true;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(n.tarikhAkhir) >= today;
+}
+function noticeHtml(n) {
+  return `<div class="notice">
+    <div class="notice-date"><b>${escHtml(n.hari)}</b><span>${escHtml(n.bulan)}</span></div>
+    <div><div class="notice-tag">${escHtml(n.tag)}</div><div class="notice-t">${escHtml(n.teks)}</div></div>
+  </div>`;
+}
 function renderPengumuman() {
   const list = loadPengumuman();
   const el = document.getElementById('notice-list');
   if (!el) return;
-  if (list.length === 0) {
+  const aktif = list.filter(isAktif);
+  const arkib = list.filter(n => !isAktif(n));
+  if (aktif.length === 0 && arkib.length === 0) {
     el.innerHTML = '<div style="padding:20px 16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengumuman</div>';
     return;
   }
-  el.innerHTML = list.map(n => `
-    <div class="notice">
-      <div class="notice-date"><b>${escHtml(n.hari)}</b><span>${escHtml(n.bulan)}</span></div>
-      <div><div class="notice-tag">${escHtml(n.tag)}</div><div class="notice-t">${escHtml(n.teks)}</div></div>
-    </div>`).join('');
+  let html = aktif.length ? aktif.map(noticeHtml).join('') : '<div style="padding:14px 16px;color:var(--t3);font-size:13px">Tiada pengumuman aktif</div>';
+  if (arkib.length) {
+    html += `<div id="notice-arkib-wrap" hidden style="border-top:1px dashed var(--border)">
+      <div style="padding:6px 16px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Arkib (${arkib.length})</div>
+      ${arkib.map(noticeHtml).join('')}
+    </div>
+    <button id="btn-lihat-lebih" onclick="toggleArkib(this)"
+      style="width:100%;padding:10px;background:none;border:none;border-top:1px solid var(--border);font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+      <svg id="arkib-chevron" viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+      Lihat ${arkib.length} pengumuman lalu
+    </button>`;
+  }
+  el.innerHTML = html;
+}
+function toggleArkib(btn) {
+  const wrap = document.getElementById('notice-arkib-wrap');
+  const chevron = document.getElementById('arkib-chevron');
+  const terbuka = !wrap.hidden;
+  wrap.hidden = terbuka;
+  chevron.style.transform = terbuka ? '' : 'rotate(180deg)';
+  btn.querySelector('span') || (btn.childNodes[btn.childNodes.length-1].textContent =
+    terbuka ? ` Lihat ${wrap.querySelectorAll('.notice').length} pengumuman lalu` : ' Sembunyikan');
 }
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -615,6 +650,7 @@ function escHtml(s) {
 function openPengumumanModal() {
   const today = new Date().toISOString().slice(0,10);
   document.getElementById('pengumuman-tarikh').value = today;
+  document.getElementById('pengumuman-tamat').value = '';
   document.getElementById('pengumuman-teks').value = '';
   renderModalNoticeList();
   const modal = document.getElementById('modal-pengumuman');
@@ -629,39 +665,51 @@ function renderModalNoticeList() {
     el.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:8px 0">Tiada pengumuman</div>';
     return;
   }
-  el.innerHTML = list.map(n => `
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+  el.innerHTML = list.map(n => {
+    const aktif = isAktif(n);
+    const tamatLabel = n.tarikhAkhir
+      ? `Tamat: ${new Date(n.tarikhAkhir).toLocaleDateString('ms-MY',{day:'numeric',month:'short',year:'numeric'})}`
+      : 'Tiada tarikh akhir';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);opacity:${aktif?'1':'.6'}">
       <div style="flex-shrink:0;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:38px">
         <b style="display:block;font-size:14px;font-weight:800;color:var(--t1);padding-top:2px">${escHtml(n.hari)}</b>
         <span style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;background:var(--navy);color:#fff;padding:1px 0">${escHtml(n.bulan)}</span>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)">${escHtml(n.tag)}</div>
-        <div style="font-size:12px;color:var(--t1);line-height:1.4;margin-top:2px">${escHtml(n.teks)}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)">${escHtml(n.tag)}</span>
+          <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;${aktif?'background:#e7f6ee;color:#067647':'background:#f3f4f6;color:#6b7280'}">${aktif?'Aktif':'Tamat'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--t1);line-height:1.4">${escHtml(n.teks)}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:3px">${tamatLabel}</div>
       </div>
       <button onclick="padamPengumuman('${escHtml(n.id)}')"
         style="flex-shrink:0;background:var(--danger-l,#fdecea);border:none;color:var(--danger,#b42318);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;font-weight:700">
         Padam
       </button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function tambahPengumuman() {
   const teks = document.getElementById('pengumuman-teks').value.trim();
   const tag = document.getElementById('pengumuman-tag').value;
   const tarikhVal = document.getElementById('pengumuman-tarikh').value;
+  const tamatVal = document.getElementById('pengumuman-tamat').value;
   if (!teks) { alert('Sila isi kandungan pengumuman.'); return; }
   const d = tarikhVal ? new Date(tarikhVal) : new Date();
   const newItem = {
     id: 'p' + Date.now(),
     hari: String(d.getDate()),
     bulan: BULAN_MS[d.getMonth()],
-    tag, teks
+    tag, teks,
+    tarikhAkhir: tamatVal || ''
   };
   const list = [newItem, ...loadPengumuman()];
   savePengumuman(list);
   renderPengumuman();
   renderModalNoticeList();
   document.getElementById('pengumuman-teks').value = '';
+  document.getElementById('pengumuman-tamat').value = '';
 }
 function padamPengumuman(id) {
   if (!confirm('Padam pengumuman ini?')) return;
