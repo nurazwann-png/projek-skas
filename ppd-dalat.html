@@ -419,19 +419,15 @@ img { max-width: 100%; }
     <!-- Panel sisi -->
     <aside class="side">
       <div class="panel" id="pengumuman">
-        <div class="panel-h">Pengumuman <small>Terkini</small></div>
-        <div class="notice">
-          <div class="notice-date"><b>28</b><span>Okt</span></div>
-          <div><div class="notice-tag">SPM</div><div class="notice-t">Pengisian markah Percubaan SPM 2026 dibuka kepada semua guru mata pelajaran.</div></div>
+        <div class="panel-h" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Pengumuman <small>Terkini</small></span>
+          <button id="btn-pengumuman-admin" hidden onclick="openPengumumanModal()"
+            style="display:none;align-items:center;gap:5px;background:var(--navy);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.03em">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Pengumuman
+          </button>
         </div>
-        <div class="notice">
-          <div class="notice-date"><b>20</b><span>Okt</span></div>
-          <div><div class="notice-tag">SK@S</div><div class="notice-t">Pemantauan SKPM Kualiti@Sekolah Fasa 2 bermula minggu hadapan.</div></div>
-        </div>
-        <div class="notice">
-          <div class="notice-date"><b>15</b><span>Okt</span></div>
-          <div><div class="notice-tag">Makluman</div><div class="notice-t">Semua aduan kerosakan fasiliti sekolah kini dibuat melalui e-Fasiliti.</div></div>
-        </div>
+        <div id="notice-list"></div>
       </div>
 
       <div class="panel" id="pautan">
@@ -491,6 +487,57 @@ img { max-width: 100%; }
   </div>
 </footer>
 
+<!-- Modal Urus Pengumuman -->
+<div id="modal-pengumuman" class="modal-ov" hidden style="align-items:flex-start;padding-top:60px">
+  <div class="modal-box" style="max-width:520px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengumuman</div>
+        <div style="font-size:12px;color:var(--t3)">Hanya Admin PPD boleh mengurus pengumuman</div>
+      </div>
+      <button onclick="document.getElementById('modal-pengumuman').hidden=true"
+        style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Form tambah -->
+    <div style="background:var(--surface-2,#f8fafc);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px">
+      <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px">Tambah Pengumuman Baharu</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Kategori</label>
+          <select id="pengumuman-tag" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit">
+            <option value="Makluman">Makluman</option>
+            <option value="SPM">SPM</option>
+            <option value="SK@S">SK@S</option>
+            <option value="e-Fasiliti">e-Fasiliti</option>
+            <option value="Peringatan">Peringatan</option>
+            <option value="Am">Am</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh</label>
+          <input type="date" id="pengumuman-tarikh" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Kandungan Pengumuman</label>
+        <textarea id="pengumuman-teks" rows="3" placeholder="Tulis kandungan pengumuman di sini..."
+          style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <button onclick="tambahPengumuman()"
+        style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+        Simpan Pengumuman
+      </button>
+    </div>
+
+    <!-- Senarai pengumuman -->
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Pengumuman Semasa</div>
+    <div id="modal-notice-list"></div>
+  </div>
+</div>
+
 <script>
 const DEMO_USERS = [
   {
@@ -526,6 +573,103 @@ const DEMO_USERS = [
 ];
 
 const USER_KEY = 'ppd_dalat_user';
+const PENGUMUMAN_KEY = 'ppd_pengumuman';
+const BULAN_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+const DEFAULT_PENGUMUMAN = [
+  { id:'p1', hari:'28', bulan:'Okt', tag:'SPM', teks:'Pengisian markah Percubaan SPM 2026 dibuka kepada semua guru mata pelajaran.' },
+  { id:'p2', hari:'20', bulan:'Okt', tag:'SK@S', teks:'Pemantauan SKPM Kualiti@Sekolah Fasa 2 bermula minggu hadapan.' },
+  { id:'p3', hari:'15', bulan:'Okt', tag:'Makluman', teks:'Semua aduan kerosakan fasiliti sekolah kini dibuat melalui e-Fasiliti.' },
+];
+
+function loadPengumuman() {
+  try {
+    const raw = localStorage.getItem(PENGUMUMAN_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return DEFAULT_PENGUMUMAN;
+}
+function savePengumuman(arr) {
+  try { localStorage.setItem(PENGUMUMAN_KEY, JSON.stringify(arr)); } catch {}
+}
+function isPpdAdmin() {
+  const u = getUser();
+  return Object.values(u.appRoles || {}).flat().some(r => r.role === 'ppd_admin');
+}
+function renderPengumuman() {
+  const list = loadPengumuman();
+  const el = document.getElementById('notice-list');
+  if (!el) return;
+  if (list.length === 0) {
+    el.innerHTML = '<div style="padding:20px 16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengumuman</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => `
+    <div class="notice">
+      <div class="notice-date"><b>${escHtml(n.hari)}</b><span>${escHtml(n.bulan)}</span></div>
+      <div><div class="notice-tag">${escHtml(n.tag)}</div><div class="notice-t">${escHtml(n.teks)}</div></div>
+    </div>`).join('');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function openPengumumanModal() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('pengumuman-tarikh').value = today;
+  document.getElementById('pengumuman-teks').value = '';
+  renderModalNoticeList();
+  const modal = document.getElementById('modal-pengumuman');
+  modal.hidden = false;
+  modal.style.display = 'flex';
+}
+function renderModalNoticeList() {
+  const list = loadPengumuman();
+  const el = document.getElementById('modal-notice-list');
+  if (!el) return;
+  if (list.length === 0) {
+    el.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:8px 0">Tiada pengumuman</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="flex-shrink:0;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:38px">
+        <b style="display:block;font-size:14px;font-weight:800;color:var(--t1);padding-top:2px">${escHtml(n.hari)}</b>
+        <span style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;background:var(--navy);color:#fff;padding:1px 0">${escHtml(n.bulan)}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)">${escHtml(n.tag)}</div>
+        <div style="font-size:12px;color:var(--t1);line-height:1.4;margin-top:2px">${escHtml(n.teks)}</div>
+      </div>
+      <button onclick="padamPengumuman('${escHtml(n.id)}')"
+        style="flex-shrink:0;background:var(--danger-l,#fdecea);border:none;color:var(--danger,#b42318);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;font-weight:700">
+        Padam
+      </button>
+    </div>`).join('');
+}
+function tambahPengumuman() {
+  const teks = document.getElementById('pengumuman-teks').value.trim();
+  const tag = document.getElementById('pengumuman-tag').value;
+  const tarikhVal = document.getElementById('pengumuman-tarikh').value;
+  if (!teks) { alert('Sila isi kandungan pengumuman.'); return; }
+  const d = tarikhVal ? new Date(tarikhVal) : new Date();
+  const newItem = {
+    id: 'p' + Date.now(),
+    hari: String(d.getDate()),
+    bulan: BULAN_MS[d.getMonth()],
+    tag, teks
+  };
+  const list = [newItem, ...loadPengumuman()];
+  savePengumuman(list);
+  renderPengumuman();
+  renderModalNoticeList();
+  document.getElementById('pengumuman-teks').value = '';
+}
+function padamPengumuman(id) {
+  if (!confirm('Padam pengumuman ini?')) return;
+  const list = loadPengumuman().filter(n => n.id !== id);
+  savePengumuman(list);
+  renderPengumuman();
+  renderModalNoticeList();
+}
 let _currentUserId = (function() {
   try { return localStorage.getItem(USER_KEY) || 'u_azman'; } catch { return 'u_azman'; }
 })();
@@ -583,6 +727,14 @@ function updateUI() {
   document.getElementById('user-banner').innerHTML =
     `<span class="ub-lbl">${u.org} · Peranan:</span>` +
     uniqueRoles.map(r => `<span class="ub-role-badge">${r.label}</span>`).join('');
+  // Tunjuk butang admin pengumuman jika ppd_admin
+  const btnAdmin = document.getElementById('btn-pengumuman-admin');
+  if (btnAdmin) {
+    const isAdmin = isPpdAdmin();
+    btnAdmin.hidden = !isAdmin;
+    btnAdmin.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+  renderPengumuman();
 }
 
 function handleAppCardClick(appKey, appUrl) {
@@ -633,6 +785,9 @@ document.getElementById('gov-date').textContent =
   new Date().toLocaleDateString('ms-MY', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 updateUI();
 document.getElementById('profile-chip').addEventListener('click', openUserModal);
+document.getElementById('modal-pengumuman').addEventListener('click', function(e) {
+  if (e.target === this) this.hidden = true;
+});
 [['skpm-card','skpm','skas-preview.html'],['spm-card','spm','spm-analytics.html'],['efasiliti-card','efasiliti','e-fasiliti.html']]
   .forEach(([id, key, url]) => {
     const el = document.getElementById(id);
