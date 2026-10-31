@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>e-Fasiliti PPD Dalat</title>
+<script src="assets/ppd-auth.js"></script>
+<script>PPDAuth.guard();</script>
+<script src="assets/ppd-data.js"></script>
+<script src="assets/ppd-ui.js"></script>
+<script src="assets/ppd-peta.js"></script>
+<script src="assets/ppd-roles.js" data-app="efasiliti" defer></script>
 <link rel="stylesheet" href="assets/ppd-theme.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,6 +28,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ef-title { font-size: 17px; font-weight: 800; line-height: 1.2; }
 .ef-sub { font-size: 12px; color: var(--ppd-t3); }
 
+.ef-skop { display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 8px; border-radius: 10px; background: var(--ppd-surface-2); border: 1px solid var(--ppd-border); }
+.ef-skop .i { width: 18px; height: 18px; color: var(--ppd-accent); }
+.ef-skop span { display: flex; flex-direction: column; line-height: 1.25; font-size: 13px; }
+.ef-skop small { font-size: 11px; color: var(--ppd-t3); }
+.fi[readonly] { background: var(--ppd-surface-2); color: var(--ppd-t2); cursor: default; }
 .seg { display: flex; gap: 2px; padding: 3px; background: var(--ppd-surface-2); border: 1px solid var(--ppd-border); border-radius: 10px; overflow-x: auto; max-width: 100%; }
 .seg button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px; border: 0; border-radius: 8px; background: transparent; color: var(--ppd-t2); font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; position: relative; }
 .seg button:hover { color: var(--ppd-t1); background: var(--ppd-surface); }
@@ -231,89 +242,29 @@ tbody tr:hover td { background: color-mix(in srgb, var(--ppd-accent) 4%, var(--p
 // ══════════════════════════════════════════════
 // MOCK DATA
 // ══════════════════════════════════════════════
-const TIKET_DATA = [
-  {
-    id: 'TKT-2024-001', tajuk: 'Paip pecah di tandas blok A',
-    kategori: 'Paip & Sanitasi',
-    butiran: 'Paip utama di tandas blok A tingkat 2 pecah menyebabkan air melimpah ke koridor. Keadaan licin dan berbahaya kepada pelajar.',
-    sekolah: 'SMK Dalat', zon: 'Zon 1', tarikh: '2024-10-28',
-    status: 'Selesai', keutamaan: 'Kritikal', gambar: null,
-    notaPJ: 'Paip PVC 4 inci perlu diganti. Anggaran kos RM 850. Kerja boleh siap dalam 2 hari.',
-    notaPPD: 'Bajet diluluskan. Kontraktor dilantik.',
-    timeline: [
-      { tarikh: '2024-10-28 08:30', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Dalat', status: 'Baru' },
-      { tarikh: '2024-10-28 14:15', tindakan: 'Lawatan tapak oleh PJ. Aduan disahkan.', oleh: 'En. Haziq (PJ Zon 1)', status: 'Disemak PJ' },
-      { tarikh: '2024-10-29 09:00', tindakan: 'Bajet RM 850 diluluskan oleh PPD', oleh: 'PPD Dalat', status: 'Lulus Bajet' },
-      { tarikh: '2024-10-30 16:00', tindakan: 'Kerja pembaikan selesai', oleh: 'Kontraktor', status: 'Selesai' },
-    ]
-  },
-  {
-    id: 'TKT-2024-002', tajuk: 'Bumbung dewan bocor ketika hujan lebat',
-    kategori: 'Bumbung',
-    butiran: 'Bumbung dewan sekolah bocor di 3 titik semasa hujan lebat. Air menitis ke atas kerusi pelajar semasa perhimpunan.',
-    sekolah: 'SMK Oya', zon: 'Zon 2', tarikh: '2024-10-29',
-    status: 'Lulus Bajet', keutamaan: 'Tinggi', gambar: null,
-    notaPJ: 'Jubin bumbung retak di kawasan seluas 12m². Keperluan: 200 jubin + kos buruh. Anggaran RM 3,200.',
-    notaPPD: null,
-    timeline: [
-      { tarikh: '2024-10-29 10:00', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Oya', status: 'Baru' },
-      { tarikh: '2024-10-30 11:30', tindakan: 'Lawatan tapak disahkan. Kritikal sebelum musim tengkujuh.', oleh: 'Pn. Farah (PJ Zon 2)', status: 'Disemak PJ' },
-      { tarikh: '2024-10-31 09:00', tindakan: 'Bajet RM 3,200 diluluskan', oleh: 'PPD Dalat', status: 'Lulus Bajet' },
-    ]
-  },
-  {
-    id: 'TKT-2024-003', tajuk: 'Litar elektrik trip berulang kali di makmal sains',
-    kategori: 'Elektrik',
-    butiran: 'Bekalan elektrik di makmal sains trip 3-4 kali sehari. Menjejaskan penggunaan peralatan makmal dan menyebabkan data komputer hilang.',
-    sekolah: 'SMK Batang Igan', zon: 'Zon 3', tarikh: '2024-10-30',
-    status: 'Disemak PJ', keutamaan: 'Kritikal', gambar: null,
-    notaPJ: 'Panel elektrik lama perlu upgrade. Anggaran kos RM 5,500. Perlu kontraktor berlesen.',
-    notaPPD: null,
-    timeline: [
-      { tarikh: '2024-10-30 07:45', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Batang Igan', status: 'Baru' },
-      { tarikh: '2024-10-31 13:00', tindakan: 'Disahkan oleh PJ. Panel elektrik usang, berisiko.', oleh: 'En. Razif (PJ Zon 3)', status: 'Disemak PJ' },
-    ]
-  },
-  {
-    id: 'TKT-2024-004', tajuk: 'Pagar sekolah rosak — keselamatan terjejas',
-    kategori: 'Struktur & Pagar',
-    butiran: 'Bahagian pagar besi di pintu masuk belakang rebah. Pelajar boleh keluar masuk tanpa kawalan.',
-    sekolah: 'SMK Agama Igan', zon: 'Zon 2', tarikh: '2024-10-31',
-    status: 'Baru', keutamaan: 'Tinggi', gambar: null,
-    notaPJ: null, notaPPD: null,
-    timeline: [
-      { tarikh: '2024-10-31 08:00', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Agama Igan', status: 'Baru' },
-    ]
-  },
-  {
-    id: 'TKT-2024-005', tajuk: 'Kipas siling bilik darjah tidak berfungsi',
-    kategori: 'Elektrik',
-    butiran: '6 buah kipas siling di blok B tidak berfungsi. Cuaca panas menyebabkan pelajar tidak selesa semasa belajar.',
-    sekolah: 'SMK Dalat', zon: 'Zon 1', tarikh: '2024-10-31',
-    status: 'Baru', keutamaan: 'Sederhana', gambar: null,
-    notaPJ: null, notaPPD: null,
-    timeline: [
-      { tarikh: '2024-10-31 09:15', tindakan: 'Aduan dihantar oleh sekolah', oleh: 'SMK Dalat', status: 'Baru' },
-    ]
-  },
-];
+const ME = PPDAuth.currentUser();
+const ME_LV = PPDAuth.session().level;
+const TIKET_DATA = PPDData.efasiliti.tiket();
 
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-const ROLE_FROM_URL = { sekolah:'sekolah', school_admin:'sekolah', teacher:'sekolah', pj:'pj', ppd:'ppd', ppd_admin:'ppd' };
+// Peranan dari portal: Pengguna Biasa & Pentadbir Sekolah = sekolah sendiri sahaja; Admin = semua sekolah (PJ + PPD)
+const APP_ROLE = PPDAuth.appRoleFor(ME, ME_LV, 'efasiliti');
+const IS_ADMIN = APP_ROLE === 'ppd_admin';
+const IS_GURU = APP_ROLE === 'teacher';
+const SEKOLAH_SAYA = PPDData.sekolahUser(ME)?.nama || ME.org;
 let state = {
-  role: ROLE_FROM_URL[new URLSearchParams(location.search).get('role')] || 'sekolah',
+  role: IS_ADMIN ? 'ppd' : 'sekolah',
   subTab: 'baru',
-  sekolahFilter: 'SMK Dalat',
+  sekolahFilter: SEKOLAH_SAYA,
   zonFilter: 'Semua',
 };
-let tiketCounter = 6;
 
 // ══════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════
-const SEKOLAH = ['SMK Dalat','SMK Oya','SMK Batang Igan','SMK Agama Igan'];
+const SEKOLAH = PPDData.SEKOLAH.map(s => s.nama);
 const STATUS_C = { 'Baru':'#1d5fa0', 'Disemak PJ':'#b54708', 'Lulus Bajet':'#6941c6', 'Dalam Kerja':'#a15c07', 'Selesai':'#067647', 'Ditolak':'#b42318' };
 const KEU_C    = { 'Kritikal':'#b42318', 'Tinggi':'#c4520f', 'Sederhana':'#a15c07', 'Rendah':'#067647' };
 
@@ -432,11 +383,10 @@ function flowHTML() {
 // RENDER: HEADER
 // ══════════════════════════════════════════════
 function renderHeader() {
-  const roles = [
-    { id:'sekolah', icon:'school', label:'Sekolah' },
-    { id:'pj',      icon:'helmet', label:'Penolong Jurutera', short:'PJ' },
-    { id:'ppd',     icon:'gov',    label:'Pengurusan PPD',   short:'PPD' },
-  ];
+  const roles = IS_ADMIN ? [
+    { id:'pj',  icon:'helmet', label:'Semakan PJ',     short:'PJ' },
+    { id:'ppd', icon:'gov',    label:'Kelulusan PPD',  short:'PPD' },
+  ] : [];
   return `
     <header class="ef-head">
       <div class="wrap">
@@ -444,9 +394,9 @@ function renderHeader() {
           <div class="ef-logo">${ic('wrench')}</div>
           <div><div class="ef-title">e-Fasiliti</div><div class="ef-sub">Sistem Aduan &amp; Pemantauan Fasiliti Sekolah</div></div>
         </div>
-        <div class="seg" role="tablist" aria-label="Pilih paparan">
+        ${roles.length ? `<div class="seg" role="tablist" aria-label="Pilih paparan">
           ${roles.map(r => `<button data-role="${r.id}" role="tab" aria-selected="${state.role===r.id}" class="${state.role===r.id?'on':''}">${ic(r.icon)}${r.short?`<span class="seg-lbl-long">${r.label}</span><span class="seg-lbl-short">${r.short}</span>`:r.label}</button>`).join('')}
-        </div>
+        </div>` : `<div class="ef-skop">${ic('school')}<span><b>${esc(SEKOLAH_SAYA)}</b><small>${IS_GURU ? 'Aduan saya' : 'Pentadbir Sekolah'}</small></span></div>`}
       </div>
     </header>`;
 }
@@ -455,7 +405,7 @@ function renderHeader() {
 // RENDER: SEKOLAH VIEW
 // ══════════════════════════════════════════════
 function renderSekolah() {
-  const mine = TIKET_DATA.filter(t => t.sekolah === state.sekolahFilter);
+  const mine = TIKET_DATA.filter(t => t.sekolah === SEKOLAH_SAYA && (!IS_GURU || t.pelaporId === ME.id));
   return `
     <main class="wrap page">
       <div class="pg-head"><div>
@@ -466,7 +416,7 @@ function renderSekolah() {
       <div class="panel">
         <div class="tabs" role="tablist" style="padding:0 10px">
           <button data-subtab="baru" class="${state.subTab==='baru'?'on':''}">${ic('plus')}Aduan Baharu</button>
-          <button data-subtab="saya" class="${state.subTab==='saya'?'on':''}">${ic('list')}Rekod Aduan <span class="count">${mine.length}</span></button>
+          <button data-subtab="saya" class="${state.subTab==='saya'?'on':''}">${ic('list')}${IS_GURU ? 'Aduan Saya' : 'Rekod Aduan Sekolah'} <span class="count">${mine.length}</span></button>
         </div>
         ${state.subTab==='baru' ? renderFormAduan() : renderAduanSaya(mine)}
       </div>
@@ -480,10 +430,7 @@ function renderFormAduan() {
         <div class="frow">
           <div class="fg">
             <label class="fl" for="f-sekolah">Nama Sekolah<span class="req">*</span></label>
-            <select id="f-sekolah" class="fi">
-              <option value="">Pilih sekolah</option>
-              ${SEKOLAH.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
-            </select>
+            <input id="f-sekolah" class="fi" value="${esc(SEKOLAH_SAYA)}" readonly aria-readonly="true">
           </div>
           <div class="fg">
             <label class="fl" for="f-tajuk">Tajuk Aduan<span class="req">*</span></label>
@@ -524,12 +471,9 @@ function renderFormAduan() {
 function renderAduanSaya(filtered) {
   return `
     <div class="panel-h" style="border-top:0">
-      <span class="muted">Paparan rekod untuk sekolah:</span>
-      <select id="filter-sekolah" class="fi" style="width:auto;min-width:200px">
-        ${SEKOLAH.map(s=>`<option ${s===state.sekolahFilter?'selected':''}>${s}</option>`).join('')}
-      </select>
+      <span class="muted">${IS_GURU ? `Aduan yang anda hantar bagi <b>${esc(SEKOLAH_SAYA)}</b>` : `Semua aduan <b>${esc(SEKOLAH_SAYA)}</b>`}</span>
     </div>
-    ${filtered.length===0 ? emptyState('Tiada aduan untuk sekolah ini', 'Aduan yang dihantar akan dipaparkan di sini.') : `
+    ${filtered.length===0 ? emptyState(IS_GURU ? 'Anda belum menghantar aduan' : 'Tiada aduan untuk sekolah ini', 'Aduan yang dihantar akan dipaparkan di sini.') : `
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>ID Tiket</th><th>Tajuk</th><th>Kategori</th><th>Tarikh</th><th>Keutamaan</th><th>Status</th><th></th></tr></thead>
@@ -603,6 +547,25 @@ function renderPJ() {
 // ══════════════════════════════════════════════
 // RENDER: PPD VIEW
 // ══════════════════════════════════════════════
+// Peta aduan aktif setiap sekolah: saiz ikut bil. aduan aktif, warna ikut usia aduan tertua
+function petaAduan() {
+  const aktif = TIKET_DATA.filter(t => !['Selesai','Ditolak'].includes(t.status));
+  const maks = Math.max(1, ...PPDData.SEKOLAH.map(sk => aktif.filter(t => t.sekolah === sk.nama).length));
+  return PPDPeta.peta({
+    tajuk: 'Peta Aduan Aktif',
+    titik: PPDData.SEKOLAH.map(sk => {
+      const a = aktif.filter(t => t.sekolah === sk.nama);
+      const tertua = Math.max(0, ...a.map(t => PPDData.efasiliti.bukaHari(t)));
+      const kritikal = a.filter(t => t.keutamaan === 'Kritikal').length;
+      return { nama: sk.nama, x: sk.x, y: sk.y, saiz: a.length / maks,
+        tahap: tertua > 30 ? 'merah' : a.length && (kritikal || tertua > 14) ? 'kuning' : 'hijau',
+        nilai: `${a.length} aduan aktif${kritikal ? ` · ${kritikal} kritikal` : ''}`,
+        sub: a.length ? `tertua ${tertua} hari` : 'tiada tunggakan' };
+    }),
+    nota: 'Merah: ada aduan aktif melebihi 30 hari. Kuning: ada aduan kritikal atau melebihi 14 hari.',
+  });
+}
+
 function renderPPD() {
   const aktif = TIKET_DATA.filter(t=>!['Selesai','Ditolak'].includes(t.status)).length;
   const tunggu = TIKET_DATA.filter(t=>t.status==='Disemak PJ').length;
@@ -618,6 +581,9 @@ function renderPPD() {
         <h1 class="pg-title">Pengurusan Fasiliti Daerah</h1>
         <p class="pg-desc">Luluskan bajet bagi aduan yang telah disahkan Penolong Jurutera dan tandakan selesai apabila kerja pembaikan siap.</p>
       </div></div>
+      <div class="ppd-ringkas">${petaAduan()}${PPDPeta.amaran(PPDData.amaranEfasiliti().map(a => ({ ...a,
+        aksi: `<button data-view-tiket="${a.tiket}" class="btn btn-gh btn-sm">${ic('eye')}Butiran</button>` })),
+        { tajuk: 'Amaran Awal · Aduan Tertunggak', kosong: 'Tiada aduan aktif melebihi 30 hari.' })}</div>
       ${flowHTML()}
       <div class="kpis">
         ${kpi('Aduan Aktif', aktif, 'Belum selesai', '#1d5fa0', 'list')}
@@ -686,6 +652,7 @@ function renderPPD() {
 // MAIN RENDER
 // ══════════════════════════════════════════════
 function render() {
+  PPDData.efasiliti.save(TIKET_DATA);
   let content = '';
   if (state.role==='sekolah') content = renderSekolah();
   else if (state.role==='pj') content = renderPJ();
@@ -699,13 +666,11 @@ function render() {
 // ══════════════════════════════════════════════
 function bindEvents() {
   document.querySelectorAll('[data-role]').forEach(btn => {
-    btn.addEventListener('click', () => { state.role = btn.dataset.role; state.subTab = 'baru'; render(); window.scrollTo(0,0); });
+    btn.addEventListener('click', () => { if (!IS_ADMIN) return; state.role = btn.dataset.role; state.subTab = 'baru'; render(); window.scrollTo(0,0); });
   });
   document.querySelectorAll('[data-subtab]').forEach(btn => {
     btn.addEventListener('click', () => { state.subTab = btn.dataset.subtab; render(); });
   });
-  const sf = document.getElementById('filter-sekolah');
-  if (sf) sf.addEventListener('change', () => { state.sekolahFilter=sf.value; render(); });
   document.querySelectorAll('[data-zon]').forEach(btn => {
     btn.addEventListener('click', () => { state.zonFilter=btn.dataset.zon; render(); });
   });
@@ -734,16 +699,16 @@ function handleHantarAduan() {
   const missing = fields.find(f => !f.value.trim());
   if (missing) { showToast('Sila lengkapkan semua medan bertanda *', 'err'); missing.focus(); return; }
   const [sekolah, tajuk, kategori, keutamaan, butiran] = fields.map(f => f.value.trim());
-  const zon = sekolah==='SMK Dalat'?'Zon 1':sekolah==='SMK Batang Igan'?'Zon 3':'Zon 2';
+  const zon = PPDData.SEKOLAH.find(s => s.nama === sekolah)?.zon || 'Zon 1';
   const tarikh = new Date().toISOString().slice(0,10);
-  const id = `TKT-2024-00${tiketCounter++}`;
+  const nMax = TIKET_DATA.reduce((m, t) => Math.max(m, +(t.id.match(/(\d+)$/) || [0, 0])[1]), 0);
+  const id = `TKT-${tarikh.slice(0,4)}-${String(nMax + 1).padStart(3, '0')}`;
   TIKET_DATA.push({
-    id, tajuk, kategori, butiran, sekolah, zon, tarikh,
+    id, tajuk, kategori, butiran, sekolah, zon, tarikh, pelaporId: ME.id,
     status:'Baru', keutamaan, gambar:null, notaPJ:null, notaPPD:null,
-    timeline:[{ tarikh:now(), tindakan:'Aduan dihantar oleh sekolah', oleh:sekolah, status:'Baru' }]
+    timeline:[{ tarikh:now(), tindakan:`Aduan dihantar oleh ${ME.nama}`, oleh:sekolah, status:'Baru' }]
   });
   showToast(`Aduan ${id} berjaya dihantar.`);
-  state.sekolahFilter = sekolah;
   state.subTab = 'saya';
   render();
 }
@@ -821,6 +786,15 @@ function tandaSelesai(id) {
 // INIT
 // ══════════════════════════════════════════════
 render();
+(function bukaDariPautan() {
+  const id = new URLSearchParams(location.search).get('tiket');
+  const t = TIKET_DATA.find(x => x.id === id);
+  if (!t || (!IS_ADMIN && t.sekolah !== SEKOLAH_SAYA)) return;
+  state.subTab = 'saya';
+  render();
+  openTiketDetail(id);
+  history.replaceState({}, '', location.pathname);
+})();
 </script>
 </body>
 </html>

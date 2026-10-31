@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analitik SPM · PPD Dalat</title>
+<script src="assets/ppd-auth.js"></script>
+<script>PPDAuth.guard();</script>
+<script src="assets/ppd-data.js"></script>
+<script src="assets/ppd-ui.js"></script>
+<script src="assets/ppd-peta.js"></script>
+<script src="assets/ppd-carta.js" defer></script>
+<script src="assets/ppd-roles.js" data-app="spm" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="assets/ppd-theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -452,13 +459,6 @@ body { font-family: var(--ppd-font); }
 
 :where(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid var(--ppd-gold); outline-offset: 2px; }
 
-/* Demo bar */
-.demo-bar { background: color-mix(in srgb, var(--ppd-gold) 12%, var(--surface)); border-bottom: 1px solid color-mix(in srgb, var(--ppd-gold) 35%, var(--border)); color: var(--t1); }
-.demo-btn { min-height: 32px; padding: 4px 14px; background: var(--surface); }
-.demo-btn.guru      { color: var(--ppd-ok);  border-color: var(--ppd-ok); }
-.demo-btn.pentadbir { color: var(--violet);  border-color: var(--violet); }
-.demo-btn.ppd       { color: var(--accent);  border-color: var(--accent); }
-
 /* Topbar */
 .topbar { height: 64px; box-shadow: var(--ppd-shadow); }
 .topbar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -555,6 +555,71 @@ body { font-family: var(--ppd-font); }
 .lap-item .prog-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--tint); font-size: 18px; }
 .lap-item .btn-sm { background: var(--btn); color: #fff; border-color: var(--btn); min-height: 34px; }
 
+/* Muat naik markah */
+.markah-muat { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 12px 14px; margin-bottom: 12px;
+  border: 1px dashed var(--tint-b); border-radius: var(--ppd-radius); background: var(--tint); }
+.markah-muat-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 280px; font-size: 13px; }
+.markah-muat-t span { font-size: 12px; color: var(--t2); line-height: 1.5; }
+.markah-muat-b { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Kemajuan guru (pentadbir) */
+.guru-prog { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.gp-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--ppd-radius); box-shadow: var(--ppd-shadow); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.gp-head { display: flex; align-items: center; gap: 10px; }
+.gp-av { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; background: var(--tint); color: var(--accent); font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.gp-who { flex: 1; min-width: 0; }
+.gp-n { font-size: 13.5px; font-weight: 700; }
+.gp-s { font-size: 11.5px; color: var(--t3); }
+.gp-pct { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gp-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.gp-bar i { display: block; height: 100%; }
+.gp-kelas { display: flex; flex-direction: column; gap: 6px; }
+.gp-k { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.gp-ing { font-size: 11.5px; font-weight: 600; color: var(--green); }
+@media (max-width: 400px) { .guru-prog { grid-template-columns: 1fr; } }
+
+/* Pengisian markah: kemajuan, simpan automatik, tarikh akhir */
+.yellow-c { color: var(--yellow); }
+.kelas-perlu { border-left: 3px solid var(--yellow); }
+.tarikh-akhir { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; color: var(--t1);
+  background: var(--tint); border: 1px solid var(--tint-b); border-left: 4px solid var(--accent); }
+.tarikh-akhir.kuning { background: color-mix(in srgb, var(--yellow) 10%, var(--surface)); border-color: color-mix(in srgb, var(--yellow) 35%, var(--border)); border-left-color: var(--yellow); }
+.tarikh-akhir.merah { background: color-mix(in srgb, var(--red) 8%, var(--surface)); border-color: color-mix(in srgb, var(--red) 30%, var(--border)); border-left-color: var(--red); }
+.mark-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 12.5px; color: var(--t2); }
+.mark-progress:empty { display: none; }
+.mp-bar { flex: 1; max-width: 320px; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.mp-bar i { display: block; height: 100%; background: var(--green); transition: width .3s; }
+.mark-no { display: none; }
+.mark-kosong td { background: color-mix(in srgb, var(--yellow) 5%, transparent); }
+.mark-th td { opacity: .6; }
+.mark-savebar { align-items: center; justify-content: flex-end; }
+.simpan-status { font-size: 12px; color: var(--t3); margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
+.simpan-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.simpan-status[data-st="menyimpan"]::before { background: var(--yellow); animation: denyut 1s infinite; }
+.simpan-status[data-st="gagal"] { color: var(--red); }
+.simpan-status[data-st="gagal"]::before { background: var(--red); }
+@keyframes denyut { 50% { opacity: .3; } }
+
+@media (max-width: 600px) {
+  /* Kad markah satu murid satu baris, input besar, bar simpan melekat */
+  .mark-wrap { background: none; box-shadow: none; overflow: visible; }
+  .mark-tbl thead { display: none; }
+  .mark-tbl, .mark-tbl tbody { display: block; }
+  .mark-tbl tr { display: grid; grid-template-columns: minmax(0,1fr) 84px 46px 52px; align-items: center; gap: 8px;
+    padding: 10px 12px; margin-bottom: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .mark-tbl td { padding: 0 !important; border: 0 !important; background: none !important; }
+  .mark-tbl .col-trend { display: none; }
+  .mark-tbl .tc-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 13px; line-height: 1.35; }
+  .mark-no { display: inline; color: var(--t3); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 16px; }
+  .mark-tbl .nama-link { text-align: left; white-space: normal; }
+  .mark-tbl .mark-input { width: 100%; height: 48px; font-size: 18px; font-weight: 700; text-align: center; }
+  .mark-tbl .mark-th-cell .btn-sm { width: 100%; min-height: 44px; }
+  .mark-kosong { border-color: color-mix(in srgb, var(--yellow) 45%, var(--border)) !important; }
+  .mark-savebar { position: sticky; bottom: 0; z-index: 20; margin: 8px -16px 0; padding: 10px 16px max(10px, env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -6px 16px rgba(0,0,0,.06); }
+  .mark-savebar .btn-primary { min-height: 44px; }
+  .tarikh-akhir { font-size: 12.5px; }
+}
 @media (max-width: 600px) {
   .topbar { height: 58px; gap: 8px; }
   .tab-bar { top: 58px; }
@@ -571,15 +636,6 @@ body { font-family: var(--ppd-font); }
 <body>
 <div class="ppd-strip"><div class="ppd-strip-l"><a href="ppd-dalat.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a><span class="ppd-strip-sep">|</span><span class="ppd-strip-app">Analitik SPM</span></div><div class="ppd-strip-r"><span class="ppd-flag"></span><span>Portal rasmi KPM</span></div></div>
 
-<!-- Demo role switcher (shown when no role in URL) -->
-<div class="demo-bar" id="demo-bar" hidden>
-  <strong>⚠ Demo:</strong> Pilih peranan untuk pratonton paparan
-  <div class="demo-btns">
-    <button class="demo-btn guru"      onclick="switchRole('teacher')">👩‍🏫 Guru</button>
-    <button class="demo-btn pentadbir" onclick="switchRole('school_admin')">🏫 Pentadbir Sekolah</button>
-    <button class="demo-btn ppd"       onclick="switchRole('ppd_admin')">🏛 Admin PPD</button>
-  </div>
-</div>
 
 <header class="topbar">
   <div class="topbar-brand">
@@ -604,7 +660,7 @@ body { font-family: var(--ppd-font); }
     <input type="hidden" id="inp-edit-id">
     <div class="form-group">
       <label class="form-label">Nama Penuh Pelajar</label>
-      <input class="form-input" id="inp-nama" placeholder="cth: Ahmad Syafiq bin Zulkifli" type="text">
+      <input class="form-input" id="inp-nama" placeholder="cth: AHMAD SYAFIQ BIN ZULKIFLI" type="text" style="text-transform:uppercase">
     </div>
     <div class="form-group">
       <label class="form-label">Jantina</label>
@@ -613,27 +669,28 @@ body { font-family: var(--ppd-font); }
         <option value="P">Perempuan</option>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Jenis Penginapan</label>
-      <select class="form-input" id="inp-penginapan">
-        <option value="Harian">Harian</option>
-        <option value="Asrama">Asrama</option>
-      </select>
-    </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">AR1</label>
-        <input class="form-input" id="inp-ar1" placeholder="0–100" type="number" min="0" max="100">
+        <label class="form-label">Agama</label>
+        <select class="form-input" id="inp-agama">
+          <option>Islam</option><option>Kristian</option><option>Buddha</option><option>Hindu</option><option>Lain-lain</option>
+        </select>
       </div>
       <div class="form-group">
-        <label class="form-label">AR2</label>
-        <input class="form-input" id="inp-ar2" placeholder="0–100" type="number" min="0" max="100">
+        <label class="form-label">Jenis Penginapan</label>
+        <select class="form-input" id="inp-penginapan">
+          <option value="Harian">Harian</option>
+          <option value="Asrama">Asrama</option>
+        </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Percubaan</label>
-        <input class="form-input" id="inp-perc" placeholder="0–100" type="number" min="0" max="100">
+        <label class="form-label">SES</label>
+        <select class="form-input" id="inp-ses">
+          <option>B40</option><option>M40</option><option>T20</option>
+        </select>
       </div>
     </div>
+    <div style="font-size:11.5px;color:var(--t3);margin-top:-4px">Markah diisi atau dibetulkan dalam tab <b>Rekod Markah</b> mengikut ujian.</div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Batal</button>
       <button class="btn-primary" id="btn-tambah-simpan" onclick="simpanPelajarModal()">
@@ -670,7 +727,7 @@ body { font-family: var(--ppd-font); }
       </div>
       <div class="form-group">
         <label class="form-label">Nama Kelas</label>
-        <input class="form-input" id="kelas-nama" placeholder="cth: Amanah" type="text">
+        <input class="form-input" id="kelas-nama" placeholder="cth: AMANAH" type="text" style="text-transform:uppercase">
       </div>
       <div class="form-group">
         <label class="form-label">Tahun</label>
@@ -689,13 +746,28 @@ body { font-family: var(--ppd-font); }
 <!-- Modal: Preview Import Fail -->
 <div class="modal-overlay" id="modal-import" hidden onclick="if(event.target===this)closeImportModal()">
   <div class="modal" style="max-width:640px">
-    <div class="modal-title">Semak Data Import</div>
+    <div class="modal-title">Semak Senarai Murid</div>
     <div class="modal-sub" id="import-sub">Sila semak data yang dikesan sebelum import</div>
     <div id="import-preview" style="max-height:320px;overflow-y:auto;margin-bottom:16px;border-radius:10px;border:1px solid var(--border)"></div>
     <div id="import-warn" style="font-size:12px;color:var(--yellow);margin-bottom:12px"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeImportModal()">Batal</button>
-      <button class="btn-primary" id="btn-confirm-import" onclick="confirmImport()">Import Pelajar</button>
+      <button class="btn-primary" id="btn-confirm-import" onclick="confirmImport()">Daftar Murid</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Pratonton muat naik markah -->
+<div class="modal-overlay" id="modal-markah" hidden onclick="if(event.target===this)tutupModalMarkah()">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-title">Semak Markah Sebelum Simpan</div>
+    <div class="modal-sub" id="markah-sub"></div>
+    <div id="markah-ringkas" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <div id="markah-preview" style="max-height:320px;overflow-y:auto;margin-bottom:12px;border-radius:10px;border:1px solid var(--border)"></div>
+    <div id="markah-warn" style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:12px"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="tutupModalMarkah()">Batal</button>
+      <button class="btn-primary" id="btn-simpan-markah" onclick="simpanMarkahFail()">Simpan Markah</button>
     </div>
   </div>
 </div>
@@ -805,66 +877,56 @@ body { font-family: var(--ppd-font); }
 
 <!-- Hidden file input -->
 <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden onchange="handleFileUpload(this)">
+<input type="file" id="file-markah" accept=".csv,.xlsx,.xls" hidden onchange="handleFileMarkah(this)">
 
 <script>
 // ── Mock data ─────────────────────────────────────────────
+const ME = PPDAuth.currentUser();
+const esc = PPDAuth.esc;
 const DEMO = {
-  guru: { nama:'Pn. Zaiton Hamdan', sekolah:'SMK Dalat', subjek:'Matematik', kelas:'5 Amanah' },
-  pentadbir: { nama:'En. Razif bin Othman', sekolah:'SMK Dalat' },
-  ppd_admin: { nama:'Azlan bin Hamid', daerah:'Daerah Dalat' },
+  guru: { nama: ME.nama, sekolah: ME.org, subjek:'', kelas:'' },
+  pentadbir: { nama: ME.nama, sekolah: ME.org },
+  ppd_admin: { nama: ME.nama, daerah:'Daerah Dalat' },
 };
-// Kemaskini nama sekolah dari localStorage jika ada
-(function() {
-  try {
-    const kl = localStorage.getItem('skas_kelas');
-    if (kl) {
-      const list = JSON.parse(kl);
-      if (list[0]?.sekolah) {
-        DEMO.guru.sekolah = list[0].sekolah;
-        DEMO.pentadbir.sekolah = list[0].sekolah;
-      }
-    }
-  } catch(e) {}
-})();
 
-const PELAJAR_5A = [
-  { id:'p1', nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
-  { id:'p2', nama:'Nurul Farhana Azman',   no:'02', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
-  { id:'p3', nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
-  { id:'p4', nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
-  { id:'p5', nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
-  { id:'p6', nama:'Amirah Syuhada',        no:'06', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
-  { id:'p7', nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'En. Rodzi Masduki', subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
-  { id:'p8', nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
-  { id:'p9', nama:'Zulhilmi Bakar',        no:'09', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
-  { id:'p10',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Salmah Idris',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
-  { id:'p11',nama:'Hairudin Salleh',       no:'11', kelas:'5 Amanah', guru:'Pn. Zaiton Hamdan', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
-  { id:'p12',nama:'Farah Nadia Kamal',     no:'12', kelas:'5 Bestari', guru:'En. Johari Taib',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
+let PELAJAR_5A = [
+  { id:'p1', nama:'AHMAD SYAFIQ ZULKIFLI', no:'01', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:72,ar2:68,percubaan:65}, alert:true  },
+  { id:'p2', nama:'NURUL FARHANA AZMAN',   no:'02', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:85,ar2:87,percubaan:89}, alert:false },
+  { id:'p3', nama:'MOHD HAFIZ ROSLAN',     no:'03', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:58,ar2:52,percubaan:46}, alert:true  },
+  { id:'p4', nama:'SITI AMINAH SALEH',     no:'04', kelas:'5 Bestari', guru:'EN. RODZI MASDUKI', subjek:'Bahasa Melayu', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:78,ar2:80,percubaan:82}, alert:false },
+  { id:'p5', nama:'KHAIRUL NIZAM AHMAD',   no:'05', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:65,ar2:63,percubaan:61}, alert:true  },
+  { id:'p6', nama:'AMIRAH SYUHADA',        no:'06', kelas:'5 Bestari', guru:'PN. SALMAH IDRIS',  subjek:'Bahasa Inggeris', ses:'T20', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:91,ar2:90,percubaan:93}, alert:false },
+  { id:'p7', nama:'FADZLI HARUN',          no:'07', kelas:'5 Bestari', guru:'EN. RODZI MASDUKI', subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:70,ar2:71,percubaan:73}, alert:false },
+  { id:'p8', nama:'ROSLINAH SAMION',       no:'08', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'M40', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:55,ar2:58,percubaan:60}, alert:false },
+  { id:'p9', nama:'ZULHILMI BAKAR',        no:'09', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:48,ar2:44,percubaan:40}, alert:true  },
+  { id:'p10',nama:'NABILAH ISMAIL',        no:'10', kelas:'5 Bestari', guru:'PN. SALMAH IDRIS',  subjek:'Bahasa Inggeris', ses:'M40', lokasi:'Bandar', penginapan:'Harian', marks:{ar1:82,ar2:83,percubaan:85}, alert:false },
+  { id:'p11',nama:'HAIRUDIN SALLEH',       no:'11', kelas:'5 Amanah', guru:'PN. ZAITON HAMDAN', subjek:'Matematik', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:63,ar2:61,percubaan:59}, alert:true  },
+  { id:'p12',nama:'FARAH NADIA KAMAL',     no:'12', kelas:'5 Bestari', guru:'EN. JOHARI TAIB',   subjek:'Sains',     ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:88,ar2:89,percubaan:91}, alert:false },
   // Entri Sejarah — untuk analisis LMS
-  { id:'p13',nama:'Siti Aminah Saleh',     no:'04', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',   ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:76,ar2:79,percubaan:81}, alert:false },
-  { id:'p14',nama:'Fadzli Harun',          no:'07', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',   ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:68,ar2:65,percubaan:62}, alert:false },
-  { id:'p15',nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:55,ar2:50,percubaan:38}, alert:true  },
-  { id:'p16',nama:'Ahmad Syafiq Zulkifli', no:'01', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:42,ar2:39,percubaan:36}, alert:true  },
-  { id:'p17',nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Pedalaman',penginapan:'Asrama', marks:{ar1:48,ar2:45,percubaan:43}, alert:true  },
-  { id:'p18',nama:'Mohd Hafiz Roslan',     no:'03', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:52,ar2:50,percubaan:48}, alert:false },
-  { id:'p19',nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:60,ar2:62,percubaan:65}, alert:false },
-  { id:'p20',nama:'Khairul Nizam Ahmad',   no:'05', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:58,ar2:55,percubaan:52}, alert:false },
-  { id:'p21',nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah',  guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:70,ar2:72,percubaan:75}, alert:false },
-  { id:'p22',nama:'Roslinah Samion',       no:'08', kelas:'5 Amanah',  guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:65,ar2:68,percubaan:71}, alert:false },
-  { id:'p23',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'En. Rodzi Masduki',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:80,ar2:82,percubaan:84}, alert:false },
-  { id:'p24',nama:'Nabilah Ismail',        no:'10', kelas:'5 Bestari', guru:'Pn. Asma Rashid',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:75,ar2:77,percubaan:79}, alert:false },
+  { id:'p13',nama:'SITI AMINAH SALEH',     no:'04', kelas:'5 Bestari', guru:'PN. ASMA RASHID',  subjek:'Sejarah',   ses:'T20', lokasi:'Bandar',      penginapan:'Harian', marks:{ar1:76,ar2:79,percubaan:81}, alert:false },
+  { id:'p14',nama:'FADZLI HARUN',          no:'07', kelas:'5 Bestari', guru:'PN. ASMA RASHID',  subjek:'Sejarah',   ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:68,ar2:65,percubaan:62}, alert:false },
+  { id:'p15',nama:'AHMAD SYAFIQ ZULKIFLI', no:'01', kelas:'5 Amanah',  guru:'EN. RODZI MASDUKI',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:55,ar2:50,percubaan:38}, alert:true  },
+  { id:'p16',nama:'AHMAD SYAFIQ ZULKIFLI', no:'01', kelas:'5 Amanah',  guru:'PN. ASMA RASHID',  subjek:'Sejarah',  ses:'B40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:42,ar2:39,percubaan:36}, alert:true  },
+  { id:'p17',nama:'MOHD HAFIZ ROSLAN',     no:'03', kelas:'5 Amanah',  guru:'EN. RODZI MASDUKI',subjek:'Bahasa Melayu', ses:'B40', lokasi:'Pedalaman',penginapan:'Asrama', marks:{ar1:48,ar2:45,percubaan:43}, alert:true  },
+  { id:'p18',nama:'MOHD HAFIZ ROSLAN',     no:'03', kelas:'5 Amanah',  guru:'PN. ASMA RASHID',  subjek:'Sejarah',  ses:'B40', lokasi:'Pedalaman',   penginapan:'Asrama', marks:{ar1:52,ar2:50,percubaan:48}, alert:false },
+  { id:'p19',nama:'KHAIRUL NIZAM AHMAD',   no:'05', kelas:'5 Amanah',  guru:'EN. RODZI MASDUKI',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:60,ar2:62,percubaan:65}, alert:false },
+  { id:'p20',nama:'KHAIRUL NIZAM AHMAD',   no:'05', kelas:'5 Amanah',  guru:'PN. ASMA RASHID',  subjek:'Sejarah',  ses:'M40', lokasi:'Luar Bandar', penginapan:'Asrama', marks:{ar1:58,ar2:55,percubaan:52}, alert:false },
+  { id:'p21',nama:'ROSLINAH SAMION',       no:'08', kelas:'5 Amanah',  guru:'EN. RODZI MASDUKI',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:70,ar2:72,percubaan:75}, alert:false },
+  { id:'p22',nama:'ROSLINAH SAMION',       no:'08', kelas:'5 Amanah',  guru:'PN. ASMA RASHID',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:65,ar2:68,percubaan:71}, alert:false },
+  { id:'p23',nama:'NABILAH ISMAIL',        no:'10', kelas:'5 Bestari', guru:'EN. RODZI MASDUKI',subjek:'Bahasa Melayu', ses:'M40', lokasi:'Bandar',    penginapan:'Harian', marks:{ar1:80,ar2:82,percubaan:84}, alert:false },
+  { id:'p24',nama:'NABILAH ISMAIL',        no:'10', kelas:'5 Bestari', guru:'PN. ASMA RASHID',  subjek:'Sejarah',  ses:'M40', lokasi:'Bandar',       penginapan:'Harian', marks:{ar1:75,ar2:77,percubaan:79}, alert:false },
 ];
 
-const PANITIA_SK = [
-  { subjek:'Matematik',       guru:'Pn. Zaiton Hamdan',    gpmp:4.82, prev:5.12, bil:156, ar1:true, ar2:true,  perc:true  },
-  { subjek:'Bahasa Melayu',   guru:'En. Rodzi Masduki',    gpmp:3.94, prev:4.21, bil:201, ar1:true, ar2:true,  perc:true  },
-  { subjek:'Bahasa Inggeris', guru:'Pn. Salmah Idris',     gpmp:5.43, prev:5.21, bil:198, ar1:true, ar2:true,  perc:false },
-  { subjek:'Sains',           guru:'En. Johari Taib',      gpmp:5.87, prev:5.63, bil:145, ar1:true, ar2:false, perc:false },
-  { subjek:'Sejarah',         guru:'Pn. Asma Rashid',      gpmp:4.12, prev:4.45, bil:198, ar1:true, ar2:true,  perc:true  },
-  { subjek:'Fizik',           guru:'Pn. Rokiah Sulaiman',  gpmp:4.56, prev:4.78, bil:52,  ar1:true, ar2:true,  perc:false },
-  { subjek:'Kimia',           guru:'En. Faizal Nordin',    gpmp:5.32, prev:5.67, bil:48,  ar1:true, ar2:false, perc:false },
-  { subjek:'Biologi',         guru:'Pn. Hasimah Daud',     gpmp:4.98, prev:5.12, bil:61,  ar1:true, ar2:true,  perc:true  },
-  { subjek:'Geografi',        guru:'En. Azmi Saad',        gpmp:5.21, prev:5.18, bil:87,  ar1:true, ar2:true,  perc:false },
+let PANITIA_SK = [
+  { subjek:'Matematik',       guru:'PN. ZAITON HAMDAN',    gpmp:4.82, prev:5.12, bil:156, ar1:true, ar2:true,  perc:true  },
+  { subjek:'Bahasa Melayu',   guru:'EN. RODZI MASDUKI',    gpmp:3.94, prev:4.21, bil:201, ar1:true, ar2:true,  perc:true  },
+  { subjek:'Bahasa Inggeris', guru:'PN. SALMAH IDRIS',     gpmp:5.43, prev:5.21, bil:198, ar1:true, ar2:true,  perc:false },
+  { subjek:'Sains',           guru:'EN. JOHARI TAIB',      gpmp:5.87, prev:5.63, bil:145, ar1:true, ar2:false, perc:false },
+  { subjek:'Sejarah',         guru:'PN. ASMA RASHID',      gpmp:4.12, prev:4.45, bil:198, ar1:true, ar2:true,  perc:true  },
+  { subjek:'Fizik',           guru:'PN. ROKIAH SULAIMAN',  gpmp:4.56, prev:4.78, bil:52,  ar1:true, ar2:true,  perc:false },
+  { subjek:'Kimia',           guru:'EN. FAIZAL NORDIN',    gpmp:5.32, prev:5.67, bil:48,  ar1:true, ar2:false, perc:false },
+  { subjek:'Biologi',         guru:'PN. HASIMAH DAUD',     gpmp:4.98, prev:5.12, bil:61,  ar1:true, ar2:true,  perc:true  },
+  { subjek:'Geografi',        guru:'EN. AZMI SAAD',        gpmp:5.21, prev:5.18, bil:87,  ar1:true, ar2:true,  perc:false },
 ];
 
 // GPS sejarah — dimuat dari localStorage supaya pentadbir boleh isi/kemaskini
@@ -878,13 +940,13 @@ const GPS_SEJARAH_DEMO = [
 ];
 function loadGPSSejarah() {
   try {
-    const saved = localStorage.getItem('skas_gps_sejarah');
+    const saved = localStorage.getItem('skas_gps_sejarah:' + ME.org);
     if (saved) return JSON.parse(saved).sort((a,b) => a.tahun - b.tahun);
   } catch(e) {}
   return GPS_SEJARAH_DEMO; // fallback demo jika tiada dalam localStorage
 }
 function saveGPSSejarah(data) {
-  try { localStorage.setItem('skas_gps_sejarah', JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem('skas_gps_sejarah:' + ME.org, JSON.stringify(data)); } catch(e) {}
 }
 let GPS_SEJARAH = loadGPSSejarah();
 
@@ -947,13 +1009,8 @@ const JURANG_SK = {
 
 // ── Auto-kira jurang dari markah guru ────────────────────
 function kiraJurangDariMarkah() {
-  let kelasList = [], markState = {};
-  try {
-    const kl = localStorage.getItem('skas_kelas');
-    if (kl) kelasList = JSON.parse(kl);
-    const ms = localStorage.getItem('skas_marks');
-    if (ms) markState = JSON.parse(ms);
-  } catch(e) {}
+  const kelasList = PPDData.spm.kelas().filter(k => !SKOP_SEKOLAH || k.sekolah === SKOP_SEKOLAH);
+  const markState = PPDData.spm.marks();
 
   const studentMap = {};
   kelasList.forEach(k => {
@@ -964,13 +1021,17 @@ function kiraJurangDariMarkah() {
   const students = Object.values(studentMap);
   if (students.length < 3) return null;
 
-  const enriched = students.map(p => {
+  // Satu murid = purata GPS semua subjeknya (rekod dikumpul ikut muridId)
+  const perMurid = {};
+  students.forEach(p => {
     const m = markState[p.id] || {};
-    const latestMark = m.percubaan ?? m.ar2 ?? m.ar1 ?? null;
-    const gps = latestMark != null ? getGPS(latestMark) : null;
-    const lulus = latestMark != null && latestMark >= 40;
-    return { ...p, latestMark, gps, lulus };
-  }).filter(p => p.gps != null);
+    const latestMark = typeof m.percubaan === 'number' ? m.percubaan : typeof m.ar2 === 'number' ? m.ar2 : typeof m.ar1 === 'number' ? m.ar1 : null;
+    if (latestMark == null) return;
+    const key = p.muridId || p.id;
+    const x = perMurid[key] = perMurid[key] || { ...p, gpsSum: 0, n: 0, lulus: true };
+    x.gpsSum += getGPS(latestMark); x.n++; x.lulus = x.lulus && latestMark >= 40;
+  });
+  const enriched = Object.values(perMurid).map(x => ({ ...x, gps: x.gpsSum / x.n }));
   if (enriched.length < 3) return null;
 
   const groupStats = (field, labels) => labels.map(label => {
@@ -1088,6 +1149,35 @@ function muatSekolahDariMarkah() {
   }).sort((a,b)=>a.gps-b.gps);
 }
 
+// Pentadbir Sekolah hanya melihat sekolah sendiri; Admin melihat seluruh daerah
+let SKOP_SEKOLAH = null;
+function muatDataSPM() {
+  const kelas = PPDData.spm.kelas().filter(k => !SKOP_SEKOLAH || k.sekolah === SKOP_SEKOLAH);
+  const marks = PPDData.spm.marks();
+  const terkini = m => typeof m.percubaan === 'number' ? m.percubaan : typeof m.ar2 === 'number' ? m.ar2 : m.ar1;
+  PELAJAR_5A = [];
+  kelas.forEach(k => k.pelajar.forEach((p, i) => {
+    const m = marks[p.id] || {};
+    const mk = {}; ['ar1','ar2','percubaan'].forEach(x => { if (typeof m[x] === 'number') mk[x] = m[x]; });
+    const akhir = terkini(m);
+    PELAJAR_5A.push({ id: p.id, muridId: p.muridId || p.id, nama: p.nama, no: String(i + 1).padStart(2, '0'), kelas: `${k.tingkatan} ${k.kelas}`,
+      guru: k.guru, guruId: k.guruId, subjek: k.subjek, sekolah: k.sekolah, ses: p.ses, lokasi: p.lokasi, penginapan: p.penginapan, marks: mk,
+      alert: typeof akhir === 'number' && ((typeof m.ar1 === 'number' && m.ar1 - akhir > 5) || akhir < 40) });
+  }));
+  const bySub = {};
+  kelas.forEach(k => { (bySub[k.subjek] = bySub[k.subjek] || []).push(k); });
+  const avgGPS = vals => vals.length ? vals.reduce((a, v) => a + getGPS(v), 0) / vals.length : 0;
+  const lengkap = (ks, key) => ks.every(k => PPDData.spm.belumIsi(k, key, marks) === 0);
+  PANITIA_SK = Object.entries(bySub).map(([subjek, ks]) => {
+    const ms = ks.flatMap(k => k.pelajar.map(p => marks[p.id] || {}));
+    return { subjek, guru: [...new Set(ks.map(k => k.guru))].join(', '),
+      gpmp: +avgGPS(ms.map(terkini).filter(v => typeof v === 'number')).toFixed(2),
+      prev: +avgGPS(ms.map(m => m.ar1).filter(v => typeof v === 'number')).toFixed(2),
+      bil: ks.reduce((a, k) => a + k.pelajar.length, 0),
+      ar1: lengkap(ks, 'ar1'), ar2: lengkap(ks, 'ar2'), perc: lengkap(ks, 'percubaan') };
+  });
+}
+
 function kemaskiniDataDaerah() {
   const sekolahBaru = muatSekolahDariMarkah();
   if (sekolahBaru && sekolahBaru.length >= 2) {
@@ -1123,42 +1213,42 @@ function refreshJurangPPD() {
 // ──────────────────────────────────────────────────────────
 
 const SEKOLAH_DAERAH = [
-  { id:'sk-dalat',    nama:'SMK Dalat',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
+  { id:'sk-dalat',    nama:'SMK DALAT',       gps:5.28, prev:5.44, lulus100:true,  bil:480, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.98},{t:2022,g:5.76},{t:2023,g:5.44},{t:2024,g:5.28}],
     trend:{ar1:5.82,ar2:5.61,perc:5.44,spm:5.28},
     panitia:[{subjek:'Matematik',gpmp:4.82,prev:5.12,bil:156},{subjek:'BM',gpmp:3.94,prev:4.21,bil:201},{subjek:'BI',gpmp:5.43,prev:5.71,bil:198},{subjek:'Sains',gpmp:5.87,prev:5.63,bil:145},{subjek:'Sejarah',gpmp:4.12,prev:4.48,bil:198}],
     berisiko:5, ses:{B40:42,M40:37,T20:21}, lokasi:{Bandar:41,LuarBandar:38,Pedalaman:21}, jantina:{Perempuan:241,Lelaki:239} },
-  { id:'sk-balingian',nama:'SMK Balingian',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap',
+  { id:'sk-balingian',nama:'SMK BALINGIAN',   gps:5.41, prev:5.62, lulus100:false, bil:312, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.22},{t:2022,g:5.98},{t:2023,g:5.62},{t:2024,g:5.41}],
     trend:{ar1:5.94,ar2:5.72,perc:5.58,spm:5.41},
     panitia:[{subjek:'Matematik',gpmp:5.11,prev:5.43,bil:98},{subjek:'BM',gpmp:4.22,prev:4.51,bil:112},{subjek:'BI',gpmp:5.62,prev:5.88,bil:102},{subjek:'Sains',gpmp:6.01,prev:6.24,bil:87},{subjek:'Sejarah',gpmp:4.88,prev:5.11,bil:112}],
     berisiko:8, ses:{B40:55,M40:31,T20:14}, lokasi:{Bandar:22,LuarBandar:54,Pedalaman:24}, jantina:{Perempuan:158,Lelaki:154} },
-  { id:'sk-daro',     nama:'SMK Daro',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap',
+  { id:'sk-daro',     nama:'SMK DARO',        gps:5.63, prev:5.71, lulus100:false, bil:287, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.41},{t:2022,g:6.12},{t:2023,g:5.71},{t:2024,g:5.63}],
     trend:{ar1:6.11,ar2:5.88,perc:5.72,spm:5.63},
     panitia:[{subjek:'Matematik',gpmp:5.42,prev:5.68,bil:88},{subjek:'BM',gpmp:4.61,prev:4.72,bil:99},{subjek:'BI',gpmp:5.88,prev:5.94,bil:94},{subjek:'Sains',gpmp:6.22,prev:6.41,bil:78},{subjek:'Sejarah',gpmp:5.11,prev:5.28,bil:99}],
     berisiko:11, ses:{B40:61,M40:27,T20:12}, lokasi:{Bandar:18,LuarBandar:51,Pedalaman:31}, jantina:{Perempuan:146,Lelaki:141} },
-  { id:'sk-mukah',    nama:'SMK Mukah',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap',
+  { id:'sk-mukah',    nama:'SMK MUKAH',       gps:5.71, prev:5.58, lulus100:false, bil:524, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:5.88},{t:2022,g:5.74},{t:2023,g:5.58},{t:2024,g:5.71}],
     trend:{ar1:5.44,ar2:5.51,perc:5.62,spm:5.71},
     panitia:[{subjek:'Matematik',gpmp:5.62,prev:5.41,bil:178},{subjek:'BM',gpmp:4.81,prev:4.62,bil:201},{subjek:'BI',gpmp:5.94,prev:5.71,bil:188},{subjek:'Sains',gpmp:6.41,prev:6.22,bil:156},{subjek:'Sejarah',gpmp:5.28,prev:5.11,bil:201}],
     berisiko:19, ses:{B40:38,M40:44,T20:18}, lokasi:{Bandar:68,LuarBandar:28,Pedalaman:4}, jantina:{Perempuan:268,Lelaki:256} },
-  { id:'sk-oya',      nama:'SMK Oya',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap',
+  { id:'sk-oya',      nama:'SMK OYA',         gps:5.84, prev:6.02, lulus100:false, bil:198, hantar:'Lengkap',
     gpsSejarah:[{t:2021,g:6.71},{t:2022,g:6.44},{t:2023,g:6.02},{t:2024,g:5.84}],
     trend:{ar1:6.38,ar2:6.14,perc:5.97,spm:5.84},
     panitia:[{subjek:'Matematik',gpmp:5.81,prev:6.11,bil:62},{subjek:'BM',gpmp:5.12,prev:5.41,bil:68},{subjek:'BI',gpmp:6.12,prev:6.38,bil:65},{subjek:'Sains',gpmp:6.54,prev:6.81,bil:55},{subjek:'Sejarah',gpmp:5.44,prev:5.72,bil:68}],
     berisiko:14, ses:{B40:72,M40:21,T20:7}, lokasi:{Bandar:8,LuarBandar:44,Pedalaman:48}, jantina:{Perempuan:102,Lelaki:96} },
-  { id:'sk-selangau', nama:'SMK Selangau',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum',
+  { id:'sk-selangau', nama:'SMK SELANGAU',    gps:5.97, prev:5.89, lulus100:false, bil:167, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.31},{t:2023,g:5.89},{t:2024,g:5.97}],
     trend:{ar1:5.72,ar2:5.81,perc:5.91,spm:5.97},
     panitia:[{subjek:'Matematik',gpmp:6.01,prev:5.88,bil:52},{subjek:'BM',gpmp:5.22,prev:5.11,bil:57},{subjek:'BI',gpmp:6.28,prev:6.12,bil:54},{subjek:'Sains',gpmp:6.71,prev:6.54,bil:47},{subjek:'Sejarah',gpmp:5.61,prev:5.44,bil:57}],
     berisiko:17, ses:{B40:78,M40:18,T20:4}, lokasi:{Bandar:5,LuarBandar:38,Pedalaman:57}, jantina:{Perempuan:86,Lelaki:81} },
-  { id:'sk-tulai',    nama:'SMK Tulai',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum',
+  { id:'sk-tulai',    nama:'SMK TULAI',       gps:6.12, prev:6.31, lulus100:false, bil:143, hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.88},{t:2022,g:6.64},{t:2023,g:6.31},{t:2024,g:6.12}],
     trend:{ar1:6.54,ar2:6.38,perc:6.22,spm:6.12},
     panitia:[{subjek:'Matematik',gpmp:6.14,prev:6.38,bil:44},{subjek:'BM',gpmp:5.44,prev:5.62,bil:48},{subjek:'BI',gpmp:6.41,prev:6.58,bil:46},{subjek:'Sains',gpmp:6.88,prev:7.11,bil:41},{subjek:'Sejarah',gpmp:5.81,prev:5.94,bil:48}],
     berisiko:21, ses:{B40:81,M40:16,T20:3}, lokasi:{Bandar:2,LuarBandar:31,Pedalaman:67}, jantina:{Perempuan:74,Lelaki:69} },
-  { id:'sk-sgmaong',  nama:'SMK Sg. Maong',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum',
+  { id:'sk-sgmaong',  nama:'SMK SG. MAONG',   gps:6.28, prev:6.14, lulus100:false, bil:98,  hantar:'Belum',
     gpsSejarah:[{t:2021,g:6.54},{t:2022,g:6.38},{t:2023,g:6.14},{t:2024,g:6.28}],
     trend:{ar1:6.11,ar2:6.18,perc:6.22,spm:6.28},
     panitia:[{subjek:'Matematik',gpmp:6.31,prev:6.18,bil:31},{subjek:'BM',gpmp:5.62,prev:5.44,bil:33},{subjek:'BI',gpmp:6.54,prev:6.41,bil:32},{subjek:'Sains',gpmp:7.01,prev:6.88,bil:28},{subjek:'Sejarah',gpmp:5.98,prev:5.81,bil:33}],
@@ -1175,104 +1265,49 @@ const JURANG = {
 // ── State ─────────────────────────────────────────────────
 let ROLE = 'teacher';
 let charts = {};
-// ── Dummy data Guru ───────────────────────────────────────
-const DUMMY_KELAS = [
-  {
-    id:'k1', subjek:'Matematik', tingkatan:'5', kelas:'Amanah', tahun:'2025',
-    pelajar:[
-      {id:'p1',  nama:'Ahmad Syafiq bin Zulkifli',     jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
-      {id:'p2',  nama:'Nurul Farhana binti Azman',     jantina:'P', ses:'M40', lokasi:'Bandar'},
-      {id:'p3',  nama:'Muhammad Haziq bin Rosli',      jantina:'L', ses:'B40', lokasi:'Pedalaman'},
-      {id:'p4',  nama:'Siti Nur Aisyah binti Kamal',   jantina:'P', ses:'T20', lokasi:'Bandar'},
-      {id:'p5',  nama:'Mohamad Aiman bin Saiful',      jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
-      {id:'p6',  nama:'Nur Syafiqah binti Hamdan',     jantina:'P', ses:'M40', lokasi:'Bandar'},
-      {id:'p7',  nama:'Izzatul Hafizah binti Nordin',  jantina:'P', ses:'T20', lokasi:'Bandar'},
-      {id:'p8',  nama:'Khairul Anam bin Rashid',       jantina:'L', ses:'B40', lokasi:'Pedalaman'},
-      {id:'p9',  nama:'Fatin Nabilah binti Yusof',     jantina:'P', ses:'M40', lokasi:'Luar Bandar'},
-      {id:'p10', nama:'Luqmanul Hakim bin Azhari',     jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
-    ]
-  },
-  {
-    id:'k2', subjek:'Matematik', tingkatan:'5', kelas:'Bestari', tahun:'2025',
-    pelajar:[
-      {id:'p11', nama:'Nur Ain binti Mohd Noor',       jantina:'P', ses:'M40', lokasi:'Bandar'},
-      {id:'p12', nama:'Farhan Hafizi bin Zainudin',    jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
-      {id:'p13', nama:'Aina Maisarah binti Suhaimi',   jantina:'P', ses:'T20', lokasi:'Bandar'},
-      {id:'p14', nama:'Amirul Fitri bin Jamaludin',    jantina:'L', ses:'B40', lokasi:'Pedalaman'},
-      {id:'p15', nama:'Nurulhuda binti Zakaria',       jantina:'P', ses:'M40', lokasi:'Bandar'},
-      {id:'p16', nama:'Syahmi Irfan bin Othman',       jantina:'L', ses:'B40', lokasi:'Luar Bandar'},
-      {id:'p17', nama:'Qistina Izzah binti Razali',    jantina:'P', ses:'T20', lokasi:'Bandar'},
-      {id:'p18', nama:'Hafiz bin Mokhtar',             jantina:'L', ses:'B40', lokasi:'Pedalaman'},
-    ]
-  },
-];
-
-const DUMMY_MARKS = {
-  p1:{ar1:72,ar2:68,percubaan:65},  p2:{ar1:85,ar2:87,percubaan:89},
-  p3:{ar1:55,ar2:50,percubaan:44},  p4:{ar1:90,ar2:92,percubaan:95},
-  p5:{ar1:63,ar2:61,percubaan:58},  p6:{ar1:78,ar2:80,percubaan:82},
-  p7:{ar1:88,ar2:85,percubaan:83},  p8:{ar1:47,ar2:43,percubaan:38},
-  p9:{ar1:76,ar2:78,percubaan:79},  p10:{ar1:60,ar2:62,percubaan:65},
-  p11:{ar1:82,ar2:84,percubaan:86}, p12:{ar1:70,ar2:67,percubaan:64},
-  p13:{ar1:91,ar2:93,percubaan:94}, p14:{ar1:53,ar2:55,percubaan:52},
-  p15:{ar1:77,ar2:79,percubaan:81}, p16:{ar1:66,ar2:63,percubaan:60},
-  p17:{ar1:89,ar2:90,percubaan:92}, p18:{ar1:58,ar2:54,percubaan:49},
-};
-
-// Guru class-based model — baca dari skas_kelas jika ada, fallback ke DUMMY_KELAS
-let kelasList = (() => {
-  try {
-    const kl = localStorage.getItem('skas_kelas');
-    if (kl) {
-      const list = JSON.parse(kl);
-      if (list && list.length > 0) {
-        // Tukar format skas_kelas → format guru view
-        return list.map(k => ({
-          id: k.id,
-          subjek: k.subjek || 'Umum',
-          tingkatan: '5',
-          kelas: k.kelas || '5 Amanah',
-          tahun: '2025',
-          guru: k.guru || DEMO.guru.nama,
-          sekolah: k.sekolah || DEMO.guru.sekolah,
-          pelajar: (k.pelajar || []).map(p => ({
-            id: p.id, nama: p.nama,
-            jantina: p.jantina === 'Lelaki' ? 'L' : p.jantina === 'Perempuan' ? 'P' : (p.jantina || 'L'),
-            ses: p.ses || 'B40', lokasi: p.lokasi || 'Bandar', penginapan: p.penginapan || 'Harian'
-          }))
-        }));
-      }
-    }
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(DUMMY_KELAS));
-})();
-let markState = (() => {
-  try {
-    const ms = localStorage.getItem('skas_marks');
-    if (ms) { const parsed = JSON.parse(ms); if (Object.keys(parsed).length > 0) return parsed; }
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(DUMMY_MARKS));
-})();
+// Guru: hanya kelas milik pengguna yang log masuk (stor kongsi PPDData)
+const JANTINA_PENUH = { L:'Lelaki', P:'Perempuan' };
+let kelasList = PPDData.spm.kelasGuru(ME.id).map(k => ({
+  ...k,
+  pelajar: k.pelajar.map(p => ({ ...p, jantina: p.jantina === 'Perempuan' ? 'P' : p.jantina === 'Lelaki' ? 'L' : (p.jantina || 'L') })),
+}));
+let markState = PPDData.spm.marks();
 let activeKelasId = null;
 let activeUjian   = null;  // null | 'ar1' | 'ar2' | 'percubaan'
 let guruView = 'kelas';    // 'kelas' | 'pelajar'
-let kelasNextId = 3;
-let pelajarNextId = 100;
+let kelasNextId = Date.now();
+let pelajarNextId = Date.now();
 
-function getRole() {
-  try {
-    const p = new URLSearchParams(window.location.search).get('role');
-    if (['teacher','school_admin','ppd_admin'].includes(p)) return p;
-  } catch {}
-  return null;
+// ── Simpan automatik ke stor kongsi ───────────────────────
+let _simpanT = null;
+function simpanAuto() {
+  setSimpanStatus('menyimpan');
+  clearTimeout(_simpanT);
+  _simpanT = setTimeout(() => {
+    const mine = new Set(kelasList.map(k => k.id));
+    const lain = PPDData.spm.kelas().filter(k => k.guruId !== ME.id && !mine.has(k.id));
+    const milikSaya = kelasList.map(k => ({
+      ...k, guru: ME.nama, guruId: ME.id, sekolah: k.sekolah || ME.org,
+      pelajar: k.pelajar.map(p => ({ ...p, jantina: JANTINA_PENUH[p.jantina] || p.jantina })),
+    }));
+    const ok = PPDData.spm.save([...lain, ...milikSaya], markState);
+    setSimpanStatus(ok ? 'disimpan' : 'gagal');
+  }, 400);
+}
+let _simpanMasa = null;
+function setSimpanStatus(st) {
+  if (st === 'disimpan') _simpanMasa = new Date();
+  const el = document.getElementById('simpan-status');
+  if (!el) return;
+  el.dataset.st = st;
+  el.textContent = st === 'menyimpan' ? 'Menyimpan…'
+    : st === 'gagal' ? 'Gagal disimpan. Semak storan pelayar.'
+    : _simpanMasa ? `Disimpan ${_simpanMasa.toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit' })}` : 'Semua perubahan disimpan automatik';
 }
 
-function switchRole(r) {
-  ROLE = r;
-  const url = new URL(window.location.href);
-  url.searchParams.set('role', r);
-  window.history.replaceState({}, '', url);
-  buildApp();
+function getRole() {
+  const s = PPDAuth.session();
+  return s ? PPDAuth.appRoleFor(PPDAuth.findById(s.uid), s.level, 'spm') : 'teacher';
 }
 
 // ── Toast ─────────────────────────────────────────────────
@@ -1315,15 +1350,13 @@ function sparkSVG(marks, isAlert) {
 function buildApp() {
   Object.keys(charts).forEach(k => { charts[k].destroy(); delete charts[k]; });
 
-  const roleInfo = {
-    teacher:      { label:'Guru',              cls:'guru',      user: DEMO.guru.nama },
-    school_admin: { label:'Pentadbir Sekolah', cls:'pentadbir', user: DEMO.pentadbir.nama },
-    ppd_admin:    { label:'Admin PPD',         cls:'ppd',       user: DEMO.ppd_admin.nama },
-  }[ROLE];
-
-  document.getElementById('role-chip').textContent = roleInfo.label;
-  document.getElementById('role-chip').className   = 'role-chip ' + roleInfo.cls;
-  document.getElementById('topbar-user').textContent = roleInfo.user;
+  const lv = PPDAuth.session().level;
+  SKOP_SEKOLAH = ROLE === 'school_admin' ? ME.org : null;
+  muatDataSPM();
+  const cls = { teacher:'guru', school_admin:'pentadbir', ppd_admin:'ppd' }[ROLE];
+  document.getElementById('role-chip').textContent = PPDAuth.LEVELS[lv].label;
+  document.getElementById('role-chip').className   = 'role-chip ' + cls;
+  document.getElementById('topbar-user').textContent = `${ME.nama} · ${ROLE === 'ppd_admin' ? 'PPD Dalat' : ME.org}`;
 
   if(ROLE === 'teacher')      buildGuru();
   if(ROLE === 'school_admin') buildPentadbir();
@@ -1385,6 +1418,7 @@ function renderGuruMain() {
     renderPelajarListDOM(ak);
   }
   if (ak) refreshMarkTable();
+  setSimpanStatus(_simpanMasa ? 'disimpan' : 'sedia');
 }
 
 // ── Tab: Kelas Saya → Senarai Kelas ──────────────────────
@@ -1395,7 +1429,8 @@ function renderKelasView() {
     const bil     = k.pelajar.length;
     const alerts  = k.pelajar.filter(p => isAlert(p.id)).length;
     const av      = kelasAv(k.subjek);
-    return `<div class="kelas-card">
+    const belumPerc = PPDData.spm.belumIsi(k, PPDData.PEPERIKSAAN_SEMASA.key, markState);
+    return `<div class="kelas-card${belumPerc ? ' kelas-perlu' : ''}">
       <div class="kelas-card-top">
         <div class="kelas-av">${av}</div>
         <div class="kelas-info">
@@ -1415,8 +1450,8 @@ function renderKelasView() {
           <div class="kelas-stat-lbl">Berisiko</div>
         </div>
         <div class="kelas-stat">
-          <div class="kelas-stat-val">${bil>0?'3/3':'—'}</div>
-          <div class="kelas-stat-lbl">Peperiksaan</div>
+          <div class="kelas-stat-val ${belumPerc ? 'yellow-c' : ''}">${bil>0 ? `${UJIAN_LIST.filter(u => ujianStatus(k, u.key) === 'lengkap').length}/3` : '—'}</div>
+          <div class="kelas-stat-lbl">Ujian lengkap</div>
         </div>
       </div>
       <div class="kelas-btns">
@@ -1472,8 +1507,8 @@ function renderPelajarView() {
          ondrop="event.preventDefault();this.style.borderColor='';handleFileDrop(event)"
          style="padding:24px;text-align:center;margin-bottom:16px">
       <div style="font-size:24px;margin-bottom:8px">📤</div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Import murid dari fail Excel atau CSV</div>
-      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">Lajur: <strong>Nama · Jantina · AR1 · AR2 · Percubaan</strong></div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Daftar murid dari fail Excel atau CSV</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">Lajur: <strong>Nama · Jantina · Agama · Penginapan · SES</strong> · markah dimuat naik kemudian di tab Rekod Markah</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn-secondary" style="font-size:12px;pointer-events:none">Pilih Fail</button>
         <button class="btn-sm" onclick="event.stopPropagation();muat_turun_templat()">⬇ Templat CSV</button>
@@ -1496,14 +1531,17 @@ function renderPelajarListDOM(k) {
   const el = document.getElementById('guru-pelajar-list-wrap');
   if (!el || k.pelajar.length === 0) return;
   el.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>No.</th><th>Nama Murid</th><th style="text-align:center">Jantina</th><th style="text-align:center">Penginapan</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
+    <thead><tr><th>No.</th><th>Nama Murid</th><th style="text-align:center">Jantina</th><th style="text-align:center">Agama</th><th style="text-align:center">Penginapan</th><th style="text-align:center">SES</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th><th></th></tr></thead>
     <tbody>${k.pelajar.map((p,i) => {
-      const m = markState[p.id] || { ar1:'—', ar2:'—', percubaan:'—' };
+      const ms = markState[p.id] || {};
+      const m = Object.fromEntries(['ar1','ar2','percubaan'].map(k => [k, ms[k] === null ? 'TH' : ms[k] ?? '—']));
       return `<tr>
         <td style="color:var(--t3)">${String(i+1).padStart(2,'0')}</td>
         <td class="tc-name">${p.nama}</td>
         <td style="text-align:center;color:var(--t3)">${p.jantina==='P'?'♀ P':'♂ L'}</td>
+        <td style="text-align:center;color:var(--t2);font-size:12px">${esc(p.agama || '—')}</td>
         <td style="text-align:center"><span class="chip ${p.penginapan==='Asrama'?'chip-blue':'chip-purple'}" style="font-size:10px">${p.penginapan||'Harian'}</span></td>
+        <td style="text-align:center;font-size:12px">${esc(p.ses || '—')}</td>
         <td style="text-align:center" class="tc-num">${m.ar1}</td>
         <td style="text-align:center" class="tc-num">${m.ar2}</td>
         <td style="text-align:center" class="tc-num">${m.percubaan}</td>
@@ -1637,8 +1675,19 @@ function renderRekodView(ak) {
            ['D','45–49','Lulus','#f59e0b'],['E','40–44','Lulus','#fb923c'],['G','0–39','Gagal','#ef4444']
           ].map(([gred,julat,kat,warna])=>`<span style="background:${warna}18;color:${warna};border:1px solid ${warna}44;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${gred} <span style="opacity:.7;font-weight:400">${julat}</span></span>`).join('')}
       </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
+      <div class="markah-muat">
+        <div class="markah-muat-t">
+          <b>Muat naik markah ${UJIAN_LIST.find(u=>u.key===activeUjian)?.label}</b>
+          <span>Fail Excel/CSV dengan lajur <b>Nama</b> dan <b>Markah</b>. Tulis <b>TH</b> bagi murid tidak hadir. Pembetulan dibuat terus dalam jadual di bawah.</span>
+        </div>
+        <div class="markah-muat-b">
+          <button class="btn-secondary" onclick="muatTurunTemplatMarkah()">⬇ Templat markah</button>
+          <button class="btn-primary" onclick="document.getElementById('file-markah').click()">⬆ Muat naik fail</button>
+        </div>
+      </div>
+      <div class="mark-progress" id="mark-progress"></div>
+      <div class="tbl-wrap mark-wrap">
+        <table class="tbl mark-tbl">
           <thead><tr>
             <th>Nama Murid</th>
             <th style="width:110px;text-align:center">Markah (0–100)</th>
@@ -1649,12 +1698,12 @@ function renderRekodView(ak) {
           <tbody id="guru-mark-tbody"></tbody>
         </table>
       </div>
-      <div class="btn-row">
+      <div class="btn-row mark-savebar">
+        <span class="simpan-status" id="simpan-status" role="status" aria-live="polite"></span>
         <button class="btn-primary" onclick="saveAllMarks()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Simpan Markah ${UJIAN_LIST.find(u=>u.key===activeUjian)?.label}
+          Simpan Sekarang
         </button>
-        <button class="btn-secondary" onclick="refreshMarkTable()">Muat Semula</button>
       </div>`}
   `;
 }
@@ -2405,22 +2454,30 @@ function renderStatusView() {
       <div class="empty-sub">Daftar kelas dahulu untuk melihat status pengisian.</div>
     </div>`;
 
+  const pe = PPDData.PEPERIKSAAN_SEMASA;
+  const baki = -PPDData.hari(pe.tarikhAkhir);
+  const DOT = { lengkap:['dot-ok','✓'], separa:['dot-sep','…'], belum:['dot-miss','—'], tiada:['dot-miss','—'] };
   return `
     <div class="sh"><div><div class="sh-title">Status Pengisian Data</div><div class="sh-sub">Status rekod markah mengikut kelas</div></div></div>
+    <div class="tarikh-akhir ${baki <= 3 ? 'merah' : baki <= 7 ? 'kuning' : ''}">
+      <b>${pe.label}</b> dibuka untuk pengisian · tarikh akhir <b>${new Date(pe.tarikhAkhir).toLocaleDateString('ms-MY', { day:'numeric', month:'long' })}</b>
+      (${baki > 0 ? `${baki} hari lagi` : baki === 0 ? 'hari ini' : `lewat ${-baki} hari`})
+    </div>
     ${kelasList.map(k => {
       const bil = k.pelajar.length;
-      const hasData = bil > 0;
+      const st = UJIAN_LIST.map(u => ujianStatus(k, u.key));
+      const semua = st.every(s => s === 'lengkap');
+      const belum = PPDData.spm.belumIsi(k, pe.key, markState);
       return `<div class="prog-row">
         <div class="prog-icon">📚</div>
         <div class="prog-info">
           <div class="prog-name">${k.subjek} · Tingkatan ${k.tingkatan} ${k.kelas}</div>
-          <div class="prog-sub">${bil} murid · ${k.tahun}</div>
+          <div class="prog-sub">${bil} murid · ${k.tahun}${belum ? ` · <b style="color:var(--yellow)">${belum} markah ${UJIAN_LIST.find(u => u.key === pe.key).label} belum diisi</b>` : ''}</div>
         </div>
         <div class="prog-dots">
-          <span class="dot-lbl">AR1</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
-          <span class="dot-lbl">AR2</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
-          <span class="dot-lbl">Perc</span><div class="dot ${hasData?'dot-ok':'dot-miss'}">${hasData?'✓':'—'}</div>
-          <span class="chip ${hasData?'chip-green':'chip-gray'}" style="margin-left:8px">${hasData?'Lengkap':'Tiada data'}</span>
+          ${UJIAN_LIST.map((u, i) => `<span class="dot-lbl">${u.key === 'percubaan' ? 'Perc' : u.label}</span><div class="dot ${DOT[st[i]][0]}" title="${u.full}: ${st[i]}">${DOT[st[i]][1]}</div>`).join('')}
+          ${semua ? `<span class="chip chip-green" style="margin-left:8px">Lengkap</span>`
+                  : `<button class="btn-sm" style="margin-left:8px" onclick="bukaRekodMarkah('${k.id}');pilihUjian('${pe.key}')">Isi sekarang</button>`}
         </div>
       </div>`;
     }).join('')}
@@ -2430,8 +2487,9 @@ function renderStatusView() {
 function isAlert(id) {
   const m = markState[id];
   if (!m) return false;
-  // Berisiko jika trend merosot lebih dari 5 markah dari AR1 ke Percubaan
-  return (m.ar1 - m.percubaan) > 5;
+  // Berisiko jika trend merosot lebih dari 5 markah dari AR1 ke ujian terkini
+  const akhir = typeof m.percubaan === 'number' ? m.percubaan : typeof m.ar2 === 'number' ? m.ar2 : null;
+  return typeof m.ar1 === 'number' && akhir !== null && (m.ar1 - akhir) > 5;
 }
 
 function switchTab(tabId) {
@@ -2465,7 +2523,7 @@ function pilihUjian(ujian) {
   if (!rekodSection) return;
   const ak = getActiveKelas();
   rekodSection.innerHTML = renderRekodView(ak);
-  if (ujian) refreshMarkTable();
+  if (ujian) { refreshMarkTable(); setSimpanStatus(_simpanMasa ? 'disimpan' : 'sedia'); }
 }
 
 function openDaftarKelas(editId) {
@@ -2498,9 +2556,9 @@ function closeDaftarKelasModal() {
 function simpanKelas() {
   const subjek    = document.getElementById('kelas-subjek').value.trim();
   const tingkatan = document.getElementById('kelas-tingkatan').value;
-  const kelasNama = document.getElementById('kelas-nama').value.trim();
+  const kelasNama = PPDAuth.besar(document.getElementById('kelas-nama').value);
   const tahun     = document.getElementById('kelas-tahun').value;
-  if (!subjek || !kelasNama) { alert('Sila isi Mata Pelajaran dan Nama Kelas.'); return; }
+  if (!subjek || !kelasNama) { PPDUI.alert('Maklumat belum lengkap', 'Sila isi Mata Pelajaran dan Nama Kelas.'); return; }
 
   const editId = document.getElementById('kelas-edit-id').value;
   if (editId) {
@@ -2509,24 +2567,26 @@ function simpanKelas() {
     showToast(`✓ Kelas dikemaskini: ${subjek} · T${tingkatan} ${kelasNama}`);
   } else {
     const id = 'k' + (kelasNextId++);
-    kelasList.push({ id, subjek, tingkatan, kelas: kelasNama, tahun, pelajar: [] });
+    kelasList.push({ id, subjek, tingkatan, kelas: kelasNama, tahun, sekolah: ME.org, guru: ME.nama, guruId: ME.id, pelajar: [] });
     showToast(`✓ Kelas baru didaftar: ${subjek} · T${tingkatan} ${kelasNama}`);
   }
   closeDaftarKelasModal();
   renderGuruMain();
   bindTabs();
+  simpanAuto();
 }
 
-function padamKelas(kelasId) {
+async function padamKelas(kelasId) {
   const k = kelasList.find(x => x.id === kelasId);
   if (!k) return;
-  if (!confirm(`Padam kelas "${k.subjek} · T${k.tingkatan} ${k.kelas}"?\nSemua ${k.pelajar.length} murid dalam kelas ini akan turut dipadam.`)) return;
+  if (!(await PPDUI.confirm(`Padam kelas ${k.subjek} · T${k.tingkatan} ${k.kelas}?`, `Semua ${k.pelajar.length} murid dan markah dalam kelas ini akan turut dipadam.`))) return;
   k.pelajar.forEach(p => delete markState[p.id]);
   kelasList = kelasList.filter(x => x.id !== kelasId);
   if (activeKelasId === kelasId) { activeKelasId = null; guruView = 'kelas'; }
   showToast(`Kelas ${k.subjek} dipadam`);
   renderGuruMain();
   bindTabs();
+  simpanAuto();
 }
 
 // markState[id][pep] values:
@@ -2543,6 +2603,7 @@ function toggleTH(id, pep) {
   markState[id][pep] = isTH(id, pep) ? undefined : null;
   refreshMarkTable();
   refreshUjianCards();
+  simpanAuto();
 }
 
 function refreshUjianCards() {
@@ -2605,29 +2666,27 @@ function refreshMarkTable() {
           ? `<span class="trend-dn">▲ Naik</span>`
           : `<span class="trend-eq">— Stabil</span>`;
 
-    // row highlight: merah kalau TH, kuning kalau noData
-    const rowStyle = th ? 'opacity:.6' : noData ? 'background:rgba(234,179,8,.04)' : '';
-
-    return `<tr style="${rowStyle}">
+    return `<tr class="${th ? 'mark-th' : noData ? 'mark-kosong' : ''}">
       <td class="tc-name">
+        <span class="mark-no">${i + 1}</span>
         <button class="nama-link" onclick="bukaPelajarModal('${p.id}')">${p.nama}</button>
-        ${noData&&!th?` <span style="font-size:10px;color:var(--yellow);font-weight:700">BARU</span>`:''}
         ${th?` <span style="font-size:10px;color:var(--t3)">Tidak Hadir</span>`:''}
       </td>
-      <td style="text-align:center">
+      <td style="text-align:center" class="mark-cell">
         ${th
           ? `<span class="chip chip-gray" style="font-size:12px;letter-spacing:.04em">TH</span>`
           : `<input type="number" class="mark-input" value="${noData?'':mark}" placeholder="—"
-               min="0" max="100" data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)">`
+               min="0" max="100" inputmode="numeric" enterkeyhint="next" aria-label="Markah ${p.nama}"
+               data-id="${p.id}" data-pep="${pep}" onchange="updateMark(this)" onkeydown="markKeydown(event)">`
         }
       </td>
-      <td style="text-align:center">
+      <td style="text-align:center" class="mark-gred">
         ${th  ? `<span style="color:var(--t3);font-size:12px">—</span>`
               : noData ? `<span style="color:var(--yellow);font-size:12px">—</span>`
               : `<span class="chip ${gredClass(gred)}">${gred}</span>`}
       </td>
       <td style="text-align:center" class="col-trend">${trendHtml}</td>
-      <td>
+      <td class="mark-th-cell">
         <button class="btn-sm${th?' btn-th-active':''}" title="${th?'Batal TH':'Tandakan Tidak Hadir'}"
           onclick="toggleTH('${p.id}','${pep}')"
           style="${th?'background:rgba(100,116,139,.2);color:var(--t2);border-color:var(--border)':'color:var(--t3)'}">
@@ -2636,6 +2695,7 @@ function refreshMarkTable() {
       </td>
     </tr>`;
   }).join('');
+  refreshMarkProgress();
 }
 
 function updateMark(el) {
@@ -2649,12 +2709,42 @@ function updateMark(el) {
     markState[id][pep] = Math.max(0, Math.min(100, +raw || 0));
     el.value = markState[id][pep];
   }
+  const g = el.closest('tr')?.querySelector('.mark-gred');
+  if (g) {
+    const v = markState[id][pep];
+    g.innerHTML = v === undefined ? '<span style="color:var(--yellow);font-size:12px">—</span>' : `<span class="chip ${gredClass(markToGred(v))}">${markToGred(v)}</span>`;
+  }
+  el.closest('tr')?.classList.toggle('mark-kosong', markState[id][pep] === undefined);
   refreshUjianCards();
+  refreshMarkProgress();
+  simpanAuto();
+}
+
+function refreshMarkProgress() {
+  const ak = getActiveKelas();
+  const el = document.getElementById('mark-progress');
+  if (!ak || !activeUjian || !el) return;
+  const done = ak.pelajar.filter(p => (markState[p.id] || {})[activeUjian] !== undefined).length;
+  const tot = ak.pelajar.length;
+  el.innerHTML = `<div class="mp-bar"><i style="width:${tot ? done / tot * 100 : 0}%"></i></div><span><b>${done}/${tot}</b> diisi${done === tot ? ' · lengkap' : ''}</span>`;
+}
+
+// Enter / "Seterusnya" pada papan kekunci telefon → terus ke murid berikutnya
+function markKeydown(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  e.target.dispatchEvent(new Event('change'));
+  const all = [...document.querySelectorAll('#guru-mark-tbody .mark-input')];
+  const next = all[all.indexOf(e.target) + 1];
+  if (next) { next.focus(); next.select(); } else e.target.blur();
 }
 
 function saveAllMarks() {
+  clearTimeout(_simpanT);
+  _simpanT = null;
+  simpanAuto();
   const ak = getActiveKelas();
-  showToast(`✓ Semua markah ${ak ? ak.pelajar.length : 0} murid telah disimpan`);
+  showToast(`✓ Markah ${ak ? ak.pelajar.length : 0} murid disimpan`);
 }
 
 // ── Modal helpers ─────────────────────────────────────────
@@ -2668,16 +2758,15 @@ function closeImportModal() {
 }
 
 function openTambahPelajar() {
-  document.getElementById('modal-tambah-title').textContent = 'Tambah Pelajar';
-  document.getElementById('modal-tambah-sub').textContent   = 'Isi maklumat pelajar untuk ditambah ke senarai kelas';
-  document.getElementById('btn-tambah-simpan').innerHTML    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Pelajar';
-  document.getElementById('inp-edit-id').value  = '';
-  document.getElementById('inp-nama').value     = '';
+  document.getElementById('modal-tambah-title').textContent = 'Tambah Murid';
+  document.getElementById('modal-tambah-sub').textContent   = 'Daftar seorang murid ke dalam kelas ini';
+  document.getElementById('btn-tambah-simpan').innerHTML    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Murid';
+  document.getElementById('inp-edit-id').value    = '';
+  document.getElementById('inp-nama').value       = '';
   document.getElementById('inp-jantina').value    = 'L';
+  document.getElementById('inp-agama').value      = 'Islam';
   document.getElementById('inp-penginapan').value = 'Harian';
-  document.getElementById('inp-ar1').value        = '';
-  document.getElementById('inp-ar2').value        = '';
-  document.getElementById('inp-perc').value       = '';
+  document.getElementById('inp-ses').value        = 'B40';
   document.getElementById('modal-tambah').hidden = false;
   setTimeout(() => document.getElementById('inp-nama').focus(), 50);
 }
@@ -2686,60 +2775,64 @@ function openEditPelajar(id) {
   const ak = getActiveKelas();
   const p = ak ? ak.pelajar.find(x => x.id === id) : null;
   if (!p) return;
-  const m = markState[id] || { ar1:0, ar2:0, percubaan:0 };
-  document.getElementById('modal-tambah-title').textContent = 'Edit Maklumat Pelajar';
+  document.getElementById('modal-tambah-title').textContent = 'Edit Maklumat Murid';
   document.getElementById('modal-tambah-sub').textContent   = p.nama;
   document.getElementById('btn-tambah-simpan').innerHTML    = '✓ Simpan Perubahan';
-  document.getElementById('inp-edit-id').value  = id;
-  document.getElementById('inp-nama').value     = p.nama;
+  document.getElementById('inp-edit-id').value    = id;
+  document.getElementById('inp-nama').value       = p.nama;
   document.getElementById('inp-jantina').value    = p.jantina || 'L';
+  document.getElementById('inp-agama').value      = p.agama || 'Islam';
   document.getElementById('inp-penginapan').value = p.penginapan || 'Harian';
-  document.getElementById('inp-ar1').value        = m.ar1 || '';
-  document.getElementById('inp-ar2').value      = m.ar2 || '';
-  document.getElementById('inp-perc').value     = m.percubaan || '';
+  document.getElementById('inp-ses').value        = p.ses || 'B40';
   document.getElementById('modal-tambah').hidden = false;
   setTimeout(() => document.getElementById('inp-nama').focus(), 50);
 }
 
 function simpanPelajarModal() {
-  const nama = document.getElementById('inp-nama').value.trim();
+  const nama = PPDAuth.besar(document.getElementById('inp-nama').value);
   if (!nama) { document.getElementById('inp-nama').focus(); return; }
-  const editId     = document.getElementById('inp-edit-id').value;
-  const jantina    = document.getElementById('inp-jantina').value;
-  const penginapan = document.getElementById('inp-penginapan').value;
-  const ar1     = Math.max(0, Math.min(100, +document.getElementById('inp-ar1').value || 0));
-  const ar2     = Math.max(0, Math.min(100, +document.getElementById('inp-ar2').value || ar1));
-  const perc    = Math.max(0, Math.min(100, +document.getElementById('inp-perc').value || ar1));
-
+  const editId = document.getElementById('inp-edit-id').value;
+  const data = {
+    nama,
+    jantina:    document.getElementById('inp-jantina').value,
+    agama:      document.getElementById('inp-agama').value,
+    penginapan: document.getElementById('inp-penginapan').value,
+    ses:        document.getElementById('inp-ses').value,
+  };
   const ak = getActiveKelas();
+  if (!ak) { PPDUI.alert('Tiada kelas dipilih', 'Pilih kelas dahulu sebelum tambah murid.'); return; }
   if (editId) {
-    const p = ak ? ak.pelajar.find(x => x.id === editId) : null;
-    if (p) { p.nama = nama; p.jantina = jantina; p.penginapan = penginapan; }
-    markState[editId] = { ar1, ar2, percubaan: perc };
+    const p = ak.pelajar.find(x => x.id === editId);
+    if (p) Object.assign(p, data);
     showToast(`✓ Maklumat ${nama} dikemaskini`);
   } else {
-    if (!ak) { alert('Pilih kelas dahulu sebelum tambah murid.'); return; }
+    if (ak.pelajar.some(p => namaKunci(p.nama) === namaKunci(nama))) {
+      PPDUI.alert('Murid sudah berdaftar', `${nama} sudah ada dalam kelas ini.`);
+      return;
+    }
     const id = 'p' + (++pelajarNextId);
-    ak.pelajar.push({ id, nama, jantina, penginapan, ses: '', lokasi: '' });
-    markState[id] = { ar1, ar2, percubaan: perc };
-    showToast(`✓ ${nama} berjaya ditambah`);
+    ak.pelajar.push({ id, ...data, lokasi: '' });
+    markState[id] = {};
+    showToast(`✓ ${nama} berjaya didaftarkan`);
   }
   closeModal();
   renderGuruMain();
   bindTabs();
+  simpanAuto();
 }
 
-function padamPelajar(id) {
+async function padamPelajar(id) {
   const ak = getActiveKelas();
   if (!ak) return;
   const p = ak.pelajar.find(x => x.id === id);
   if (!p) return;
-  if (!confirm(`Padam ${p.nama} daripada kelas ini?`)) return;
+  if (!(await PPDUI.confirm(`Padam ${p.nama}?`, 'Murid ini dan semua markahnya akan dibuang daripada kelas.'))) return;
   ak.pelajar = ak.pelajar.filter(x => x.id !== id);
   delete markState[id];
   showToast(`Murid ${p.nama} dipadam`);
   renderGuruMain();
   bindTabs();
+  simpanAuto();
 }
 
 // ── File upload & parsing ──────────────────────────────────
@@ -2762,7 +2855,7 @@ function handleFileUpload(input) {
 function processFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   if (!['csv','xlsx','xls'].includes(ext)) {
-    alert('Hanya fail CSV (.csv) atau Excel (.xlsx, .xls) dibenarkan.');
+    PPDUI.alert('Jenis fail tidak disokong', 'Hanya fail CSV (.csv) atau Excel (.xlsx, .xls) dibenarkan.');
     return;
   }
   const reader = new FileReader();
@@ -2777,10 +2870,10 @@ function processFile(file) {
         const data = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
         rows = parseRows(data);
       }
-      if (rows.length === 0) { alert('Tiada data pelajar yang dikesan dalam fail.'); return; }
+      if (rows.length === 0) { PPDUI.alert('Tiada data murid', 'Tiada data pelajar yang dikesan dalam fail. Semak lajur Nama dalam fail anda.'); return; }
       showImportPreview(rows, file.name);
     } catch(err) {
-      alert('Ralat membaca fail: ' + err.message);
+      PPDUI.alert('Fail tidak dapat dibaca', err.message);
     }
   };
   if (ext === 'csv') reader.readAsText(file, 'UTF-8');
@@ -2793,6 +2886,9 @@ const COL_MAP = {
   jantina:  ['jantina','gender','jantina pelajar','sex'],
   kelas:    ['kelas','class','tingkatan'],
   ses:      ['ses','status sosioekonomi','b40','m40','t20','kumpulan isi rumah','kir','pendapatan'],
+  agama:    ['agama','religion'],
+  penginapan:['penginapan','jenis penginapan','asrama/harian','status penginapan','asrama'],
+  markah:   ['markah','mark','marks','skor','markah ujian','score'],
   lokasi:   ['lokasi','location','kawasan','tempat tinggal','lokasi rumah'],
   ar1:      ['ar1','ujian 1','ujian pertengahan','mid','markah ar1','ar 1'],
   ar2:      ['ar2','ujian 2','ujian akhir','end','markah ar2','ar 2'],
@@ -2826,113 +2922,290 @@ function findCol(headers, key) {
   return headers.findIndex(h => aliases.includes(String(h).toLowerCase().trim()));
 }
 
+// Kunci padanan nama: abaikan huruf besar/kecil, tanda baca, ruang berlebihan & variasi biasa (Mohd/Muhd, Bt/Binti, Ak/Anak)
+const NAMA_SINONIM = {
+  mohd: 'muhammad', muhd: 'muhammad', mohamad: 'muhammad', mohammad: 'muhammad', mohamed: 'muhammad', muhamad: 'muhammad', md: 'muhammad',
+  b: 'bin', bn: 'bin', bt: 'binti', bte: 'binti', binte: 'binti', ak: 'anak',
+};
+function namaKunci(n) {
+  return String(n || '').toLowerCase().replace(/[@'’`.,()/-]/g, ' ').replace(/\s+/g, ' ').trim()
+    .split(' ').map(w => NAMA_SINONIM[w] || w).join(' ');
+}
+function normAgama(raw) {
+  const v = String(raw || '').trim().toLowerCase();
+  if (!v) return '';
+  if (v.startsWith('isl')) return 'Islam';
+  if (v.startsWith('kris') || v.startsWith('chris') || v.includes('katolik')) return 'Kristian';
+  if (v.startsWith('bud')) return 'Buddha';
+  if (v.startsWith('hin')) return 'Hindu';
+  return 'Lain-lain';
+}
+function normPenginapan(raw) {
+  const v = String(raw || '').trim().toLowerCase();
+  if (!v) return '';
+  return v.startsWith('asr') || v === 'a' ? 'Asrama' : 'Harian';
+}
+
+// Templat daftar murid: Nama, Jantina, Agama, Penginapan, SES (tiada markah)
 function parseRows(data) {
   if (data.length < 2) return [];
   const headers = data[0].map(h => String(h).toLowerCase().trim());
-  const iNama   = findCol(headers, 'nama');
-  const iJant   = findCol(headers, 'jantina');
-  const iKelas  = findCol(headers, 'kelas');
-  const iSES    = findCol(headers, 'ses');
-  const iLokasi = findCol(headers, 'lokasi');
-  const iAr1    = findCol(headers, 'ar1');
-  const iAr2    = findCol(headers, 'ar2');
-  const iPerc   = findCol(headers, 'percubaan');
-
+  const col = k => findCol(headers, k);
+  const iNama = col('nama'), iJant = col('jantina'), iAgama = col('agama'), iPeng = col('penginapan'), iSES = col('ses'), iLokasi = col('lokasi');
+  const sel = (r, i) => i >= 0 ? String(r[i] ?? '').trim() : '';
   return data.slice(1).filter(r => r.some(c => String(c).trim())).map(r => {
-    const nama    = iNama   >= 0 ? String(r[iNama]   || '').trim() : '';
-    const rawJ    = iJant   >= 0 ? String(r[iJant]   || '').trim().toUpperCase() : '';
-    const jantina = rawJ.startsWith('P') ? 'P' : 'L';
-    const kelas   = iKelas  >= 0 ? String(r[iKelas]  || '').trim() : '';
-    const ses     = iSES    >= 0 ? normSES(r[iSES])               : '';
-    const lokasi  = iLokasi >= 0 ? normLokasi(r[iLokasi])         : '';
-    const ar1     = iAr1    >= 0 ? clamp(+r[iAr1]   || 0) : 0;
-    const ar2     = iAr2    >= 0 ? clamp(+r[iAr2]   || 0) : ar1;
-    const perc    = iPerc   >= 0 ? clamp(+r[iPerc]  || 0) : ar1;
-    return { nama, jantina, kelas, ses, lokasi, ar1, ar2, percubaan: perc };
+    const rawJ = sel(r, iJant).toUpperCase();
+    return {
+      nama: sel(r, iNama),
+      jantina: rawJ ? (rawJ.startsWith('P') ? 'P' : 'L') : '',
+      agama: normAgama(sel(r, iAgama)),
+      penginapan: normPenginapan(sel(r, iPeng)),
+      ses: normSES(sel(r, iSES)),
+      lokasi: normLokasi(sel(r, iLokasi)),
+    };
   }).filter(r => r.nama);
 }
 
 function parseCSV(text) {
-  const lines = text.split(/\r?\n/).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
-  return parseRows(lines);
+  return parseRows(pecahCSV(text));
 }
 
 function clamp(v) { return Math.max(0, Math.min(100, isNaN(v)?0:v)); }
 
 function showImportPreview(rows, filename) {
+  const ak = getActiveKelas();
+  const ada = new Set((ak ? ak.pelajar : []).map(p => namaKunci(p.nama)));
+  const dlmFail = new Set();
+  rows.forEach(r => {
+    const k = namaKunci(r.nama);
+    r._status = ada.has(k) ? 'ada' : dlmFail.has(k) ? 'ganda' : 'baru';
+    dlmFail.add(k);
+    r._kurang = ['jantina', 'agama', 'penginapan', 'ses'].filter(f => !r[f]);
+  });
   importBuffer = rows;
-  document.getElementById('import-sub').textContent =
-    `${rows.length} pelajar dikesan dalam "${filename}" — semak sebelum import`;
-  document.getElementById('btn-confirm-import').textContent = `Import ${rows.length} Pelajar`;
-
-  const warn = rows.filter(r => !r.nama).length;
-  document.getElementById('import-warn').textContent =
-    warn > 0 ? `⚠ ${warn} baris diabaikan kerana nama kosong` : '';
-
-  const sesStat  = { B40: rows.filter(r=>r.ses==='B40').length, M40: rows.filter(r=>r.ses==='M40').length, T20: rows.filter(r=>r.ses==='T20').length, tiada: rows.filter(r=>!r.ses).length };
-  const lokStat  = { Bandar: rows.filter(r=>r.lokasi==='Bandar').length, 'Luar Bandar': rows.filter(r=>r.lokasi==='Luar Bandar').length, Pedalaman: rows.filter(r=>r.lokasi==='Pedalaman').length, tiada: rows.filter(r=>!r.lokasi).length };
-  const infoHtml = (sesStat.tiada < rows.length || lokStat.tiada < rows.length) ? `
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px">
-      ${sesStat.tiada < rows.length ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px">
-        <span style="color:var(--t3);font-weight:600">SES:</span>
-        ${sesStat.B40?`<span class="chip chip-yellow" style="font-size:10px;margin-left:4px">B40 · ${sesStat.B40}</span>`:''}
-        ${sesStat.M40?`<span class="chip chip-blue"   style="font-size:10px;margin-left:4px">M40 · ${sesStat.M40}</span>`:''}
-        ${sesStat.T20?`<span class="chip chip-green"  style="font-size:10px;margin-left:4px">T20 · ${sesStat.T20}</span>`:''}
-        ${sesStat.tiada?`<span style="color:var(--t3);margin-left:4px">${sesStat.tiada} tiada data</span>`:''}
-      </div>` : ''}
-      ${lokStat.tiada < rows.length ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 12px">
-        <span style="color:var(--t3);font-weight:600">Lokasi:</span>
-        ${lokStat.Bandar?`<span class="chip chip-blue"   style="font-size:10px;margin-left:4px">Bandar · ${lokStat.Bandar}</span>`:''}
-        ${lokStat['Luar Bandar']?`<span class="chip chip-yellow" style="font-size:10px;margin-left:4px">Luar Bandar · ${lokStat['Luar Bandar']}</span>`:''}
-        ${lokStat.Pedalaman?`<span class="chip chip-red"    style="font-size:10px;margin-left:4px">Pedalaman · ${lokStat.Pedalaman}</span>`:''}
-        ${lokStat.tiada?`<span style="color:var(--t3);margin-left:4px">${lokStat.tiada} tiada data</span>`:''}
-      </div>` : ''}
-    </div>` : `<div style="font-size:12px;color:var(--yellow);margin-bottom:10px">⚠ Lajur SES dan Lokasi tidak dijumpai — data analisis tidak lengkap. Guna templat CSV untuk format yang betul.</div>`;
-
-  document.getElementById('import-preview').innerHTML = infoHtml + `
+  const baru = rows.filter(r => r._status === 'baru');
+  const kurang = baru.filter(r => r._kurang.length);
+  document.getElementById('import-sub').textContent = `${rows.length} murid dikesan dalam "${filename}" — semak sebelum daftar`;
+  const btn = document.getElementById('btn-confirm-import');
+  btn.textContent = baru.length ? `Daftar ${baru.length} Murid` : 'Tiada murid baharu';
+  btn.disabled = !baru.length;
+  document.getElementById('import-warn').innerHTML = [
+    rows.length - baru.length ? `${rows.length - baru.length} nama dilangkau kerana sudah berdaftar dalam kelas atau berulang dalam fail.` : '',
+    kurang.length ? `${kurang.length} murid tiada sebahagian maklumat (ditanda —). Boleh dilengkapkan kemudian melalui Edit.` : '',
+  ].filter(Boolean).map(t => `⚠ ${t}`).join('<br>');
+  const STATUS = { baru: ['chip-green', 'Baru'], ada: ['chip-gray', 'Sudah berdaftar'], ganda: ['chip-yellow', 'Berulang'] };
+  const sel = (r, f) => r[f] ? esc(r[f]) : '<span style="color:var(--red)">—</span>';
+  document.getElementById('import-preview').innerHTML = `
     <table class="tbl" style="font-size:12px">
-      <thead><tr><th>No.</th><th>Nama Pelajar</th><th>Jantina</th><th>SES</th><th>Lokasi</th><th style="text-align:center">AR1</th><th style="text-align:center">AR2</th><th style="text-align:center">Percubaan</th></tr></thead>
-      <tbody>${rows.map((r,i) => `<tr>
-        <td style="color:var(--t3)">${i+1}</td>
-        <td class="tc-name">${r.nama || '<span style="color:var(--red)">—</span>'}</td>
-        <td style="color:var(--t3)">${r.jantina==='P'?'♀ P':'♂ L'}</td>
-        <td>${r.ses ? `<span class="chip ${r.ses==='B40'?'chip-yellow':r.ses==='T20'?'chip-green':'chip-blue'}" style="font-size:10px">${r.ses}</span>` : '<span style="color:var(--t3)">—</span>'}</td>
-        <td style="color:var(--t3);font-size:11px">${r.lokasi||'—'}</td>
-        <td style="text-align:center">${r.ar1||'—'}</td>
-        <td style="text-align:center">${r.ar2||'—'}</td>
-        <td style="text-align:center">${r.percubaan||'—'}</td>
+      <thead><tr><th>No.</th><th>Nama Murid</th><th>Jantina</th><th>Agama</th><th>Penginapan</th><th>SES</th><th>Status</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr${r._status !== 'baru' ? ' style="opacity:.55"' : ''}>
+        <td style="color:var(--t3)">${i + 1}</td>
+        <td class="tc-name">${esc(r.nama)}</td>
+        <td>${sel(r, 'jantina')}</td>
+        <td>${sel(r, 'agama')}</td>
+        <td>${sel(r, 'penginapan')}</td>
+        <td>${r.ses ? `<span class="chip ${r.ses === 'B40' ? 'chip-yellow' : r.ses === 'T20' ? 'chip-green' : 'chip-blue'}" style="font-size:10px">${r.ses}</span>` : sel(r, 'ses')}</td>
+        <td><span class="chip ${STATUS[r._status][0]}" style="font-size:10px">${STATUS[r._status][1]}</span></td>
       </tr>`).join('')}</tbody>
     </table>`;
-
   document.getElementById('modal-import').hidden = false;
 }
 
 function confirmImport() {
   const ak = getActiveKelas();
-  if (!ak) { alert('Pilih kelas dahulu sebelum import murid.'); return; }
+  if (!ak) { PPDUI.alert('Tiada kelas dipilih', 'Pilih kelas dahulu sebelum daftar murid.'); return; }
   let added = 0;
-  importBuffer.forEach(r => {
-    if (!r.nama) return;
+  importBuffer.filter(r => r._status === 'baru').forEach(r => {
     const id = 'p' + (++pelajarNextId);
-    ak.pelajar.push({ id, nama: r.nama, jantina: r.jantina, ses: r.ses || '', lokasi: r.lokasi || '' });
-    markState[id] = { ar1: r.ar1, ar2: r.ar2, percubaan: r.percubaan };
+    ak.pelajar.push({ id, nama: PPDAuth.besar(r.nama), jantina: r.jantina || 'L', agama: r.agama, penginapan: r.penginapan || 'Harian', ses: r.ses, lokasi: r.lokasi || '' });
+    markState[id] = {};
     added++;
   });
   importBuffer = [];
   closeImportModal();
-  showToast(`✓ ${added} pelajar berjaya diimport`);
+  showToast(`✓ ${added} murid berjaya didaftarkan`);
   renderGuruMain();
   bindTabs();
+  simpanAuto();
+}
+
+function muatTurunCSV(nama, baris) {
+  const sel = c => /[",\n]/.test(String(c)) ? `"${String(c).replace(/"/g, '""')}"` : String(c);
+  const csv = '﻿' + baris.map(r => r.map(sel).join(',')).join('\r\n') + '\r\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = nama;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function muat_turun_templat() {
-  const csv = 'Nama,Jantina,Kelas,SES,Lokasi,AR1,AR2,Percubaan\nAhmad Syafiq bin Zulkifli,L,5 Amanah,B40,Luar Bandar,72,68,65\nNurul Farhana binti Azman,P,5 Amanah,M40,Bandar,85,87,89\nMuhammad Haziq bin Rosli,L,5 Amanah,T20,Bandar,90,88,91\n';
-  const blob = new Blob([csv], { type:'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'templat_pelajar_spm.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  muatTurunCSV('templat_daftar_murid.csv', [
+    ['Nama', 'Jantina', 'Agama', 'Penginapan', 'SES'],
+    ['AHMAD SYAFIQ BIN ZULKIFLI', 'L', 'Islam', 'Asrama', 'B40'],
+    ['MELISSA ANAK JUGAH', 'P', 'Kristian', 'Harian', 'M40'],
+    ['WONG KAH HUI', 'L', 'Buddha', 'Harian', 'T20'],
+  ]);
+}
+
+// ══ Muat naik markah mengikut ujian (Nama + Markah; TH = tidak hadir) ══════════
+const TH_TEKS = ['th', 't/h', 'tidak hadir', 'x hadir', 'abs', 'absent'];
+let markahBuffer = null;
+
+// CSV ringkas yang menghormati tanda petik ("Nama, X")
+function pecahCSV(text) {
+  const baris = [];
+  let r = [], c = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"' && text[i + 1] === '"') { c += '"'; i++; }
+      else if (ch === '"') q = false;
+      else c += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',' || ch === ';' || ch === '\t') { r.push(c.trim()); c = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      r.push(c.trim()); baris.push(r); r = []; c = '';
+    } else c += ch;
+  }
+  if (c || r.length) { r.push(c.trim()); baris.push(r); }
+  return baris.map(x => x.map(v => v.replace(/^﻿/, ''))).filter(x => x.some(v => v));
+}
+
+function bacaFailBaris(file) {
+  return new Promise((ok, gagal) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['csv', 'xlsx', 'xls'].includes(ext)) { gagal(new Error('Hanya fail CSV (.csv) atau Excel (.xlsx, .xls) dibenarkan.')); return; }
+    const rd = new FileReader();
+    rd.onerror = () => gagal(new Error('Fail tidak dapat dibaca.'));
+    rd.onload = e => {
+      try {
+        if (ext === 'csv') return ok(pecahCSV(e.target.result));
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', raw: false }));
+      } catch (err) { gagal(err); }
+    };
+    if (ext === 'csv') rd.readAsText(file, 'UTF-8'); else rd.readAsArrayBuffer(file);
+  });
+}
+
+function muatTurunTemplatMarkah() {
+  const ak = getActiveKelas();
+  if (!ak || !activeUjian) return;
+  const uj = UJIAN_LIST.find(u => u.key === activeUjian);
+  const fail = `markah_${uj.label}_${ak.subjek}_${ak.tingkatan}${ak.kelas}.csv`.replace(/\s+/g, '_');
+  muatTurunCSV(fail, [['Nama', 'Markah'], ...ak.pelajar.map(p => [p.nama, ''])]);
+  showToast(`Templat ${uj.label} dimuat turun — isi lajur Markah, tulis TH bagi murid tidak hadir`);
+}
+
+async function handleFileMarkah(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  const ak = getActiveKelas();
+  if (!ak || !activeUjian) { PPDUI.alert('Pilih ujian dahulu', 'Buka kelas dan pilih ujian dalam tab Rekod Markah sebelum memuat naik markah.'); return; }
+  let data;
+  try { data = await bacaFailBaris(file); }
+  catch (err) { PPDUI.alert('Fail tidak dapat dibaca', err.message); return; }
+  if (data.length < 2) { PPDUI.alert('Fail kosong', 'Tiada baris markah dikesan dalam fail.'); return; }
+
+  const headers = data[0].map(h => String(h).toLowerCase().trim());
+  const iNama = findCol(headers, 'nama');
+  let iMark = findCol(headers, 'markah');
+  if (iMark < 0) iMark = findCol(headers, activeUjian);
+  if (iMark < 0 && headers.length === 2 && iNama >= 0) iMark = 1 - iNama;
+  if (iNama < 0 || iMark < 0) {
+    PPDUI.alert('Lajur tidak dijumpai', 'Fail perlu ada lajur "Nama" dan "Markah". Muat turun templat markah untuk format yang betul.');
+    return;
+  }
+
+  // Padanan nama dengan murid berdaftar
+  const kunciKe = {};
+  ak.pelajar.forEach(p => { const k = namaKunci(p.nama); (kunciKe[k] = kunciKe[k] || []).push(p); });
+  const baris = [], dipadan = new Set();
+  data.slice(1).forEach((r, i) => {
+    const nama = String(r[iNama] ?? '').trim();
+    const raw = String(r[iMark] ?? '').trim();
+    if (!nama) return;
+    const calon = kunciKe[namaKunci(nama)] || [];
+    const b = { no: i + 2, nama, raw };
+    if (!calon.length) b.status = 'tiada';
+    else if (calon.length > 1) b.status = 'kabur';
+    else if (dipadan.has(calon[0].id)) b.status = 'ulang';
+    else {
+      b.p = calon[0]; dipadan.add(b.p.id);
+      const lama = (markState[b.p.id] || {})[activeUjian];
+      if (!raw) b.status = 'kosong';
+      else if (TH_TEKS.includes(raw.toLowerCase())) b.nilai = null;
+      else {
+        const n = Number(raw.replace(',', '.'));
+        if (!isFinite(n) || n < 0 || n > 100) b.status = 'ralat';
+        else b.nilai = Math.round(n);
+      }
+      if (!b.status) b.status = lama === undefined ? 'baru' : lama === b.nilai ? 'sama' : 'ubah';
+      b.lama = lama;
+    }
+    baris.push(b);
+  });
+  const tiadaDlmFail = ak.pelajar.filter(p => !dipadan.has(p.id));
+  markahBuffer = { baris, ujian: activeUjian, kelasId: ak.id };
+  tunjukPratontonMarkah(file.name, baris, tiadaDlmFail);
+}
+
+function tunjukPratontonMarkah(namaFail, baris, tiadaDlmFail) {
+  const uj = UJIAN_LIST.find(u => u.key === markahBuffer.ujian);
+  const kira = st => baris.filter(b => b.status === st).length;
+  const disimpan = baris.filter(b => b.status === 'baru' || b.status === 'ubah');
+  const fmtM = v => v === null ? 'TH' : v === undefined ? '—' : v;
+  const STATUS = {
+    baru: ['chip-green', 'Diisi'], ubah: ['chip-yellow', 'Diganti'], sama: ['chip-gray', 'Tiada perubahan'], kosong: ['chip-gray', 'Kosong · dilangkau'],
+    ralat: ['chip-red', 'Markah tidak sah'], tiada: ['chip-red', 'Nama tidak sepadan'], kabur: ['chip-red', 'Nama berulang dalam kelas'], ulang: ['chip-red', 'Berulang dalam fail'],
+  };
+  const isu = kira('tiada') + kira('kabur') + kira('ulang') + kira('ralat');
+  document.getElementById('markah-sub').textContent = `${uj.full} · ${baris.length} baris dalam "${namaFail}"`;
+  document.getElementById('markah-ringkas').innerHTML = [
+    ['chip-green', `${kira('baru')} diisi`], ['chip-yellow', `${kira('ubah')} diganti`], ['chip-gray', `${kira('sama')} tiada perubahan`],
+    ['chip-red', `${isu} perlu disemak`], ['chip-gray', `${tiadaDlmFail.length} murid tiada dalam fail`],
+  ].filter(([, t]) => !t.startsWith('0 ')).map(([c, t]) => `<span class="chip ${c}">${t}</span>`).join('');
+  const urutan = { tiada: 0, kabur: 0, ulang: 0, ralat: 0, ubah: 1, baru: 2, kosong: 3, sama: 4 };
+  document.getElementById('markah-preview').innerHTML = `<table class="tbl" style="font-size:12px">
+    <thead><tr><th>Baris</th><th>Nama dalam fail</th><th style="text-align:center">Markah fail</th><th style="text-align:center">Markah sedia ada</th><th>Status</th></tr></thead>
+    <tbody>${[...baris].sort((a, b) => urutan[a.status] - urutan[b.status]).map(b => `<tr${['sama', 'kosong'].includes(b.status) ? ' style="opacity:.55"' : ''}>
+      <td style="color:var(--t3)">${b.no}</td>
+      <td class="tc-name">${esc(b.nama)}${b.p && b.p.nama !== b.nama ? `<div style="font-size:11px;color:var(--t3)">→ ${esc(b.p.nama)}</div>` : ''}</td>
+      <td style="text-align:center;font-weight:700">${esc(b.raw || '—')}</td>
+      <td style="text-align:center;color:var(--t3)">${b.p ? fmtM(b.lama) : '—'}</td>
+      <td><span class="chip ${STATUS[b.status][0]}" style="font-size:10px">${STATUS[b.status][1]}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+  document.getElementById('markah-warn').innerHTML = [
+    isu ? `⚠ ${isu} baris tidak akan disimpan. Betulkan nama/markah dalam fail dan muat naik semula, atau isi terus dalam jadual selepas ini.` : '',
+    tiadaDlmFail.length ? `ℹ Tiada dalam fail (markah kekal seperti sedia ada): ${tiadaDlmFail.slice(0, 6).map(p => esc(p.nama)).join(', ')}${tiadaDlmFail.length > 6 ? ` dan ${tiadaDlmFail.length - 6} lagi` : ''}.` : '',
+  ].filter(Boolean).join('<br>');
+  const btn = document.getElementById('btn-simpan-markah');
+  btn.textContent = disimpan.length ? `Simpan ${disimpan.length} Markah ${uj.label}` : 'Tiada markah untuk disimpan';
+  btn.disabled = !disimpan.length;
+  document.getElementById('modal-markah').hidden = false;
+}
+
+function tutupModalMarkah() {
+  document.getElementById('modal-markah').hidden = true;
+  markahBuffer = null;
+}
+
+function simpanMarkahFail() {
+  if (!markahBuffer) return;
+  const { baris, ujian } = markahBuffer;
+  let n = 0;
+  baris.filter(b => b.status === 'baru' || b.status === 'ubah').forEach(b => {
+    markState[b.p.id] = { ...(markState[b.p.id] || {}), [ujian]: b.nilai };
+    n++;
+  });
+  tutupModalMarkah();
+  refreshMarkTable();
+  refreshUjianCards();
+  simpanAuto();
+  showToast(`✓ ${n} markah ${UJIAN_LIST.find(u => u.key === ujian).label} disimpan daripada fail`);
 }
 
 function markToGred(m) {
@@ -2966,33 +3239,29 @@ function buildPentadbir() {
   ];
   renderTabs(tabs);
 
-  const belum = PANITIA_SK.filter(p => !p.ar2 || !p.perc);
 
-  // Kira KPI sekolah dari markah guru
-  const _skNama = (() => {
-    try { const kl = localStorage.getItem('skas_kelas'); if (kl) { const l=JSON.parse(kl); if (l[0]?.sekolah) return l[0].sekolah; } } catch(e) {}
-    return DEMO.pentadbir.sekolah;
-  })();
+  // KPI dari markah sekolah sendiri sahaja
+  const _skNama = ME.org;
   const _skMarkah = (() => {
-    try {
-      const kl = localStorage.getItem('skas_kelas'); const ms = localStorage.getItem('skas_marks');
-      if (!kl||!ms) return null;
-      const list=JSON.parse(kl), marks=JSON.parse(ms), seen={}, all=[];
-      list.forEach(k=>(k.pelajar||[]).forEach(p=>{ if(!seen[p.id]){ seen[p.id]=1; const m=marks[p.id]||{}; const v=m.percubaan??m.ar2??m.ar1??null; if(v!=null) all.push({gps:getGPS(v),lulus:v>=40}); } }));
-      return all.length>=3?all:null;
-    } catch(e) { return null; }
+    const marks = PPDData.spm.marks(), all = [];
+    PPDData.spm.kelasSekolah(_skNama).forEach(k => k.pelajar.forEach(p => {
+      const m = marks[p.id] || {};
+      const v = typeof m.percubaan === 'number' ? m.percubaan : typeof m.ar2 === 'number' ? m.ar2 : m.ar1;
+      if (typeof v === 'number') all.push({ murid: p.muridId || p.id, gps: getGPS(v), lulus: v >= 40 });
+    }));
+    return all.length >= 3 ? all : null;
   })();
   const _skGPS = _skMarkah ? parseFloat((_skMarkah.reduce((a,p)=>a+p.gps,0)/_skMarkah.length).toFixed(2)) : 5.28;
   const _skLulus100 = _skMarkah ? _skMarkah.every(p=>p.lulus) : true;
-  const _skJumlah = _skMarkah ? _skMarkah.length : 480;
-  const _skBerisiko = _skMarkah ? _skMarkah.filter(p=>p.gps>6.0).length : 28;
+  const _skJumlah = _skMarkah ? new Set(_skMarkah.map(p => p.murid)).size : 0;
+  const _skBerisiko = new Set(PELAJAR_5A.filter(p => p.alert).map(p => p.muridId)).size;
   const _skPrev = parseFloat((_skGPS+0.16).toFixed(2));
 
   document.getElementById('main').innerHTML = `
     <!-- Tab: Analitik Sekolah -->
     <section id="sk-analitik" class="active">
       <div class="sh">
-        <div><div class="sh-title">${_skNama}</div><div class="sh-sub">Ringkasan pencapaian SPM 2024</div></div>
+        <div><div class="sh-title">${_skNama}</div><div class="sh-sub">Ringkasan pencapaian · data markah guru ${PPDData.PEPERIKSAAN_SEMASA.label.slice(-4)}</div></div>
         <span class="chip chip-green">GPS ${_skGPS}</span>
       </div>
       <div class="kpi-grid">
@@ -3103,36 +3372,7 @@ function buildPentadbir() {
     </section>
 
     <!-- Tab: Semak Pengisian -->
-    <section id="sk-semak">
-      <div class="sh">
-        <div><div class="sh-title">Semak Pengisian Data</div><div class="sh-sub">Status pengisian markah oleh guru panitia</div></div>
-      </div>
-      ${belum.length > 0 ? `<div class="alert-banner">⚠️ ${belum.length} panitia belum melengkapkan pengisian data Percubaan atau AR2</div>` : ''}
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-lbl">Pengisian AR1</div><div class="kpi-val green">9/9</div><span class="kpi-delta green">Semua lengkap</span></div>
-        <div class="kpi"><div class="kpi-lbl">Pengisian AR2</div><div class="kpi-val yellow">7/9</div><span class="kpi-delta yellow">2 belum hantar</span></div>
-        <div class="kpi"><div class="kpi-lbl">Pengisian Percubaan</div><div class="kpi-val yellow">5/9</div><span class="kpi-delta yellow">4 belum hantar</span></div>
-      </div>
-      ${PANITIA_SK.map(p => `
-        <div class="prog-row">
-          <div class="prog-icon">📚</div>
-          <div class="prog-info">
-            <div class="prog-name">${p.subjek}</div>
-            <div class="prog-sub">${p.guru} · ${p.bil} pelajar</div>
-          </div>
-          <div class="prog-dots">
-            <span class="dot-lbl">AR1</span>
-            <div class="dot ${p.ar1?'dot-ok':'dot-miss'}">${p.ar1?'✓':'✗'}</div>
-            <span class="dot-lbl">AR2</span>
-            <div class="dot ${p.ar2?'dot-ok':'dot-miss'}">${p.ar2?'✓':'✗'}</div>
-            <span class="dot-lbl">Perc</span>
-            <div class="dot ${p.perc?'dot-ok':'dot-miss'}">${p.perc?'✓':'✗'}</div>
-            <span class="chip ${(p.ar1&&p.ar2&&p.perc)?'chip-green':(!p.ar2||!p.perc)?'chip-yellow':'chip-green'}" style="margin-left:8px">
-              ${(p.ar1&&p.ar2&&p.perc)?'Lengkap':'Belum lengkap'}
-            </span>
-          </div>
-        </div>`).join('')}
-    </section>
+    <section id="sk-semak">${renderSemakPengisian()}</section>
 
     <!-- Tab: Pelajar Berisiko -->
     <section id="sk-berisiko">
@@ -3219,6 +3459,55 @@ function buildPentadbir() {
 
   bindTabs();
   setTimeout(() => { renderGPSSejarahTable(); renderSKTrend(); kemaskiniSasaranGPS(GPS_SASARAN); renderJurang(); }, 50);
+}
+
+// Kemajuan pengisian markah setiap guru di sekolah sendiri + peringatan
+function renderSemakPengisian() {
+  const pe = PPDData.PEPERIKSAAN_SEMASA;
+  const marks = PPDData.spm.marks();
+  const kelas = PPDData.spm.kelasSekolah(ME.org);
+  const baki = -PPDData.hari(pe.tarikhAkhir);
+  const lengkapUj = key => kelas.filter(k => PPDData.spm.belumIsi(k, key, marks) === 0).length;
+  const byGuru = {};
+  kelas.forEach(k => { (byGuru[k.guru] = byGuru[k.guru] || []).push(k); });
+  const rows = Object.entries(byGuru).map(([guru, ks]) => {
+    const tot = ks.reduce((a, k) => a + k.pelajar.length, 0);
+    const belum = ks.reduce((a, k) => a + PPDData.spm.belumIsi(k, pe.key, marks), 0);
+    return { guru, ks, tot, belum, pct: tot ? Math.round((tot - belum) / tot * 100) : 0 };
+  }).sort((a, b) => a.pct - b.pct);
+  const kpi = (lbl, n) => `<div class="kpi"><div class="kpi-lbl">${lbl}</div><div class="kpi-val ${n === kelas.length ? 'green' : 'yellow'}">${n}/${kelas.length}</div><span class="kpi-delta ${n === kelas.length ? 'green' : 'yellow'}">${n === kelas.length ? 'Semua kelas lengkap' : `${kelas.length - n} kelas belum lengkap`}</span></div>`;
+  return `
+    <div class="sh"><div><div class="sh-title">Semak Pengisian Data</div><div class="sh-sub">${ME.org} · kemajuan pengisian markah oleh guru mata pelajaran</div></div></div>
+    <div class="tarikh-akhir ${baki <= 3 ? 'merah' : baki <= 7 ? 'kuning' : ''}"><b>${pe.label}</b> · tarikh akhir <b>${new Date(pe.tarikhAkhir).toLocaleDateString('ms-MY', { day:'numeric', month:'long' })}</b> (${baki > 0 ? baki + ' hari lagi' : baki === 0 ? 'hari ini' : 'lewat ' + (-baki) + ' hari'})</div>
+    <div class="kpi-grid">${kpi('Pengisian AR1', lengkapUj('ar1'))}${kpi('Pengisian AR2', lengkapUj('ar2'))}${kpi('Pengisian Percubaan', lengkapUj(pe.key))}</div>
+    <div class="guru-prog">
+      ${rows.map(r => `<div class="gp-row">
+        <div class="gp-head">
+          <div class="gp-av">${r.guru.split(' ').filter(w => !/^(bin|binti|anak|ustaz|ustazah)$/i.test(w)).slice(0,2).map(w => w[0]).join('').toUpperCase()}</div>
+          <div class="gp-who"><div class="gp-n">${r.guru}</div><div class="gp-s">${r.ks[0].subjek} · ${r.ks.length} kelas · ${r.tot} murid</div></div>
+          <div class="gp-pct ${r.pct === 100 ? 'green' : r.pct < 50 ? 'red-c' : 'yellow'}">${r.pct}%</div>
+        </div>
+        <div class="gp-bar"><i style="width:${r.pct}%;background:${r.pct === 100 ? 'var(--green)' : r.pct < 50 ? 'var(--red)' : 'var(--yellow)'}"></i></div>
+        <div class="gp-kelas">${r.ks.map(k => {
+          const b = PPDData.spm.belumIsi(k, pe.key, marks);
+          const ing = PPDData.peringatan.untukKelas(k.id);
+          return `<div class="gp-k">
+            <span><b>${k.tingkatan} ${k.kelas}</b> · ${b ? `<span class="yellow-c">${b} belum diisi</span>` : '<span class="green">Lengkap</span>'}</span>
+            ${b ? (ing ? `<span class="gp-ing">✓ Peringatan dihantar ${new Date(ing.t).toLocaleDateString('ms-MY', { day:'numeric', month:'short' })}</span>`
+                       : `<button class="btn-sm" onclick="hantarPeringatan('${k.id}')">🔔 Hantar peringatan</button>`) : ''}
+          </div>`;
+        }).join('')}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function hantarPeringatan(kelasId) {
+  const k = PPDData.spm.kelasSekolah(ME.org).find(x => x.id === kelasId);
+  if (!k) return;
+  PPDData.peringatan.hantar(kelasId, ME);
+  showToast(`Peringatan dihantar kepada ${k.guru} (${k.subjek} · ${k.tingkatan} ${k.kelas})`);
+  const sec = document.getElementById('sk-semak');
+  if (sec) sec.innerHTML = renderSemakPengisian();
 }
 
 function renderGPSSejarahTable() {
@@ -3413,20 +3702,18 @@ function renderJurang() {
     const dimLabel = { ses: 'SES', lokasi: 'Lokasi', jantina: 'Jantina', penginapan: 'Penginapan' }[dim];
     let cadangan = '';
     if (dim === 'ses') {
-      cadangan = `Jurang GPS antara <strong>B40 (${JURANG_SK.ses[0].gps.toFixed(2)})</strong> dan <strong>T20 (${JURANG_SK.ses[2].gps.toFixed(2)})</strong> adalah <strong>${jurang} mata</strong>.
-      Pelajar B40 memerlukan sokongan tambahan — pertimbangkan program tuisyen, skim buku teks tambahan, dan mentor sebaya dari kumpulan T20.`;
+      cadangan = `Jurang GPS antara <strong>${worstGroup.label} (${worstGroup.gps.toFixed(2)})</strong> dan <strong>${bestGroup.label} (${bestGroup.gps.toFixed(2)})</strong> adalah <strong>${jurang} mata</strong>.
+      Pelajar ${worstGroup.label} memerlukan sokongan tambahan — pertimbangkan program tuisyen, skim buku teks tambahan, dan mentor sebaya dari kumpulan ${bestGroup.label}.`;
     } else if (dim === 'lokasi') {
-      cadangan = `Pelajar kawasan <strong>Pedalaman (GPS ${JURANG_SK.lokasi[2].gps.toFixed(2)})</strong> ketinggalan berbanding pelajar <strong>Bandar (GPS ${JURANG_SK.lokasi[0].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
+      cadangan = `Pelajar kawasan <strong>${worstGroup.label} (GPS ${worstGroup.gps.toFixed(2)})</strong> ketinggalan berbanding pelajar <strong>${bestGroup.label} (GPS ${bestGroup.gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
       Cadangkan program PdPR hybrid, kelas tambahan hujung minggu, dan kerjasama dengan guru berprestasi tinggi di kawasan bandar.`;
     } else if (dim === 'penginapan') {
-      const asrama = JURANG_SK.penginapan.find(r => r.label === 'Asrama');
-      const harian = JURANG_SK.penginapan.find(r => r.label === 'Harian');
-      const better = asrama.gps < harian.gps ? 'Asrama' : 'Harian';
+      const better = bestGroup.label;
       cadangan = `Pelajar <strong>${better}</strong> mencatatkan GPS lebih baik berbanding kumpulan satu lagi — jurang <strong>${jurang} mata GPS</strong>.
       ${better === 'Asrama' ? 'Persekitaran asrama yang berstruktur mungkin menyumbang kepada pencapaian lebih baik. Pertimbangkan program mentor rakan sebaya antara pelajar asrama dan harian.' : 'Pelajar harian menunjukkan prestasi lebih baik. Semak faktor sokongan keluarga dan akses kepada sumber pembelajaran luar sekolah.'}`;
     } else {
-      cadangan = `Pelajar <strong>Perempuan (GPS ${JURANG_SK.jantina[0].gps.toFixed(2)})</strong> mencatatkan prestasi lebih baik berbanding <strong>Lelaki (GPS ${JURANG_SK.jantina[1].gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
-      Fokus intervensi khusus untuk pelajar lelaki: mentoring, program motivasi, dan penjejakan kehadiran secara aktif.`;
+      cadangan = `Pelajar <strong>${bestGroup.label} (GPS ${bestGroup.gps.toFixed(2)})</strong> mencatatkan prestasi lebih baik berbanding <strong>${worstGroup.label} (GPS ${worstGroup.gps.toFixed(2)})</strong> — jurang <strong>${jurang} mata GPS</strong>.
+      Fokus intervensi khusus untuk pelajar ${worstGroup.label.toLowerCase()}: mentoring, program motivasi, dan penjejakan kehadiran secara aktif.`;
     }
     const aiHTML = `<div class="jurang-ai">🤖 <strong>Pemerhatian AI:</strong> ${cadangan}</div>`;
 
@@ -3455,7 +3742,7 @@ function renderJurang() {
           responsive: true, maintainAspectRatio: false, indexAxis: 'y',
           plugins: { legend: { labels:{ color:CHART_LBL, font: { size: 11 } } } },
           scales: {
-            x: { min: 3.5, max: 7.5, grid:{color:CHART_GRID}, ticks:{ color:CHART_TICK, font: { size: 11 } } },
+            x: { suggestedMin: 3.5, suggestedMax: 7.5, grid:{color:CHART_GRID}, ticks:{ color:CHART_TICK, font: { size: 11 } } },
             y: { grid: { display: false }, ticks:{ color:CHART_LBL, font: { size: 12, weight: '600' } } }
           }
         }
@@ -3717,7 +4004,7 @@ function renderSKTrend() {
         { label:'2023', data:[6.14,5.93,5.71,5.44], borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
       ]
     },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:CHART_LBL, font:{size:12} } } }, scales:{ y:{ min:4.5, max:7, grid:{color:CHART_GRID}, ticks:{font:{size:11}} }, x:{ grid:{color:CHART_GRID}, ticks:{font:{size:12}} } } }
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:CHART_LBL, font:{size:12} } } }, scales:{ y:{ suggestedMin:4.5, suggestedMax:7, grid:{color:CHART_GRID}, ticks:{font:{size:11}} }, x:{ grid:{color:CHART_GRID}, ticks:{font:{size:12}} } } }
   });
 }
 
@@ -4903,9 +5190,9 @@ function loadIntervensi() {
   const t2 = new Date(today); t2.setDate(t2.getDate()-14);
   const t3 = new Date(today); t3.setDate(t3.getDate()-7);
   const samples = [
-    { id:'i1', sekolahId:'sk-oya', sekolah:'SMK Oya', subjek:'Matematik', jenis:'Kelas Tambahan', tarikh:fmt(t1), pj:'En. Azman Salleh', sasaran:5.5, catatan:'Kelas hujung minggu setiap Sabtu', gpsSekolah:5.84 },
-    { id:'i2', sekolahId:'sk-tulai', sekolah:'SMK Tulai', subjek:'Bahasa Inggeris', jenis:'Bengkel Subjek', tarikh:fmt(t2), pj:'Pn. Fatimah Daud', sasaran:6.0, catatan:'Bengkel penulisan esei', gpsSekolah:6.12 },
-    { id:'i3', sekolahId:'sk-sgmaong', sekolah:'SMK Sg. Maong', subjek:'Sains', jenis:'Program Motivasi', tarikh:fmt(t3), pj:'En. Razman Hamid', sasaran:6.8, catatan:'Motivasi pelajar berisiko tinggi', gpsSekolah:6.28 },
+    { id:'i1', sekolahId:'sk-oya', sekolah:'SMK OYA', subjek:'Matematik', jenis:'Kelas Tambahan', tarikh:fmt(t1), pj:'EN. AZMAN SALLEH', sasaran:5.5, catatan:'Kelas hujung minggu setiap Sabtu', gpsSekolah:5.84 },
+    { id:'i2', sekolahId:'sk-tulai', sekolah:'SMK TULAI', subjek:'Bahasa Inggeris', jenis:'Bengkel Subjek', tarikh:fmt(t2), pj:'PN. FATIMAH DAUD', sasaran:6.0, catatan:'Bengkel penulisan esei', gpsSekolah:6.12 },
+    { id:'i3', sekolahId:'sk-sgmaong', sekolah:'SMK SG. MAONG', subjek:'Sains', jenis:'Program Motivasi', tarikh:fmt(t3), pj:'EN. RAZMAN HAMID', sasaran:6.8, catatan:'Motivasi pelajar berisiko tinggi', gpsSekolah:6.28 },
   ];
   saveIntervensiData(samples);
   return samples;
@@ -5021,7 +5308,7 @@ function initRamalTab() {
           { label:'Ramalan 2025', data:predictions.map(p=>p.ramal), backgroundColor:'rgba(251,146,60,.75)', borderRadius:4 },
         ]},
       options:{ responsive:true, maintainAspectRatio:false,
-        scales:{ y:{min:4,max:8,ticks:{color:CHART_TICK},grid:{color:CHART_GRID}}, x:{ticks:{color:CHART_TICK,font:{size:10}}} },
+        scales:{ y:{suggestedMin:4,suggestedMax:8,ticks:{color:CHART_TICK},grid:{color:CHART_GRID}}, x:{ticks:{color:CHART_TICK,font:{size:10}}} },
         plugins:{ legend:{labels:{color:CHART_LBL}}, tooltip:{mode:'index',intersect:false} }
       }
     });
@@ -5036,6 +5323,19 @@ function initRamalTab() {
       return `<tr><td class="tc-name">${p.nama}</td><td class="tc-num" style="text-align:center">${p.gps.toFixed(2)}</td><td class="tc-num" style="text-align:center;${ok?'color:var(--green)':'color:var(--red)'}">${p.ramal.toFixed(2)}</td><td style="text-align:center">${trendHtml}</td><td style="text-align:center">${ok?'<span class="chip chip-green">On Track</span>':'<span class="chip chip-red">Perlu Intervensi</span>'}</td></tr>`;
     }).join('')}
   </tbody></table>`;
+}
+
+// Peta sekolah: warna ikut % murid berisiko, saiz ikut bil. murid
+function petaDaerahSPM() {
+  const r = PPDData.ringkasanSPM();
+  const maks = Math.max(...r.map(s => s.murid), 1);
+  return PPDPeta.peta({
+    tajuk: 'Peta Prestasi Sekolah',
+    titik: r.map(s => ({ nama: s.nama, x: s.x, y: s.y, saiz: s.murid / maks,
+      tahap: !s.kelas ? 'tiada' : s.risikoPct >= 30 ? 'merah' : s.risikoPct >= 18 || s.isiPct < 70 ? 'kuning' : 'hijau',
+      nilai: s.kelas ? `GPS ${s.gps ?? '—'} · ${s.risikoPct}% berisiko` : 'Belum ada data', sub: s.kelas ? `${s.murid} murid · pengisian ${s.isiPct}%` : 'tiada kelas berdaftar' })),
+    nota: 'Murid berisiko: purata markah terkini semua subjek &lt; 45, atau purata merosot &gt; 5 markah sejak AR1. Warna juga mengambil kira kemajuan pengisian markah.',
+  });
 }
 
 function buildPPD() {
@@ -5066,6 +5366,7 @@ function buildPPD() {
   document.getElementById('main').innerHTML = `
     <!-- Tab: Analitik Daerah -->
     <section id="ppd-daerah" class="active">
+      <div class="ppd-ringkas">${petaDaerahSPM()}${PPDPeta.amaran(PPDData.amaranSPM(), { tajuk: 'Amaran Awal · SPM' })}</div>
       <div class="filter-bar">
         <span class="filter-label">Tapis:</span>
         <select class="sel" id="ppd-tahun" onchange="refreshPPDTrend()">
@@ -5376,7 +5677,7 @@ function refreshPPDTrend() {
       { label:'2023', data:[6.14,5.93,5.71,5.44], borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
       { label:'2022', data:[6.43,6.21,5.97,5.63], borderColor:'#475569', backgroundColor:'transparent', borderWidth:1.5, pointRadius:3, borderDash:[4,3], tension:.35 },
     ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:CHART_LBL, font:{size:12}}}}, scales:{ y:{min:4.5,max:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{color:CHART_GRID},ticks:{font:{size:12}}} } }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:CHART_LBL, font:{size:12}}}}, scales:{ y:{suggestedMin:4.5,suggestedMax:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{color:CHART_GRID},ticks:{font:{size:12}}} } }
   });
 }
 
@@ -5387,7 +5688,7 @@ function renderPPDBar(id, labels, data, colors) {
   charts[id] = new Chart(ctx, {
     type:'bar',
     data:{ labels, datasets:[{ data, backgroundColor:colors, borderRadius:6, borderSkipped:false }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:4,max:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{display:false},ticks:{font:{size:12}}} } }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{suggestedMin:4,suggestedMax:7,grid:{color:CHART_GRID},ticks:{font:{size:11}}}, x:{grid:{display:false},ticks:{font:{size:12}}} } }
   });
 }
 
@@ -5557,13 +5858,16 @@ Chart.defaults.plugins.legend.labels.usePointStyle = true;
 Chart.defaults.elements.bar.borderRadius = 4;
 Chart.defaults.font.size   = 12;
 
-const urlRole = getRole();
-if(urlRole) {
-  ROLE = urlRole;
-} else {
-  document.getElementById('demo-bar').hidden = false;
-}
+ROLE = getRole();
 buildApp();
+(function bukaDariPautan() {
+  const q = new URLSearchParams(location.search);
+  const kid = q.get('kelas'), uj = q.get('ujian');
+  if (ROLE !== 'teacher' || !kid || !kelasList.some(k => k.id === kid)) return;
+  bukaRekodMarkah(kid);
+  if (UJIAN_LIST.some(u => u.key === uj)) pilihUjian(uj);
+  history.replaceState({}, '', location.pathname);
+})();
 </script>
 </body>
 </html>

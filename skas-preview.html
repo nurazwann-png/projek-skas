@@ -1,6 +1,13 @@
 ﻿<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SKPM Kualiti@Sekolah</title>
+<script src="assets/ppd-auth.js"></script>
+<script>PPDAuth.guard();</script>
+<script src="assets/ppd-data.js"></script>
+<script src="assets/ppd-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="assets/ppd-carta.js" defer></script>
+<script src="assets/ppd-roles.js" data-app="skas" defer></script>
 <link rel="stylesheet" href="assets/ppd-theme.css">
 
 <style>
@@ -240,6 +247,15 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 /* --- Page heading --------------------------------------------- */
 .pg-title{font-family:var(--h);font-size:20px;font-weight:800;text-wrap:balance;letter-spacing:-.3px}
 .pg-sub{font-size:12px;color:var(--t3);margin-top:3px}
+.st-rekod{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;color:var(--sc);background:color-mix(in srgb,var(--sc) 12%,transparent);border:1px solid color-mix(in srgb,var(--sc) 30%,transparent)}
+.sah-btns{display:flex;gap:6px}
+.btn-sah,.btn-tolak{padding:4px 10px;font-size:11.5px;min-height:28px}
+.btn-sah{background:var(--ppd-ok);color:#fff;border-color:var(--ppd-ok)}
+.btn-tolak{background:transparent;color:var(--ppd-danger);border:1px solid color-mix(in srgb,var(--ppd-danger) 40%,transparent)}
+.draf-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:var(--t3)}
+.draf-bar span::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ppd-ok);margin-right:6px;vertical-align:1px}
+.draf-buang{border:1px solid var(--border);background:none;color:var(--t2);font:inherit;font-weight:600;padding:3px 10px;border-radius:6px;cursor:pointer}
+.draf-buang:hover{border-color:var(--gold);color:var(--t1)}
 .pg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 /* --- Step indicator ------------------------------------------- */
@@ -487,7 +503,7 @@ const LEVELS_SEKOLAH = ['INT','NAT','NEG','DAE'];
 const DEMO_SCHOOL_RECORDS = [
   { id:'sr1', program:'World\'s Best School Prize 2026', tarikh:'2026-03-15', level:'INT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t1' },
   { id:'sr2', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t3' },
-  { id:'sr3', program:'Anugerah Sekolah Cemerlang Sukan PPD Gombak 2026', tarikh:'2026-02-20', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'' },
+  { id:'sr3', program:'Anugerah Sekolah Cemerlang Sukan PPD Dalat 2026', tarikh:'2026-02-20', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'' },
   { id:'sr4', program:'SPM 2025 -- Peratus Calon Cemerlang Tertinggi Daerah', tarikh:'2026-04-08', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t2' },
   { id:'sr5', program:'Anugerah Pengurusan Kaunseling Peringkat Negeri 2026', tarikh:'2026-06-01', level:'NEG', tahap:'T2', pautanEviden:'', catatan:'Sijil belum diterima', guruId:'t4' },
 ];
@@ -586,99 +602,106 @@ function aiKlasifikasi(rec) {
 /* -- Mock data ------------------------------------------------- */
 // Semua rekod adalah pencapaian PERIBADI guru (bukan murid/sekolah)
 // tahap: T1=Tempat1/Anugerah, T2=Tempat2, T3=Tempat3, SH=Saguhati, SY=Penyertaan
-const DEMO_RECORDS = [
-  { id:'r1', program:'Anugerah Hari Guru Peringkat Kebangsaan 2026 -- Guru Inovatif Individu Sekolah Rendah', level:'NAT', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil KPM rasmi', pautanEviden:'https://drive.google.com/...', status:'approved',
-    draft:'Guru telah menerima Anugerah Hari Guru Peringkat Kebangsaan 2026 (Guru Inovatif Individu Sekolah Rendah), pencapaian tertinggi pengiktirafan profesionalisme guru di peringkat kebangsaan yang dianjurkan oleh KPM.',
-    tags:['#Kebangsaan','#5.4.1','#AHG2026'] },
-  { id:'r2', program:'SEAMEO-Japan ESD Award 2026', level:'INT', peranan:'Peserta', tarikh:'2026-09-10', tahap:'T2', pengesahan:'Sijil SEAMEO', pautanEviden:'https://drive.google.com/...', status:'approved',
-    draft:'Guru telah bersaing dalam SEAMEO-Japan Education for Sustainable Development (ESD) Award 2026 di peringkat Antarabangsa dan berjaya meraih Tempat Kedua, membuktikan kemahiran inovasi pendidikan beliau diiktiraf di pentas antarabangsa.',
-    tags:['#Antarabangsa','#5.4.1','#SEAMEO'] },
-  { id:'r3', program:'Anugerah Kualiti Guru PPD Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-07-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved',
-    draft:'Guru telah menerima Anugerah Kualiti Guru PPD Gombak 2026, pengiktirafan rasmi atas kecemerlangan pengajaran dan pembelajaran di peringkat daerah.',
-    tags:['#Daerah','#5.4.1'] },
-  { id:'r4', program:'Kursus Jurulatih Bola Sepak Kebangsaan (Lesen C AFC) 2026', level:'NAT', peranan:'Jurulatih', tarikh:'2026-03-08', tahap:'T1', pengesahan:'Lesen C AFC -- FAM', pautanEviden:'https://drive.google.com/...', status:'pending',
-    draft:'Guru telah memperoleh pengiktirafan rasmi Lesen C AFC sebagai Jurulatih Bola Sepak bertauliah peringkat Kebangsaan, membuktikan kepakaran beliau yang diiktiraf oleh FAM dan AFC.',
-    tags:['#Kebangsaan','#5.4.1','#Jurulatih'] },
-  { id:'r5', program:'Pertandingan Penulisan Esei Guru Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-09-18', tahap:'T1', pengesahan:'Sijil penyertaan PPD', pautanEviden:'', status:'pending',
-    draft:'Guru telah menyertai Pertandingan Penulisan Esei Guru Daerah Gombak 2026 dan berjaya meraih tempat pertama, menunjukkan kemahiran bahasa dan pemikiran kritis beliau yang diiktiraf di peringkat daerah.',
-    tags:['#Daerah','#5.4.1'] },
-  { id:'r6', program:'Pertandingan Catur Guru Peringkat Sekolah 2026', level:'SKL', peranan:'Peserta', tarikh:'2026-05-20', tahap:'T1', pengesahan:'Sijil sekolah', pautanEviden:'', status:'approved',
-    draft:null, tags:['#Sekolah'] },
-];
 
 /* -- Demo teachers (school roster) ---------------------------- */
 const DEMO_TEACHERS = [
-  { id:'t1', name:'Azman Harun',      jawatan:'Guru Cemerlang Matematik', av:'AH',
-    mataPelajaran:'Matematik', emel:'azman@skwm1.edu.my', tahunMula:2015,
-    records: DEMO_RECORDS },
-  { id:'t2', name:'Siti Norzahra Md Zain', jawatan:'Guru Bahasa Melayu',  av:'SN',
-    mataPelajaran:'Bahasa Melayu', emel:'siti.norzahra@skwm1.edu.my', tahunMula:2018,
+  { id:'t1', name:'AZMAN BIN HARUN',      jawatan:'Guru Cemerlang Matematik', av:'AH',
+    mataPelajaran:'Matematik', emel:'azman.harun@moe-dl.edu.my', tahunMula:2015, uid:'u_azman',
+    get records() { return PPDData.skas.rekod('u_azman'); } },
+  { id:'t2', name:'SITI NORZAHRA MD ZAIN', jawatan:'Guru Bahasa Melayu',  av:'SN',
+    mataPelajaran:'Bahasa Melayu', emel:'siti.norzahra@moe-dl.edu.my', tahunMula:2018,
     records: [
-      { id:'t2r1', program:'Anugerah Guru Inovatif Individu Sekolah Rendah -- Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil JPN Selangor', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Negeri','#5.4.1'] },
-      { id:'t2r2', program:'Pertandingan Syarahan Guru Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-08-10', tahap:'T2', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved', draft:null, tags:['#Daerah','#5.4.1'] },
+      { id:'t2r1', program:'Anugerah Guru Inovatif Individu -- Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil JPN Sarawak', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Negeri','#5.4.1'] },
+      { id:'t2r2', program:'Pertandingan Syarahan Guru Daerah Dalat 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-08-10', tahap:'T2', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved', draft:null, tags:['#Daerah','#5.4.1'] },
       { id:'t2r3', program:'Bengkel Penulisan Kreatif Sekolah', level:'SKL', peranan:'Peserta', tarikh:'2026-03-05', tahap:'T1', pengesahan:'Sijil sekolah', pautanEviden:'', status:'approved', draft:null, tags:['#Sekolah'] },
     ]},
-  { id:'t3', name:'Mohd Fadhli Ismail', jawatan:'Guru Sains',             av:'MF',
-    mataPelajaran:'Sains', emel:'fadhli@skwm1.edu.my', tahunMula:2012,
+  { id:'t3', name:'MOHD FADHLI ISMAIL', jawatan:'Guru Sains',             av:'MF',
+    mataPelajaran:'Sains', emel:'fadhli@moe-dl.edu.my', tahunMula:2012,
     records: [
       { id:'t3r1', program:'Malaysia Teacher Prize (MTP) 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-09-20', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Kebangsaan','#5.4.1'] },
       { id:'t3r2', program:'Global Educator Award (GEA) 2026', level:'INT', peranan:'Peserta', tarikh:'2026-07-14', tahap:'SH', pengesahan:'Sijil GEA', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Antarabangsa','#5.4.1'] },
     ]},
-  { id:'t4', name:'Nurul Ain Hamzah',   jawatan:'Guru Pendidikan Islam',  av:'NA',
-    mataPelajaran:'Pendidikan Islam', emel:'nurulain@skwm1.edu.my', tahunMula:2020,
+  { id:'t4', name:'NURUL AIN HAMZAH',   jawatan:'Guru Pendidikan Islam',  av:'NA',
+    mataPelajaran:'Pendidikan Islam', emel:'nurulain@moe-dl.edu.my', tahunMula:2020,
     records: [
-      { id:'t4r1', program:'Kursus Facilitator STEM Bahagian Hulu Langat', level:'BAH', peranan:'Peserta', tarikh:'2026-04-18', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'', status:'approved', draft:null, tags:['#Bahagian','#5.4.1'] },
+      { id:'t4r1', program:'Kursus Facilitator STEM Bahagian Mukah', level:'BAH', peranan:'Peserta', tarikh:'2026-04-18', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'', status:'approved', draft:null, tags:['#Bahagian','#5.4.1'] },
     ]},
-  { id:'t5', name:'Redzuan Othman',     jawatan:'Guru Pendidikan Jasmani', av:'RO',
-    mataPelajaran:'Pendidikan Jasmani', emel:'redzuan@skwm1.edu.my', tahunMula:2019,
+  { id:'t5', name:'REDZUAN OTHMAN',     jawatan:'Guru Pendidikan Jasmani', av:'RO',
+    mataPelajaran:'Pendidikan Jasmani', emel:'redzuan@moe-dl.edu.my', tahunMula:2019,
     records: [] },
 ];
 
 /* -- Demo schools (PPD view) ----------------------------------- */
 const DEMO_SCHOOLS = [
-  { id:'s1', name:'SK Wangsa Maju 1',   kod:'WM001', jenis:'SK',  av:'W1',
+  { id:'s1', name:'SMK DALAT',       kod:'YEA6101', jenis:'SMK',  av:'SD',
     teachers: DEMO_TEACHERS,
     schoolRecords: DEMO_SCHOOL_RECORDS },
-  { id:'s2', name:'SK Wangsa Maju 2',   kod:'WM002', jenis:'SK',  av:'W2',
+  { id:'s2', name:'SMK OYA',         kod:'YEA6102', jenis:'SMK',  av:'SO',
     teachers: [
-      { id:'s2t1', name:'Hazwani Ramli',    jawatan:'Guru Besar', av:'HR', records:[
+      { id:'s2t1', name:'HAZWANI RAMLI',    jawatan:'Guru Besar', av:'HR', records:[
         { id:'s2r1', program:'Anugerah Guru Cemerlang Kebangsaan 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-04-10', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', tags:[] },
         { id:'s2r2', program:'Inovasi Pendidikan Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-06-15', tahap:'T2', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
       ]},
-      { id:'s2t2', name:'Fadzilah Yusof', jawatan:'Guru Matematik', av:'FY', records:[
-        { id:'s2r3', program:'STEM Ambassador Daerah Gombak 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-03-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', tags:[] },
+      { id:'s2t2', name:'FADZILAH YUSOF', jawatan:'Guru Matematik', av:'FY', records:[
+        { id:'s2r3', program:'STEM Ambassador Daerah Dalat 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-03-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', tags:[] },
       ]},
     ],
     schoolRecords: [
       { id:'ss2r1', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
       { id:'ss2r2', program:'Anugerah Pengurusan Kaunseling Daerah 2026', tarikh:'2026-03-08', level:'DAE', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
     ]},
-  { id:'s3', name:'SK Setapak Indah',   kod:'SI001', jenis:'SK',  av:'SI',
+  { id:'s3', name:'SMK BATANG IGAN', kod:'YEA6103', jenis:'SMK',  av:'BI',
     teachers: [
-      { id:'s3t1', name:'Roslan Abd Hamid', jawatan:'Guru Besar',  av:'RA', records:[
+      { id:'s3t1', name:'ROSLAN ABD HAMID', jawatan:'Guru Besar',  av:'RA', records:[
         { id:'s3r1', program:'Anugerah Pengetua/GB Cemerlang Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-07-01', tahap:'T1', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
       ]},
-      { id:'s3t2', name:'Norfadzilah Idris', jawatan:'Guru Sains', av:'NI', records:[] },
+      { id:'s3t2', name:'NORFADZILAH IDRIS', jawatan:'Guru Sains', av:'NI', records:[] },
     ],
     schoolRecords: [
-      { id:'ss3r1', program:'Anugerah Sekolah Cemerlang Kokurikulum PPD Gombak 2026', tarikh:'2026-02-14', level:'DAE', tahap:'T1', kategori:'KOK', pautanEviden:'https://drive.google.com/...', catatan:'' },
+      { id:'ss3r1', program:'Anugerah Sekolah Cemerlang Kokurikulum PPD Dalat 2026', tarikh:'2026-02-14', level:'DAE', tahap:'T1', kategori:'KOK', pautanEviden:'https://drive.google.com/...', catatan:'' },
     ]},
-  { id:'s4', name:'SK Gombak Setia',    kod:'GS001', jenis:'SK',  av:'GS',
+  { id:'s4', name:'SMK AGAMA IGAN',  kod:'YEA6104', jenis:'SMKA', av:'AI',
     teachers: [
-      { id:'s4t1', name:'Zainudin Bakar',   jawatan:'Guru Besar',  av:'ZB', records:[] },
-      { id:'s4t2', name:'Salmiah Nordin',   jawatan:'Guru BM',     av:'SN', records:[] },
+      { id:'s4t1', name:'ZAINUDIN BAKAR',   jawatan:'Guru Besar',  av:'ZB', records:[] },
+      { id:'s4t2', name:'SALMIAH NORDIN',   jawatan:'Guru BM',     av:'SN', records:[] },
     ],
     schoolRecords: [] },
-  { id:'s5', name:'SJKC Confucian',     kod:'CF001', jenis:'SJKC', av:'CF',
-    teachers: [
-      { id:'s5t1', name:'Chan Wei Lin',  jawatan:'Guru Besar',     av:'CW', records:[
-        { id:'s5r1', program:'International Teacher Award 2026', level:'INT', peranan:'Peserta', tarikh:'2026-08-20', tahap:'T1', pengesahan:'Sijil Antarabangsa', pautanEviden:'https://drive.google.com/...', tags:[] },
-      ]},
-    ],
-    schoolRecords:[
-      { id:'ss5r1', program:"World's Best School Prize 2026", tarikh:'2026-03-15', level:'INT', tahap:'T1', kategori:'PGS', pautanEviden:'https://drive.google.com/...', catatan:'' },
-    ]},
 ];
+
+/* -- Pengguna log masuk & stor kongsi --------------------------- */
+const ME = PPDAuth.currentUser();
+const ME_LV = PPDAuth.session().level;
+const SEKOLAH_SAYA = ME.org;
+const SEKOLAH_KOD = PPDData.sekolahUser(ME)?.kod || '';
+const DRAF_KEY = 'ppd_skas_draf_' + ME.id;
+const F_KOSONG = () => ({program:'',tarikhmula:'',tarikhakhir:'',level:'',peranan:'',tahap:'',pengesahan:'',pautanEviden:'',catatan:'',hasSijil:false});
+const drafAda = f => !!(f && (f.program||f.tarikhmula||f.level||f.peranan||f.tahap||f.pengesahan||f.pautanEviden||f.catatan));
+function bacaDraf() { try { return JSON.parse(localStorage.getItem(DRAF_KEY) || 'null'); } catch { return null; } }
+function drafAtauKosong() {
+  const d = bacaDraf();
+  S._drafMasa = d && drafAda(d.f) ? d.t : null;
+  return S._drafMasa ? { ...F_KOSONG(), ...d.f, hasSijil:false } : F_KOSONG();
+}
+let _rekodTersimpan = null;
+function simpanAutoSkas(dariInput) {
+  if (S.records !== _rekodTersimpan) {
+    if (_rekodTersimpan !== null) PPDData.skas.save(ME.id, S.records);
+    _rekodTersimpan = S.records;
+  }
+  if (S.view === 'form' && !S.editingId && drafAda(S.f)) {
+    try { localStorage.setItem(DRAF_KEY, JSON.stringify({ f: S.f, t: Date.now() })); } catch {}
+    const el = document.getElementById('draf-status');
+    if (el && dariInput) el.textContent = 'Draf disimpan automatik · ' + new Date().toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit' });
+  }
+}
+// Penanda carta HTML untuk paparan besar (assets/ppd-carta.js)
+const cartaAttr = spec => ` data-carta="${esc(JSON.stringify(spec))}"`;
+// Profil guru yang log masuk: padan ikut akaun portal, bukan guru pertama dalam senarai
+function profilSaya() {
+  return S.teachers.find(t => t.uid === ME.id) || S.profilSaya || { id: 'me', uid: ME.id, name: ME.nama, jawatan: 'Guru',
+    av: PPDAuth.initials(ME.nama), mataPelajaran: '', emel: ME.emel, tahunMula: null, records: [] };
+}
+function buangDraf() { try { localStorage.removeItem(DRAF_KEY); } catch {} S._drafMasa = null; }
 
 /* -- State ----------------------------------------------------- */
 let S = {
@@ -694,38 +717,25 @@ let S = {
   _profileReadOnly: false,
 
   // ppd admin sub-views
-  ppdView: 'analysis',  // analysis | charts | schools | school_detail | reset_password | user_mgmt
+  ppdView: 'analysis',  // analysis | charts | schools | school_landing | school_users | school_detail
   selectedSchoolId: null,
   ppdFilter: null,
-  resetDone: [],       // schoolIds that have been reset
   expandedPpdRecs: [],
   ppdSchoolSearch: '',  // search text in Senarai Sekolah
-  ppdSchoolJenis: 'all', // filter by jenis: 'all'|'SK'|'SJKC'|'SJKT'
+  ppdSchoolJenis: 'all', // filter by jenis: 'all'|'SMK'|'SMKA'
   ppdSchoolStatus: 'all', // filter by status: 'all'|'lemah'|'baik'
   ppdNotifSeen: false,   // whether bell notification has been seen
   ppdYearFilter: TAHUN_SEMASA, // cadangan B: year filter for analysis (number)
 
-  // pengurusan pengguna
-  demoUsers: [
-    { id:'u1', name:'Ahmad Faizal bin Mohd',      email:'a.faizal@moe.gov.my',   role:'guru',         schoolId:null },
-    { id:'u2', name:'Siti Rahimah binti Zain',     email:'s.rahimah@moe.gov.my',  role:'school_admin', schoolId:'s1' },
-    { id:'u3', name:'Mohamad Hafiz bin Razali',    email:'m.hafiz@moe.gov.my',    role:'guru',         schoolId:null },
-    { id:'u4', name:'Nurul Ain binti Hassan',       email:'n.ain@moe.gov.my',      role:'school_admin', schoolId:'s2' },
-    { id:'u5', name:'Razif bin Othman',            email:'razif@moe.gov.my',      role:'guru',         schoolId:null },
-    { id:'u6', name:'Zarina binti Abdul Karim',    email:'zarina@moe.gov.my',     role:'guru',         schoolId:null },
-    { id:'u7', name:'Khairul Nizam bin Ismail',    email:'k.nizam@moe.gov.my',    role:'guru',         schoolId:null },
-    { id:'u8', name:'Faridah binti Mahmud',        email:'faridah@moe.gov.my',    role:'school_admin', schoolId:'s3' },
-  ],
-  ppdUserFilter: 'semua',  // 'semua' | 'school_admin' | 'guru'
   ppdUserSearch: '',
 
   // teacher roster (mutable)
-  teachers: DEMO_TEACHERS.map(t=>({...t})),
+  teachers: (DEMO_SCHOOLS.find(sc => sc.name === SEKOLAH_SAYA)?.teachers || []).map(t=>({...t})),
   usrModal: null,   // null | 'add' | 'edit'
   usrEditId: null,  // id of teacher being edited
 
   // school achievement records
-  schoolRecords: [...DEMO_SCHOOL_RECORDS],
+  schoolRecords: [...(DEMO_SCHOOLS.find(sc => sc.name === SEKOLAH_SAYA)?.schoolRecords || [])],
   sfDetailId: null,     // id of school record being viewed in detail
   // school form
   sf: { program:'', tarikh:'', level:'', tahap:'', kategori:'', pautanEviden:'', catatan:'', guruId:'' },
@@ -747,8 +757,8 @@ let S = {
   draftText:  '',
   draftDone:  false,
 
-  // records (in session)
-  records: [...DEMO_RECORDS],
+  // rekod pencapaian guru yang log masuk (stor kongsi)
+  records: PPDData.skas.rekod(ME.id),
 
 };
 
@@ -771,6 +781,7 @@ const render = () => {
     document.getElementById('app').innerHTML = buildApp();
   }
   bind();
+  simpanAutoSkas();
 };
 
 /* -- Sidebar --------------------------------------------------- */
@@ -789,8 +800,8 @@ function sidebar() {
       }).join('')}
     </div>
     <div class="sb-footer">
-      <div class="av">AH</div>
-      <div><div class="sb-uname">Cikgu Azman Harun</div><div class="sb-urole">Guru</div></div>
+      <div class="av">${PPDAuth.esc(PPDAuth.initials(ME.nama))}</div>
+      <div><div class="sb-uname">${PPDAuth.esc(ME.nama)}</div><div class="sb-urole">${PPDAuth.LEVELS[ME_LV].label} · ${PPDAuth.esc(ME.org)}</div></div>
     </div>
   </aside>`;
 }
@@ -802,11 +813,25 @@ function topbar(title) {
     <div style="display:flex;align-items:center;gap:10px">
       ${back?`<button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" id="btn-back">${IC.arrow} Kembali</button>`:''}
       <div class="tb-info">
-        <div class="g">Guru &middot; SK Wangsa Maju 1</div>
+        <div class="g">${PPDAuth.LEVELS[ME_LV].label} &middot; ${PPDAuth.esc(ME.org)}</div>
         <div class="n">${title}</div>
       </div>
     </div>
   </div>`;
+}
+
+/* -- Status pengesahan rekod ------------------------------------ */
+const STATUS_REKOD = { pending:['Menunggu pengesahan','#b54708'], approved:['Disahkan','#067647'], rejected:['Ditolak','#b42318'] };
+function statusRekodHTML(r) {
+  const st = STATUS_REKOD[r.status] || STATUS_REKOD.pending;
+  return `<span class="st-rekod" style="--sc:${st[1]}">${st[0]}</span>`;
+}
+function tetapStatusRekod(tid, rid, status) {
+  const t = S.teachers.find(x => x.id === tid);
+  if (!t) return;
+  const recs = t.records.map(r => r.id === rid ? { ...r, status, disahkanOleh: ME.nama, disahkanPada: new Date().toISOString() } : r);
+  if (t.uid) PPDData.skas.save(t.uid, recs);
+  setState({ teachers: S.teachers.map(x => x.id === tid ? { ...x, records: recs } : x) });
 }
 
 /* -- Dashboard view -------------------------------------------- */
@@ -823,6 +848,7 @@ function dashRecRow(r) {
     + '<div class="ach-row-meta">'+r.peranan+' &middot; '+fmtDate(r.tarikh)+'</div>'
     + thHtml + errHtml
     + '</div>'
+    + '<div style="flex-shrink:0">'+statusRekodHTML(r)+'</div>'
     + '</div>';
 }
 
@@ -945,7 +971,7 @@ function viewDashboard() {
 
   const defaultPanels = panelGuide;
 
-  const me = S.teachers.find(t=>t.id==='t1') || S.teachers[0] || {};
+  const me = profilSaya();
   const avC = '#13406e';
   const profileCard = `<div class="panel" style="margin-bottom:4px">
     <div class="pb" style="display:flex;align-items:center;gap:14px">
@@ -1388,6 +1414,7 @@ function viewForm() {
       <div>
         <div class="pg-title">${S.editingId?'Edit Pencapaian':'Tambah Pencapaian Baru'}</div>
         <div class="pg-sub">Pencapaian peribadi guru -- bukan mewakili murid atau sekolah</div>
+        ${S.editingId ? '' : `<div class="draf-bar"><span id="draf-status">${S._drafMasa ? 'Draf dipulihkan dari ' + new Date(S._drafMasa).toLocaleString('ms-MY', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Draf disimpan automatik semasa anda menaip'}</span>${S._drafMasa ? '<button type="button" class="draf-buang" id="btn-draf-buang">Mula semula</button>' : ''}</div>`}
       </div>
       ${stepBar}
 
@@ -1663,7 +1690,6 @@ function sidebarAdmin() {
       { pv:'analysis',        label:'Analisis Daerah',   icon:IC.dash },
       { pv:'charts',          label:'Carta & Analitik',  icon:i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>') },
       { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
-      { pv:'reset_password',  label:'Urus Kata Laluan',  icon:i('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') },
     ];
     return `<aside class="sidebar">
       <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -1677,7 +1703,7 @@ function sidebarAdmin() {
       </div>
       <div class="sb-footer">
         <div class="av">PA</div>
-        <div><div class="sb-ppd">PPD Gombak &nbsp;<span style="opacity:.5">|</span>&nbsp; Y101</div></div>
+        <div><div class="sb-ppd">PPD Dalat &nbsp;<span style="opacity:.5">|</span>&nbsp; Sarawak</div></div>
       </div>
     </aside>`;
   }
@@ -1702,7 +1728,7 @@ function sidebarAdmin() {
     </div>
     <button class="sb-footer sb-footer-btn" data-pfooter title="Kemaskini Profil Sekolah">
       <div class="av">SK</div>
-      <div><div class="sb-uname">SK Wangsa Maju 1</div><div class="sb-urole">BBA3021</div></div>
+      <div><div class="sb-uname">${esc(SEKOLAH_SAYA)}</div><div class="sb-urole">${SEKOLAH_KOD}</div></div>
       <div class="sb-footer-gear">${i('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>')}</div>
     </button>
   </aside>`;
@@ -1824,7 +1850,7 @@ function viewSchoolAdmin() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Analisis Pencapaian</div>
-      <div class="pg-sub">SK Wangsa Maju 1 &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA}</div>
+      <div class="pg-sub">${esc(SEKOLAH_SAYA)} &middot; SKPM Aspek 5.4 &middot; Tahun ${TAHUN_SEMASA}</div>
     </div>
   </div>
 
@@ -1916,12 +1942,16 @@ function viewSchoolAdmin() {
           const max = Math.max(1,...LEVELS.map(l=>layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length));
           const pct = total>0?Math.round(layakRecs.length/total*100):0;
           const levels = LEVELS.filter(l=>LEVELS_LAYAK.includes(l.key));
-          return `<div class="panel" style="overflow:hidden">
+          const kiraLvl = l => layakRecs.filter(r=>(LEVEL_MAP_SKPM[r.level]||r.level)===l.key).length;
+          return `<div class="panel" style="overflow:hidden"${cartaAttr({ id: aspek.includes('Guru') ? 'skas-peringkat-guru' : 'skas-peringkat-sekolah',
+            tajuk: aspek + ' — Mengikut Peringkat', sub: `${layakRecs.length} rekod layak daripada ${total} (${pct}%) · ${SEKOLAH_SAYA}`, jenis: 'hbar', paksiLabel: 'Peringkat',
+            label: levels.map(l=>l.label), siri: [{ nama: 'Rekod layak', data: levels.map(kiraLvl), warna: levels.map(l=>lvlColors[l.key]||'#64748b') }] })}>
             <div style="padding:14px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px">
-              <div>
+              <div style="flex:1;min-width:0">
                 <div style="font-size:13px;font-weight:700;color:var(--t1)">${aspek}</div>
                 <div style="font-size:11px;color:var(--t3);margin-top:2px">${layakRecs.length} rekod layak daripada ${total}</div>
               </div>
+              <span data-carta-slot style="display:inline-flex"></span>
               <div style="text-align:center;flex-shrink:0">
                 <div style="font-size:22px;font-weight:800;color:${chipColor};line-height:1">${pct}%</div>
                 <div style="font-size:10px;color:var(--t3);margin-top:1px">Layak</div>
@@ -2114,10 +2144,14 @@ function viewSchoolAdmin() {
           </div>
         </div>`;
       }).join('');
-      return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      const kira = p => allTeacherRecs.filter(r=>r.peranan===p.val).length, kiraL = p => tLayak.filter(r=>r.peranan===p.val).length;
+      return `<div${cartaAttr({ id: 'skas-peranan-guru', tajuk: 'Analisis Peranan Guru (SKPM 5.4.1)', sub: `${allTeacherRecs.length} rekod guru · ${SEKOLAH_SAYA}`, jenis: 'hbar', tindan: true, paksiLabel: 'Peranan',
+          label: PERANAN.map(p=>p.val), siri: [{ nama: 'Layak', data: PERANAN.map(kiraL), warna: '#059669' }, { nama: 'Tidak layak', data: PERANAN.map(p=>kira(p)-kiraL(p)), warna: '#f87171' }] })}>
+        <div style="display:flex;justify-content:flex-end;margin:-34px 0 8px"><span data-carta-slot style="display:inline-flex"></span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
         ${rows}
         ${allTeacherRecs.length===0?'<div class="panel" style="grid-column:1/-1"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>':''}
-      </div>`;
+      </div></div>`;
     })()}
   </div>`;
 }
@@ -2162,7 +2196,7 @@ function viewSchoolAchievements() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Pencapaian Sekolah <span style="font-size:12px;font-weight:500;color:var(--t3)">SKPM 5.4.2</span></div>
-      <div class="pg-sub">SK Wangsa Maju 1 &middot; Tahun ${TAHUN_SEMASA} &middot; Wajaran 10%</div>
+      <div class="pg-sub">${esc(SEKOLAH_SAYA)} &middot; Tahun ${TAHUN_SEMASA} &middot; Wajaran 10%</div>
     </div>
   </div>
 
@@ -2475,7 +2509,7 @@ function viewSchoolForm() {
     <button class="btn btn-ghost" id="btn-school-back" style="padding:6px 10px;font-size:12px">${IC.arrow} Kembali</button>
     <div>
       <div class="pg-title">${S.sfEditingId?'Edit Pencapaian Sekolah':'Tambah Pencapaian Sekolah'}</div>
-      <div class="pg-sub">SKPM 5.4.2 &middot; SK Wangsa Maju 1 &middot; Tahun ${TAHUN_SEMASA}</div>
+      <div class="pg-sub">SKPM 5.4.2 &middot; ${esc(SEKOLAH_SAYA)} &middot; Tahun ${TAHUN_SEMASA}</div>
     </div>
   </div>
 
@@ -2485,7 +2519,7 @@ function viewSchoolForm() {
 
       <div class="fg">
         <label class="fl">Nama Program / Pertandingan / Anugerah <span class="req">*</span></label>
-        <input class="fi" id="sf-program" placeholder="cth. Anugerah Sekolah Cemerlang Sukan PPD Gombak 2026" value="${sf.program}">
+        <input class="fi" id="sf-program" placeholder="cth. Anugerah Sekolah Cemerlang Sukan PPD Dalat 2026" value="${sf.program}">
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -2547,12 +2581,12 @@ function viewSchoolForm() {
 /* -- School Profile view (school admin) ------------------------ */
 function viewSchoolProfile() {
   const school = {
-    nama: 'SK Wangsa Maju 1',
+    nama: SEKOLAH_SAYA,
     kod: 'BBA3021',
     jenis: 'Sekolah Kebangsaan',
-    ppd: 'PPD Gombak',
+    ppd: 'PPD Dalat',
     negeri: 'Wilayah Persekutuan Kuala Lumpur',
-    alamat: 'Jalan 12, Wangsa Maju, 53300 Kuala Lumpur',
+    alamat: `${SEKOLAH_SAYA}, 96300 Dalat, Sarawak`,
     poskod: '53300',
     bandar: 'Kuala Lumpur',
     telefon: '03-4149 2200',
@@ -2630,7 +2664,7 @@ function viewUsers() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Senarai Guru</div>
-      <div class="pg-sub">SK Wangsa Maju 1 &middot; ${teachers.length} guru berdaftar &middot; Tahun ${TAHUN_SEMASA}</div>
+      <div class="pg-sub">${esc(SEKOLAH_SAYA)} &middot; ${teachers.length} guru berdaftar &middot; Tahun ${TAHUN_SEMASA}</div>
     </div>
     <button class="btn btn-primary" id="btn-add-teacher" style="gap:6px">${i('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',16)} Tambah Guru</button>
   </div>
@@ -2702,10 +2736,13 @@ function viewTeacherDetail() {
         ${th?`<div class="ach-row-meta" style="color:var(--t2);margin-top:1px">${th.short}</div>`:''}
         ${!ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${ai.reasons[0]||''}</div>`:''}
       </div>
-      <div style="flex-shrink:0">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         ${ai.layak
           ? '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:10px">&#10003; Layak 5.4.1</span>'
           : '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">&#10007; Tidak Layak</span>'}
+        ${r.status === 'pending' || !r.status
+          ? `<div class="sah-btns"><button class="btn btn-sah" data-sah="${r.id}">&#10003; Sahkan</button><button class="btn btn-tolak" data-tolak="${r.id}">Tolak</button></div>`
+          : statusRekodHTML(r)}
       </div>
     </div>`;
   };
@@ -2890,7 +2927,8 @@ function viewPPDCharts() {
   </div>
 
   <!-- Trend chart -->
-  ${monthKeys.length ? `<div class="card" style="padding:20px 22px;margin-bottom:16px">
+  ${monthKeys.length ? `<div class="card" style="padding:20px 22px;margin-bottom:16px"${cartaAttr({ id: 'skas-trend-serahan', tajuk: 'Trend Penyerahan Rekod', sub: `Bilangan rekod dihantar setiap bulan · Daerah Dalat · ${selectedYear}`, jenis: 'bar', tindan: true, paksiLabel: 'Bulan',
+    label: monthKeys.map(k=>BULAN[+k.split('-')[1]]+' '+k.split('-')[0]), siri: [{ nama: 'Rekod guru', data: monthKeys.map(k=>tMonthCounts[k]||0), warna: '#13406e' }, { nama: 'Rekod sekolah', data: monthKeys.map(k=>sMonthCounts[k]||0), warna: '#06b6d4' }] })}>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
       <div>
         <div style="font-weight:700;font-size:14px;color:var(--t1)">Trend Penyerahan Rekod</div>
@@ -2899,6 +2937,7 @@ function viewPPDCharts() {
       <div style="display:flex;gap:14px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:3px;background:#13406e"></div><span style="font-size:11px;color:var(--t2)">Guru</span></div>
         <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;border-radius:3px;background:#06b6d4"></div><span style="font-size:11px;color:var(--t2)">Sekolah</span></div>
+        <span data-carta-slot style="display:inline-flex"></span>
       </div>
     </div>
     <div style="display:flex;gap:6px;align-items:flex-end;padding-bottom:4px;overflow-x:auto">
@@ -2908,14 +2947,16 @@ function viewPPDCharts() {
 
   <!-- Level breakdown -->
   <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:4px">
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card" style="padding:0;overflow:hidden"${cartaAttr({ id: 'skas-peringkat-guru', tajuk: 'Taburan Peringkat Guru (SKPM 5.4.1)', sub: `${tLayakAll.length} rekod layak daripada ${allTRecs.length} (${tPct}%) · Daerah Dalat · ${selectedYear}`, jenis: 'hbar', paksiLabel: 'Peringkat',
+      label: tByLvl.map(l=>LVL[l.key]?.label||l.key), siri: [{ nama: 'Rekod layak', data: tByLvl.map(l=>l.count), warna: tByLvl.map(l=>LVL[l.key]?.color||'#888') }] })}>
       <div style="padding:16px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px">
         <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#13406e);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">👩‍🏫</div>
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--t1)">Taburan Peringkat Guru</div>
           <div style="font-size:11px;color:var(--t3)">SKPM 5.4.1 · ${tLayakAll.length} rekod layak</div>
         </div>
-        <div style="margin-left:auto;text-align:right">
+        <div style="margin-left:auto"><span data-carta-slot style="display:inline-flex"></span></div>
+        <div style="text-align:right">
           <div style="font-size:22px;font-weight:800;color:#7c3aed">${tPct}%</div>
           <div style="font-size:9px;color:var(--t3)">kadar layak</div>
         </div>
@@ -2924,14 +2965,16 @@ function viewPPDCharts() {
         ${tByLvl.length ? tByLvl.map(l=>lvlBar(l.key,l.count,tLayakAll.length)).join('') : `<div style="font-size:12px;color:var(--t3);padding:16px 0">Tiada rekod layak.</div>`}
       </div>
     </div>
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card" style="padding:0;overflow:hidden"${cartaAttr({ id: 'skas-peringkat-sekolah', tajuk: 'Taburan Peringkat Sekolah (SKPM 5.4.2)', sub: `${sLayakAll.length} rekod layak daripada ${allSRecs.length} (${sPct}%) · Daerah Dalat · ${selectedYear}`, jenis: 'hbar', paksiLabel: 'Peringkat',
+      label: sByLvl.map(l=>LVL[l.key]?.label||l.key), siri: [{ nama: 'Rekod layak', data: sByLvl.map(l=>l.count), warna: sByLvl.map(l=>LVL[l.key]?.color||'#888') }] })}>
       <div style="padding:16px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px">
         <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0891b2,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏫</div>
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--t1)">Taburan Peringkat Sekolah</div>
           <div style="font-size:11px;color:var(--t3)">SKPM 5.4.2 · ${sLayakAll.length} rekod layak</div>
         </div>
-        <div style="margin-left:auto;text-align:right">
+        <div style="margin-left:auto"><span data-carta-slot style="display:inline-flex"></span></div>
+        <div style="text-align:right">
           <div style="font-size:22px;font-weight:800;color:#0891b2">${sPct}%</div>
           <div style="font-size:9px;color:var(--t3)">kadar layak</div>
         </div>
@@ -2942,86 +2985,6 @@ function viewPPDCharts() {
     </div>
   </div>`;
 }
-
-function viewPPDUserMgmt() {
-  const search = (S.ppdUserSearch||'').toLowerCase();
-  const filter = S.ppdUserFilter || 'semua';
-
-  const filtered = S.demoUsers.filter(u => {
-    const matchSearch = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
-    const matchFilter = filter === 'semua' || u.role === filter;
-    return matchSearch && matchFilter;
-  });
-
-  const totalAdmins = S.demoUsers.filter(u => u.role === 'school_admin').length;
-  const totalGurus  = S.demoUsers.filter(u => u.role === 'guru').length;
-
-  const chipFilter = (val, label) => {
-    const active = filter === val;
-    return `<button data-usr-filter="${val}" style="padding:6px 14px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--bdr)'};background:${active?'var(--accent)':'transparent'};color:${active?'#fff':'var(--t2)'};font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">${label}</button>`;
-  };
-
-  const avColors = ['#13406e','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
-
-  const cards = filtered.length === 0
-    ? `<div style="text-align:center;padding:48px 20px;color:var(--t3);font-size:14px">Tiada pengguna dijumpai.</div>`
-    : filtered.map((u,idx) => {
-        const isAdmin = u.role === 'school_admin';
-        const school = isAdmin ? DEMO_SCHOOLS.find(s => s.id === u.schoolId) : null;
-        const av = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        const avCol = avColors[S.demoUsers.findIndex(x=>x.id===u.id) % avColors.length];
-        return `<div class="card" style="padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="width:44px;height:44px;border-radius:12px;background:${avCol};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0">${av}</div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
-              <span style="font-weight:700;font-size:14px;color:var(--t1)">${esc(u.name)}</span>
-              <span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:${isAdmin?'#818cf818':'var(--chip)'};color:${isAdmin?'#818cf8':'var(--chip-fg)'};border:1px solid ${isAdmin?'#818cf840':'transparent'}">${isAdmin?'Pentadbir Sekolah':'Guru'}</span>
-            </div>
-            <div style="font-size:11.5px;color:var(--t3)">${esc(u.email)}</div>
-            ${isAdmin && school ? `<div style="font-size:11.5px;color:var(--accent);margin-top:3px;font-weight:600">&#x1F3EB; ${esc(school.name)}</div>` : ''}
-          </div>
-          <button data-usr-assign="${u.id}" style="flex-shrink:0;padding:8px 16px;border-radius:9px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--t1)'">${isAdmin?'Tukar Peranan':'Tetapkan Peranan'}</button>
-        </div>`;
-      }).join('');
-
-  return `<div class="sa-wrap">
-    <div class="ppd-analysis-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--t1)">Pengurusan Pengguna</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${S.demoUsers.length} pengguna berdaftar</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div class="card" style="padding:16px 18px;text-align:center">
-        <div style="font-size:26px;font-weight:800;color:var(--t1)">${S.demoUsers.length}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">Jumlah Pengguna</div>
-      </div>
-      <div class="card" style="padding:16px 18px;text-align:center">
-        <div style="font-size:26px;font-weight:800;color:#818cf8">${totalAdmins}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">Pentadbir Sekolah</div>
-      </div>
-      <div class="card" style="padding:16px 18px;text-align:center">
-        <div style="font-size:26px;font-weight:800;color:var(--accent)">${totalGurus}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">Guru</div>
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <div style="position:relative">
-        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="ppd-user-search" type="text" placeholder="Cari nama atau emel pengguna..." value="${esc(S.ppdUserSearch||'')}" style="width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:13px;box-sizing:border-box;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${chipFilter('semua','Semua')}
-        ${chipFilter('school_admin','Pentadbir Sekolah')}
-        ${chipFilter('guru','Guru')}
-      </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      ${cards}
-    </div>
-  </div>`;
-}
-
 
 function viewPPDAnalysis() {
   // Cadangan B: year filter
@@ -3145,7 +3108,7 @@ function viewPPDAnalysis() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Analisis Daerah</div>
-      <div class="pg-sub">PPD Gombak &middot; SKPM Aspek 5.4 &middot; Tahun ${selectedYear} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
+      <div class="pg-sub">PPD Dalat &middot; SKPM Aspek 5.4 &middot; Tahun ${selectedYear} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button id="btn-ppd-csv" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
@@ -3311,7 +3274,7 @@ function viewPPDAnalysis() {
 
 function viewPPDSchools() {
   const jenisBadge = j => {
-    const col = j==='SK'?'#1d5fa0':j==='SJKC'?'#f59e0b':'#8b5cf6';
+    const col = j==='SMK'?'#1d5fa0':'#8b5cf6';
     return `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${col}22;color:${col};border:1px solid ${col}44">${j}</span>`;
   };
   const search = (S.ppdSchoolSearch||'').toLowerCase();
@@ -3349,7 +3312,7 @@ function viewPPDSchools() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--t1)">Senarai Sekolah</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${filtered.length} / ${DEMO_SCHOOLS.length} sekolah</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Dalat &middot; ${filtered.length} / ${DEMO_SCHOOLS.length} sekolah</div>
       </div>
     </div>
     <!-- Search + filter jenis + filter status (Cadangan 3 + P) -->
@@ -3360,7 +3323,7 @@ function viewPPDSchools() {
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <span style="font-size:11px;color:var(--t3);font-weight:600">Jenis:</span>
-        ${chipJenis('all','Semua')}${chipJenis('SK','SK')}${chipJenis('SJKC','SJKC')}${chipJenis('SJKT','SJKT')}
+        ${chipJenis('all','Semua')}${chipJenis('SMK','SMK')}${chipJenis('SMKA','SMKA')}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <span style="font-size:11px;color:var(--t3);font-weight:600">Status:</span>
@@ -3407,13 +3370,13 @@ function viewPPDSchools() {
 function viewPPDSchoolLanding() {
   const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
   if(!sch) return '<p>Sekolah tidak dijumpai.</p>';
-  const admins = S.demoUsers.filter(u=>u.role==='school_admin'&&u.schoolId===sch.id);
-  const gurus  = S.demoUsers.filter(u=>u.role==='guru');
+  const pengguna = penggunaSekolah(sch.name);
+  const admins = pengguna.filter(u=>u.roles.includes('sekolah_skas'));
   return `<div style="padding:24px 20px;max-width:680px;margin:0 auto">
     <div style="margin-bottom:24px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--t3);text-transform:uppercase;margin-bottom:6px">Sekolah</div>
       <div style="font-size:22px;font-weight:800;color:var(--t1);line-height:1.2">${esc(sch.name)}</div>
-      <div style="font-size:13px;color:var(--t3);margin-top:4px">${esc(sch.daerah||'Daerah Gombak')}</div>
+      <div style="font-size:13px;color:var(--t3);margin-top:4px">${esc(sch.daerah||'Daerah Dalat')}</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <button data-goto-pv="school_detail" style="background:var(--card);border:1.5px solid var(--bdr);border-radius:16px;padding:24px 20px;text-align:left;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
@@ -3428,51 +3391,49 @@ function viewPPDSchoolLanding() {
           ${i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>','20')}
         </div>
         <div style="font-size:15px;font-weight:700;color:var(--t1);margin-bottom:4px">Senarai &amp; Peranan Pengguna</div>
-        <div style="font-size:12px;color:var(--t3);line-height:1.5">${admins.length} pentadbir &bull; ${gurus.length} guru — urus peranan dan akses pengguna</div>
+        <div style="font-size:12px;color:var(--t3);line-height:1.5">${pengguna.length} pengguna &bull; ${admins.length} Pentadbir Sekolah SK@S — lihat dan urus peranan</div>
       </button>
     </div>
   </div>`;
 }
 
+// Pengguna sekolah diambil dari portal; peranan hanya diubah melalui Urus Peranan
+function penggunaSekolah(nama) { return PPDAuth.users().filter(u => u.org === nama); }
+function perananSkas(u) {
+  if (u.roles.includes('superadmin')) return ['Superadmin', PPDAuth.LEVELS.superadmin.color];
+  if (u.roles.includes('admin_skas')) return ['Admin SK@S', PPDAuth.LEVELS.admin.color];
+  if (u.roles.includes('sekolah_skas')) return ['Pentadbir Sekolah', PPDAuth.LEVELS.sekolah.color];
+  return ['Pengguna Biasa', PPDAuth.LEVELS.pengguna.color];
+}
 function viewPPDSchoolUsers() {
   const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
   if(!sch) return '<p>Sekolah tidak dijumpai.</p>';
-  const admins = S.demoUsers.filter(u=>u.role==='school_admin'&&u.schoolId===sch.id);
-  const gurus  = S.demoUsers.filter(u=>u.role==='guru');
-  const allUsers = [...admins, ...gurus];
-  const search = (S.ppdUserSearch||'').toLowerCase();
-  const filtered = search ? allUsers.filter(u=>u.name.toLowerCase().includes(search)||u.email.toLowerCase().includes(search)) : allUsers;
-  const roleLabel = r => r==='school_admin'?'Pentadbir Sekolah':'Guru';
-  const roleBadge = r => r==='school_admin'
-    ? `<span style="font-size:13px;font-weight:700;background:#dbeafe;color:#0b2a4a;border-radius:8px;padding:4px 12px">Pentadbir</span>`
-    : `<span style="font-size:13px;font-weight:700;background:#f3e8ff;color:#7c3aed;border-radius:8px;padding:4px 12px">Guru</span>`;
+  const users = penggunaSekolah(sch.name);
+  const boleh = PPDAuth.assignableRoles(ME, ME_LV, 'skas').length > 0;
   return `<div style="padding:24px 20px;max-width:800px;margin:0 auto">
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap">
-      <button id="btn-school-users-back" style="background:none;border:1.5px solid var(--bdr);border-radius:12px;padding:10px 18px;font-size:15px;font-weight:600;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:8px">
-        ${i('<polyline points="15 18 9 12 15 6"/>','18')} Kembali
-      </button>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+      <button id="btn-school-users-back" class="btn btn-ghost">${i('<polyline points="15 18 9 12 15 6"/>','16')} Kembali</button>
       <div style="flex:1;min-width:180px">
         <div style="font-size:20px;font-weight:800;color:var(--t1)">${esc(sch.name)}</div>
-        <div style="font-size:14px;color:var(--t3)">Pengurusan Pengguna</div>
+        <div style="font-size:13px;color:var(--t3)">${users.length} pengguna portal berdaftar</div>
       </div>
+      ${boleh ? `<button class="btn btn-primary" id="btn-buka-urus-peranan">${i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>','16')} Urus Peranan</button>` : ''}
     </div>
-    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:16px;margin-bottom:16px">
-      <input id="ppd-usr-search" value="${esc(S.ppdUserSearch||'')}" placeholder="Cari nama atau emel..." style="width:100%;padding:12px 16px;border:1px solid var(--bdr);border-radius:10px;background:var(--bg);color:var(--t1);font-size:15px;box-sizing:border-box">
+    <div class="notice" style="margin-bottom:16px;border-radius:10px;font-size:12.5px;line-height:1.55">
+      <span style="font-weight:700;flex-shrink:0">i</span>
+      <div>Akaun dan peranan diurus secara berpusat di Portal PPD Dalat. ${boleh ? 'Klik <b>Urus Peranan</b> untuk menetapkan Pentadbir Sekolah SK@S.' : ''} Pengguna baharu didaftarkan oleh Superadmin melalui <a href="ppd-dalat.html">Portal PPD Dalat</a> → Urus Pengguna.</div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;overflow:hidden">
-      ${filtered.length===0?`<div style="padding:40px;text-align:center;color:var(--t3);font-size:15px">Tiada pengguna dijumpai.</div>`
-        :filtered.map((u,idx)=>`
-        <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;${idx>0?'border-top:1px solid var(--bdr)':''}">
-          <div style="width:46px;height:46px;background:var(--accent-soft,#e8f0fe);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);flex-shrink:0">${esc(u.name.charAt(0))}</div>
+    <div style="background:var(--card);border:1px solid var(--bdr);border-radius:14px;overflow:hidden">
+      ${users.length===0 ? `<div style="padding:32px;text-align:center;color:var(--t3);font-size:14px">Tiada pengguna portal didaftarkan untuk sekolah ini.</div>`
+        : users.map((u,idx)=>{ const [lbl,col]=perananSkas(u); return `
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;${idx>0?'border-top:1px solid var(--bdr)':''}">
+          <div style="width:40px;height:40px;background:${col};border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${esc(PPDAuth.initials(u.nama))}</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:16px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.name)}</div>
-            <div style="font-size:13px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div>
+            <div style="font-size:14.5px;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis">${esc(u.nama)}</div>
+            <div style="font-size:12.5px;color:var(--t3);overflow-wrap:anywhere">${esc(u.emel)}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            ${roleBadge(u.role)}
-            <button data-usr-assign="${u.id}" style="background:none;border:1.5px solid var(--bdr);border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--t2);cursor:pointer">Tukar</button>
-          </div>
-        </div>`).join('')}
+          <span style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 12px;flex-shrink:0;color:${col};background:color-mix(in srgb,${col} 12%,transparent);border:1px solid color-mix(in srgb,${col} 30%,transparent)">${lbl}</span>
+        </div>`; }).join('')}
     </div>
   </div>`;
 }
@@ -3587,7 +3548,7 @@ function viewPPDSchoolDetail() {
       <div style="width:52px;height:52px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;flex-shrink:0">${sch.av}</div>
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--t1)">${sch.name}</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">${sch.kod} &middot; ${sch.jenis} &middot; PPD Gombak</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">${sch.kod} &middot; ${sch.jenis} &middot; PPD Dalat</div>
       </div>
     </div>
     <!-- Mini-analitik (cadangan 2) -->
@@ -3612,50 +3573,6 @@ function viewPPDSchoolDetail() {
   </div>`;
 }
 
-/* -- PPD Reset Password view ----------------------------------- */
-function viewPPDResetPassword() {
-  const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-  const rows = DEMO_SCHOOLS.map(sch => {
-    const done = (S.resetDone||[]).includes(sch.id);
-    return '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:14px 16px;border-radius:10px;border:1px solid var(--bdr);background:var(--card)">'
-      + (()=>{const avC=['#13406e','#7c3aed','#059669','#d97706','#db2777'];const c=avC[DEMO_SCHOOLS.indexOf(sch)%avC.length];return '<div style="width:42px;height:42px;border-radius:12px;background:'+c+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px '+c+'55">'+esc(sch.av)+'</div>';})()
-      + '<div style="flex:1;min-width:0">'
-      +   '<div style="font-size:13.5px;font-weight:700;color:var(--t1)">' + esc(sch.name) + '</div>'
-      +   '<div style="font-size:11.5px;color:var(--t3);margin-top:1px">' + esc(sch.kod) + ' &middot; ' + esc(sch.jenis) + '</div>'
-      + '</div>'
-      + (done
-          ? '<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ok);padding:7px 14px;border-radius:8px;background:color-mix(in srgb,var(--ok) 12%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Berjaya Direset</div>'
-          : '<button data-reset-school="' + sch.id + '" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#fff;padding:7px 14px;border-radius:8px;background:var(--accent);border:none;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity=\'.8\'" onmouseout="this.style.opacity=\'1\'">' + lockIcon + 'Reset Kata Laluan</button>')
-      + '</div>';
-  }).join('');
-
-  return '<div style="padding:24px;max-width:700px">'
-    + '<div style="margin-bottom:20px">'
-    +   '<div style="font-size:18px;font-weight:800;color:var(--t1)">Urus Kata Laluan Sekolah</div>'
-    +   '<div style="font-size:12.5px;color:var(--t3);margin-top:4px">Reset kata laluan akaun Pentadbir Sekolah dalam PPD Gombak</div>'
-    + '</div>'
-    + '<div style="display:flex;flex-direction:column;gap:10px">' + rows + '</div>'
-    + '</div>';
-}
-
-function buildResetModal() {
-  if (!S.resetModal) return '';
-  const sch = DEMO_SCHOOLS.find(s=>s.id===S.resetModal);
-  return '<div id="reset-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">'
-    + '<div style="background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:28px 24px;max-width:380px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5)">'
-    +   '<div style="width:48px;height:48px;border-radius:12px;background:color-mix(in srgb,var(--accent) 15%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:var(--accent)">'
-    +     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-    +   '</div>'
-    +   '<div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:8px">Reset Kata Laluan?</div>'
-    +   '<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:20px">Kata laluan akaun <strong>' + esc(sch?sch.name:'') + '</strong> akan direset kepada kata laluan sementara. Pentadbir sekolah perlu menukar semula selepas log masuk.</div>'
-    +   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +     '<button id="reset-cancel" style="padding:10px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>'
-    +     '<button id="reset-confirm" style="padding:10px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Ya, Reset</button>'
-    +   '</div>'
-    + '</div>'
-    + '</div>';
-}
-
 /* -- Gallery view ---------------------------------------------- */
 /* -- Build app ------------------------------------------------- */
 function buildContent() {
@@ -3665,7 +3582,6 @@ function buildContent() {
       : S.ppdView==='school_detail'     ? viewPPDSchoolDetail()
       : S.ppdView==='schools'           ? viewPPDSchools()
       : S.ppdView==='charts'            ? viewPPDCharts()
-      : S.ppdView==='reset_password'    ? viewPPDResetPassword()
       : viewPPDAnalysis();
   }
   if (S.role === 'school_admin') {
@@ -3686,7 +3602,7 @@ function buildContent() {
 
 function buildTopbarTitle() {
   if (S.role === 'ppd_admin') {
-    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', reset_password:'Urus Kata Laluan' }[S.ppdView] || 'SK@S';
+    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
     return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
@@ -3709,7 +3625,7 @@ function buildApp() {
     return `${sidebarAdmin()}
     <div class="main">
       <div class="topbar">
-        <div class="tb-info"><div class="g">Admin PPD &middot; PPD Gombak</div><div class="n">${buildTopbarTitle()}</div></div>
+        <div class="tb-info"><div class="g">Admin PPD &middot; PPD Dalat</div><div class="n">${buildTopbarTitle()}</div></div>
         <button id="ppd-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadge}</button>
       </div>
       <div class="content">${contentHtml}</div>
@@ -3719,7 +3635,7 @@ function buildApp() {
     return `${sidebarAdmin()}
     <div class="main">
       <div class="topbar">
-        <div class="tb-info"><div class="g">Pentadbir Sekolah &middot; SK Wangsa Maju 1</div><div class="n">${buildTopbarTitle()}</div></div>
+        <div class="tb-info"><div class="g">Pentadbir Sekolah &middot; ${esc(SEKOLAH_SAYA)}</div><div class="n">${buildTopbarTitle()}</div></div>
       </div>
       <div class="content">${contentHtml}</div>
     </div>`;
@@ -3737,7 +3653,7 @@ function bind() {
 
   // nav
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{
-    if(b.dataset.view==='form') setState({view:'form',formStep:1,f:{program:'',tarikhmula:'',tarikhakhir:'',level:'',peranan:'',tahap:'',pengesahan:'',pautanEviden:'',catatan:'',hasSijil:false},extracting:false,extracted:false,generating:false,draftText:'',draftDone:false});
+    if(b.dataset.view==='form') setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,generating:false,draftText:'',draftDone:false});
     else setState({view:b.dataset.view});
   }));
 
@@ -3750,7 +3666,7 @@ function bind() {
   // teacher: edit own profile from dashboard
   const bdep=document.getElementById('btn-dash-edit-profile');
   if(bdep)bdep.addEventListener('click',()=>{
-    const me=S.teachers.find(t=>t.id==='t1')||S.teachers[0];
+    const me=profilSaya();
     if(!me)return;
     let ov=document.getElementById('modal-my-profile');
     if(ov)ov.remove();
@@ -3761,10 +3677,10 @@ function bind() {
       <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px">Edit Profil Saya</div>
       <div style="font-size:12px;color:var(--t2);margin-bottom:20px">Maklumat ini akan dipaparkan kepada Pentadbir Sekolah</div>
       <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="fg"><label class="fl">Nama Penuh</label><input class="fi" id="myp-name" value="${esc(me.name||'')}" placeholder="cth. Azman bin Harun"></div>
+        <div class="fg"><label class="fl">Nama Penuh</label><input class="fi" id="myp-name" value="${esc(me.name||'')}" placeholder="cth. AZMAN BIN HARUN" style="text-transform:uppercase"></div>
         <div class="fg"><label class="fl">Jawatan</label><input class="fi" id="myp-jawatan" value="${esc(me.jawatan||'')}" placeholder="cth. Guru Cemerlang Matematik"></div>
         <div class="fg"><label class="fl">Mata Pelajaran</label><input class="fi" id="myp-mp" value="${esc(me.mataPelajaran||'')}" placeholder="cth. Matematik, Sains"></div>
-        <div class="fg"><label class="fl">E-mel</label><input class="fi" type="email" id="myp-emel" value="${esc(me.emel||'')}" placeholder="cth. nama@skwm1.edu.my"></div>
+        <div class="fg"><label class="fl">E-mel</label><input class="fi" type="email" id="myp-emel" value="${esc(me.emel||'')}" placeholder="cth. nama@moe-dl.edu.my"></div>
         <div class="fg"><label class="fl">Tahun Mula Berkhidmat</label><input class="fi" type="number" id="myp-tahun" value="${me.tahunMula||''}" min="1970" max="2026" placeholder="cth. 2015"></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
@@ -3776,20 +3692,22 @@ function bind() {
     document.getElementById('myp-cancel').addEventListener('click',()=>ov.remove());
     ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
     document.getElementById('myp-save').addEventListener('click',()=>{
-      const name=document.getElementById('myp-name').value.trim()||me.name;
+      const name=PPDAuth.besar(document.getElementById('myp-name').value.trim()||me.name);
       const jawatan=document.getElementById('myp-jawatan').value.trim()||me.jawatan;
       const mp=document.getElementById('myp-mp').value.trim();
       const emel=document.getElementById('myp-emel').value.trim();
       const tahunMula=parseInt(document.getElementById('myp-tahun').value)||me.tahunMula;
       const av=(name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase())||me.av;
-      setState({teachers:S.teachers.map(t=>t.id===me.id?{...t,name,jawatan,mataPelajaran:mp,emel,tahunMula,av}:t)});
+      const baru={...me,name,jawatan,mataPelajaran:mp,emel,tahunMula,av};
+      if (S.teachers.some(t=>t.id===me.id)) setState({teachers:S.teachers.map(t=>t.id===me.id?baru:t)});
+      else setState({profilSaya:baru});
       ov.remove();
     });
   });
 
   // new btn
   const nb=document.getElementById('btn-new');
-  if(nb)nb.addEventListener('click',()=>setState({view:'form',formStep:1,f:{program:'',tarikhmula:'',tarikhakhir:'',level:'',peranan:'',tahap:'',pengesahan:'',pautanEviden:'',catatan:'',hasSijil:false},extracting:false,extracted:false,generating:false,draftText:'',draftDone:false}));
+  if(nb)nb.addEventListener('click',()=>setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,generating:false,draftText:'',draftDone:false}));
 
   // back btn
   const bk=document.getElementById('btn-back');
@@ -3848,7 +3766,7 @@ function bind() {
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">E-mel</label>
-          <input id="tcm-emel" type="email" class="input" value="${esc(teacher&&teacher.emel?teacher.emel:'')}" placeholder="nama@skwm1.edu.my" style="width:100%;box-sizing:border-box">
+          <input id="tcm-emel" type="email" class="input" value="${esc(teacher&&teacher.emel?teacher.emel:'')}" placeholder="nama@moe-dl.edu.my" style="width:100%;box-sizing:border-box">
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">Tahun Mula Berkhidmat</label>
@@ -3864,8 +3782,8 @@ function bind() {
     ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
     document.getElementById('tcm-cancel').addEventListener('click',()=>ov.remove());
     document.getElementById('tcm-save').addEventListener('click',()=>{
-      const name=document.getElementById('tcm-name').value.trim();
-      if(!name){alert('Sila masukkan nama guru.');return;}
+      const name=PPDAuth.besar(document.getElementById('tcm-name').value.trim());
+      if(!name){PPDUI.alert('Nama diperlukan','Sila masukkan nama guru.');return;}
       const jawatan=document.getElementById('tcm-jawatan').value.trim();
       const mp=document.getElementById('tcm-mp').value.trim();
       const emel=document.getElementById('tcm-emel').value.trim();
@@ -3946,35 +3864,7 @@ function bind() {
   }));
 
   // ppd admin nav
-  document.querySelectorAll('[data-ppdview]').forEach(b=>b.addEventListener('click',()=>{ const ov=document.getElementById('reset-modal-overlay'); if(ov)ov.remove(); setState({ppdView:b.dataset.ppdview,selectedSchoolId:null,ppdFilter:null}); }));
-
-  // ppd reset password - open modal (inject into body to avoid fixed positioning issues)
-  document.querySelectorAll('[data-reset-school]').forEach(b=>b.addEventListener('click',()=>{
-    const sid=b.dataset.resetSchool;
-    const sch=DEMO_SCHOOLS.find(s=>s.id===sid);
-    let ov=document.getElementById('reset-modal-overlay');
-    if(ov)ov.remove();
-    ov=document.createElement('div');
-    ov.id='reset-modal-overlay';
-    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    ov.innerHTML='<div style="background:linear-gradient(135deg,#1e40af,#13406e);border-radius:20px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.6)">'
-      +'<div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin-bottom:20px">'
-      +'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-      +'</div>'
-      +'<div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:10px">Reset Kata Laluan?</div>'
-      +'<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:24px">Kata laluan akaun <strong style="color:#fff">'+esc(sch?sch.name:'')+'</strong> akan direset kepada kata laluan sementara. Pentadbir sekolah perlu menukar semula selepas log masuk.</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-      +'<button id="reset-cancel" style="padding:11px;border-radius:10px;border:none;background:rgba(255,255,255,.18);color:#fff;font-weight:600;font-size:13px;cursor:pointer">Batal</button>'
-      +'<button id="reset-confirm" style="padding:11px;border-radius:10px;border:none;background:#fff;color:#1e40af;font-weight:700;font-size:13px;cursor:pointer">Ya, Reset</button>'
-      +'</div></div>';
-    document.body.appendChild(ov);
-    document.getElementById('reset-cancel').addEventListener('click',()=>ov.remove());
-    document.getElementById('reset-confirm').addEventListener('click',()=>{
-      ov.remove();
-      setState({resetDone:[...S.resetDone,sid]});
-    });
-    ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-  }));
+  document.querySelectorAll('[data-ppdview]').forEach(b=>b.addEventListener('click',()=>{ setState({ppdView:b.dataset.ppdview,selectedSchoolId:null,ppdFilter:null}); }));
 
   // ppd school cards (both from senarai and from analysis table)
   document.querySelectorAll('[data-school]').forEach(b=>b.addEventListener('click',()=>setState({ppdView:'school_landing',selectedSchoolId:b.dataset.school,ppdFilter:null,expandedPpdRecs:[]})));
@@ -3986,9 +3876,9 @@ function bind() {
   const sub=document.getElementById('btn-school-users-back');
   if(sub)sub.addEventListener('click',()=>setState({ppdView:'school_landing'}));
 
-  // school users search
-  const suSearch=document.getElementById('ppd-usr-search');
-  if(suSearch)suSearch.addEventListener('input',()=>setState({ppdUserSearch:suSearch.value}));
+  // buka Urus Peranan portal, ditapis ke sekolah semasa
+  const bup=document.getElementById('btn-buka-urus-peranan');
+  if(bup)bup.addEventListener('click',()=>{ const sch=DEMO_SCHOOLS.find(x=>x.id===S.selectedSchoolId); window.PPDRoles && PPDRoles.open(sch?sch.name:''); });
 
   // ppd back button (from school_detail → school_landing)
   const bpb=document.getElementById('btn-ppd-back');
@@ -4056,7 +3946,7 @@ function bind() {
   const printBtn=document.getElementById('btn-ppd-print');
   if(printBtn)printBtn.addEventListener('click',()=>{
     const d=new Date(); const ts=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');
-    alert('Laporan Analisis Daerah PPD Gombak\nTarikh: '+ts+'\n\nFungsi cetak/eksport PDF akan disediakan dalam versi penuh.');
+    PPDUI.alert('Laporan Analisis Daerah','Tarikh: '+ts+'\n\nFungsi cetak/eksport PDF akan disediakan dalam versi penuh.',{tone:'info'});
   });
 
   // ppd year filter chips (cadangan B)
@@ -4268,8 +4158,15 @@ function bind() {
   Object.keys(fmap).forEach(id=>{
     const el=document.getElementById('f-'+id);
     if(!el)return;
-    el.addEventListener('input', ()=>{ S.f[fmap[id]]=el.value; checkCanNext(); });
+    el.addEventListener('input', ()=>{ S.f[fmap[id]]=el.value; checkCanNext(); simpanAutoSkas(true); });
   });
+
+  document.querySelectorAll('[data-sah]').forEach(b => b.addEventListener('click', () => tetapStatusRekod(S.selectedTeacherId, b.dataset.sah, 'approved')));
+  document.querySelectorAll('[data-tolak]').forEach(b => b.addEventListener('click', async () => {
+    if (await PPDUI.confirm('Tolak rekod ini?', 'Guru akan melihat rekod ini sebagai Ditolak dan boleh mengemas kininya.', { ok: 'Tolak' })) tetapStatusRekod(S.selectedTeacherId, b.dataset.tolak, 'rejected');
+  }));
+  const bdb = document.getElementById('btn-draf-buang');
+  if (bdb) bdb.addEventListener('click', () => { buangDraf(); setState({ f: F_KOSONG(), formStep: 1 }); });
 
   // custom dropdown logic
   const CDD_MAP = {peranan:'peranan', level:'level', tahap:'tahap'};
@@ -4295,6 +4192,7 @@ function bind() {
         list.remove();
         btn.classList.remove('open');
         checkCanNext();
+        simpanAutoSkas(true);
         // always render to refresh AI preview panel (cadangan K)
         render();
       });
@@ -4395,7 +4293,8 @@ function bind() {
         tags:[`#${LVL[S.f.level]?.label||S.f.level}`,`#5.4.1`],
       };
       S.records=[newRec,...S.records];
-      setState({view:'dashboard',formStep:1});
+      buangDraf();
+      setState({view:'dashboard',formStep:1,f:F_KOSONG()});
     }
   });
 
@@ -4422,122 +4321,13 @@ function bind() {
       setState({view:'records',selectedRecordId:null});
     });
   }
-
-  // -- Pengurusan Pengguna handlers --
-
-  // ppd user search
-  const pusEl=document.getElementById('ppd-user-search');
-  if(pusEl)pusEl.addEventListener('input',()=>setState({ppdUserSearch:pusEl.value,ppdView:'user_mgmt'}));
-
-  // ppd user filter chips
-  document.querySelectorAll('[data-usr-filter]').forEach(b=>
-    b.addEventListener('click',()=>setState({ppdUserFilter:b.dataset.usrFilter,ppdView:'user_mgmt'}))
-  );
-
-  // ppd user role assignment modal
-  const avColors=['#13406e','#7c3aed','#059669','#d97706','#db2777','#0891b2'];
-  document.querySelectorAll('[data-usr-assign]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const uid=btn.dataset.usrAssign;
-      const u=S.demoUsers.find(x=>x.id===uid);
-      if(!u)return;
-      let ov=document.getElementById('usr-assign-modal');
-      if(ov)ov.remove();
-      ov=document.createElement('div');
-      ov.id='usr-assign-modal';
-      ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-      const av=u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      const avCol=avColors[S.demoUsers.findIndex(x=>x.id===uid)%avColors.length];
-      // When opened from school_users context, schoolId is fixed to the selected school
-      const contextSchoolId = S.ppdView==='school_users' ? S.selectedSchoolId : null;
-      const contextSchool = contextSchoolId ? DEMO_SCHOOLS.find(s=>s.id===contextSchoolId) : null;
-      ov.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4)">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
-          <div style="width:48px;height:48px;border-radius:13px;background:${avCol};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;flex-shrink:0">${av}</div>
-          <div>
-            <div style="font-size:15px;font-weight:800;color:var(--t1)">${esc(u.name)}</div>
-            <div style="font-size:12px;color:var(--t3)">${esc(u.email)}</div>
-          </div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Peranan</div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
-          <label id="lbl-role-guru" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid ${u.role==='guru'?'var(--accent)':'var(--bdr)'};background:${u.role==='guru'?'rgba(59,130,246,.1)':'transparent'};transition:all .15s">
-            <input type="radio" name="usr-role" id="radio-guru" value="guru" ${u.role==='guru'?'checked':''} style="accent-color:var(--accent);width:16px;height:16px">
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:var(--t1)">Guru</div>
-              <div style="font-size:11px;color:var(--t3)">Akses standard — hantar &amp; lihat rekod sendiri sahaja</div>
-            </div>
-          </label>
-          <label id="lbl-role-admin" style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid ${u.role==='school_admin'?'#818cf8':'var(--bdr)'};background:${u.role==='school_admin'?'rgba(129,140,248,.1)':'transparent'};transition:all .15s">
-            <input type="radio" name="usr-role" id="radio-admin" value="school_admin" ${u.role==='school_admin'?'checked':''} style="accent-color:#818cf8;width:16px;height:16px">
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:var(--t1)">Pentadbir Sekolah</div>
-              <div style="font-size:11px;color:var(--t3)">${contextSchool?`Pentadbir untuk ${esc(contextSchool.name)}`:'Akses penuh rekod dan pengguna sekolah yang ditetapkan'}</div>
-            </div>
-          </label>
-        </div>
-        <div style="display:flex;gap:10px">
-          <button id="usr-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>
-          <button id="usr-modal-save" style="flex:2;padding:11px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Simpan Peranan</button>
-        </div>
-      </div>`;
-      document.body.appendChild(ov);
-      const radioGuru=ov.querySelector('#radio-guru');
-      const radioAdmin=ov.querySelector('#radio-admin');
-      const lblGuru=ov.querySelector('#lbl-role-guru');
-      const lblAdmin=ov.querySelector('#lbl-role-admin');
-      const updateLabels=()=>{
-        const isAdmin=radioAdmin.checked;
-        lblGuru.style.borderColor=isAdmin?'var(--bdr)':'var(--accent)';
-        lblGuru.style.background=isAdmin?'transparent':'rgba(59,130,246,.1)';
-        lblAdmin.style.borderColor=isAdmin?'#818cf8':'var(--bdr)';
-        lblAdmin.style.background=isAdmin?'rgba(129,140,248,.1)':'transparent';
-      };
-      radioGuru.addEventListener('change',updateLabels);
-      radioAdmin.addEventListener('change',updateLabels);
-      ov.querySelector('#usr-modal-cancel').addEventListener('click',()=>ov.remove());
-      ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-      ov.querySelector('#usr-modal-save').addEventListener('click',()=>{
-        const newRole=radioAdmin.checked?'school_admin':'guru';
-        // No change — close without confirmation
-        if(newRole===u.role){ ov.remove(); return; }
-        // School context: use current school; otherwise clear
-        const newSchoolId=newRole==='school_admin'?(contextSchoolId||u.schoolId||null):null;
-        const roleDisplayOld = u.role==='school_admin'?'Pentadbir Sekolah':'Guru';
-        const roleDisplayNew = newRole==='school_admin'?'Pentadbir Sekolah':'Guru';
-        // Show confirmation step inside the modal
-        const modalBox = ov.querySelector('div');
-        modalBox.innerHTML=`
-          <div style="text-align:center;padding:8px 0 20px">
-            <div style="width:52px;height:52px;border-radius:14px;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px">⚠️</div>
-            <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:8px">Sahkan Perubahan Peranan</div>
-            <div style="font-size:13px;color:var(--t3);line-height:1.5">Tukar peranan <strong style="color:var(--t1)">${esc(u.name)}</strong><br>daripada <strong>${roleDisplayOld}</strong> kepada <strong>${roleDisplayNew}</strong>?</div>
-          </div>
-          <div style="display:flex;gap:10px">
-            <button id="usr-confirm-batal" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:14px;cursor:pointer">Batal</button>
-            <button id="usr-confirm-ya" style="flex:2;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">Ya, Tukar Peranan</button>
-          </div>`;
-        ov.querySelector('#usr-confirm-batal').addEventListener('click',()=>ov.remove());
-        ov.querySelector('#usr-confirm-ya').addEventListener('click',()=>{
-          const updated=S.demoUsers.map(x=>x.id===uid?{...x,role:newRole,schoolId:newSchoolId}:x);
-          ov.remove();
-          setState({demoUsers:updated});
-        });
-      });
-    });
-  });
 }
 
-// Read ?role= from URL (set by PPD Dalat portal)
-(function() {
-  try {
-    const urlRole = new URLSearchParams(window.location.search).get('role');
-    const valid = ['ppd_admin','school_admin','teacher'];
-    if (urlRole && valid.includes(urlRole)) {
-      S.role = urlRole;
-    }
-  } catch(e) {}
-})();
+// Senarai pengguna sekolah dikemas kini selepas perubahan di Urus Peranan
+window.addEventListener('ppd-peranan-berubah', () => { if (S.ppdView === 'school_users' || S.ppdView === 'school_landing') render(); });
+
+// Peranan ikut sesi log masuk portal (bukan parameter URL)
+S.role = PPDAuth.appRoleFor(ME, ME_LV, 'skas');
 
 render();
 </script>

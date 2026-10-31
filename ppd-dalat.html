@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Portal PPD Dalat</title>
+<script src="assets/ppd-auth.js"></script>
+<script>PPDAuth.guard();</script>
+<script src="assets/ppd-data.js"></script>
+<script src="assets/ppd-ui.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 :root {
@@ -170,8 +174,33 @@ img { max-width: 100%; }
 .kpi-num { font-size: 22px; font-weight: 800; color: var(--t1); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .kpi-lbl { font-size: 12px; color: var(--t3); font-weight: 500; }
 
+/* ── Tugasan saya ────────────────────────────────────── */
+.tg-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background .15s; }
+.tg-item:last-child { border-bottom: 0; }
+.tg-item:hover { background: var(--surface-2); }
+.tg-item:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+.tg-ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: var(--c); background: color-mix(in srgb, var(--c) 13%, var(--surface)); }
+.tg-ic svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tg-body { flex: 1; min-width: 0; }
+.tg-app { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+.tg-t { font-size: 14px; font-weight: 700; color: var(--t1); line-height: 1.35; }
+.tg-d { font-size: 12.5px; color: var(--t2); margin-top: 1px; overflow-wrap: anywhere; }
+.tg-due { flex-shrink: 0; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+  color: var(--tc); background: color-mix(in srgb, var(--tc) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tc) 30%, var(--border)); }
+.tg-go { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: var(--t3); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.tg-kosong { padding: 22px 16px; display: flex; align-items: center; gap: 12px; color: var(--t2); font-size: 13.5px; }
+.tg-kosong svg { width: 22px; height: 22px; fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.app-badge.perlu { color: var(--bc); }
+.app-badge.perlu::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--bc) 18%, transparent); }
+@media (max-width: 560px) {
+  .tg-item { flex-wrap: wrap; gap: 10px 12px; }
+  .tg-body { flex-basis: calc(100% - 56px); }
+  .tg-due { margin-left: 52px; }
+  .tg-go { display: none; }
+}
+
 /* ── 5. Main layout ──────────────────────────────────── */
-.main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; margin-top: 32px; align-items: start; }
+.main { display: flex; flex-direction: column; gap: 24px; margin-top: 32px; }
 .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .sec-title { font-size: 17px; font-weight: 700; color: var(--t1); display: flex; align-items: center; gap: 10px; }
 .sec-title::before { content: ''; width: 4px; height: 18px; background: var(--gold); border-radius: 2px; }
@@ -217,7 +246,7 @@ img { max-width: 100%; }
 .app-card:hover .app-open svg { transform: translateX(3px); }
 
 /* ── Side panels ─────────────────────────────────────── */
-.side { display: flex; flex-direction: column; gap: 16px; }
+.side { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; align-items: start; }
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; }
 .panel-h { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--t1); display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); }
 .panel-h small { font-size: 11px; font-weight: 600; color: var(--t3); }
@@ -264,9 +293,119 @@ img { max-width: 100%; }
 .btn-ghost { margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--t1); font: inherit; font-weight: 600; cursor: pointer; }
 .btn-ghost:hover { background: var(--surface-2); }
 
+/* ── Pil peranan (hero) ──────────────────────────────── */
+.lv-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.lv-pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px 6px 10px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #fff;
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, box-shadow .15s, color .15s;
+}
+.lv-pill:hover { background: rgba(255,255,255,.16); }
+.lv-pill:focus-visible { outline: 2px solid #e5c066; outline-offset: 2px; }
+.lv-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lv); box-shadow: 0 0 0 2px rgba(255,255,255,.55); flex-shrink: 0; }
+.lv-pill small { font-size: 11px; font-weight: 500; opacity: .75; }
+.lv-pill.on { background: #fff; color: #0b2a4a; border-color: #fff; box-shadow: 0 0 0 3px rgba(229,192,102,.5); cursor: default; }
+.ub-admin {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid #e5c066; background: rgba(229,192,102,.14); color: #f3d68a;
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.ub-admin:hover { background: rgba(229,192,102,.26); }
+.ub-admin svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Menu profil ─────────────────────────────────────── */
+.masthead-top { position: relative; }
+.pmenu {
+  position: absolute; right: var(--gutter-r); top: calc(100% - 2px); z-index: 60;
+  width: 310px; max-width: calc(100vw - 32px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.pmenu-h { padding: 14px 16px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+.pmenu-roles { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--border); }
+.pmenu-roles .lbl { width: 100%; font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .05em; }
+.rchip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; color: var(--lv); background: color-mix(in srgb, var(--lv) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--lv) 28%, transparent); }
+.pmenu button.mi { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 16px; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--t1); cursor: pointer; text-align: left; }
+.pmenu button.mi:hover { background: var(--surface-2); }
+.pmenu button.mi svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pmenu button.mi.out { color: var(--red); border-top: 1px solid var(--border); }
+
+/* ── Urus pengguna ───────────────────────────────────── */
+.upg-add { display: grid; grid-template-columns: 1.2fr 1.3fr 1fr auto; gap: 8px; align-items: end; }
+.upg-add label { font-size: 11px; font-weight: 600; color: var(--t2); display: block; margin-bottom: 4px; }
+.inp { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 13px; background: var(--surface); color: var(--t1); }
+.inp-besar { text-transform: uppercase; }
+.inp-besar::placeholder { text-transform: none; }
+.inp:focus { outline: 2px solid var(--gold); outline-offset: 0; border-color: var(--gold); }
+.btn-navy { background: var(--navy); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-navy:hover { background: var(--navy-2); }
+.upg-row { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; }
+.upg-row + .upg-row { margin-top: 10px; }
+.upg-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.upg-av { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.upg-n { font-size: 14px; font-weight: 700; color: var(--t1); }
+.upg-e { font-size: 12px; color: var(--t3); overflow-wrap: anywhere; }
+.upg-del { margin-left: auto; flex-shrink: 0; background: var(--danger-l, #fdecea); color: var(--red); border: 0; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.upg-grp { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.upg-grp > span { width: 132px; font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .04em; }
+.tg {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--t2); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.tg::before { content: ''; width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--t3); }
+.tg[aria-pressed="true"] { border-color: var(--lv); color: var(--lv); background: color-mix(in srgb, var(--lv) 10%, var(--surface)); }
+.tg[aria-pressed="true"]::before { border-color: var(--lv); background: var(--lv) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 9px no-repeat; }
+.tg:disabled { opacity: .55; cursor: not-allowed; }
+.toast {
+  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 10000;
+  background: #0b2a4a; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0,0,0,.25); border-left: 4px solid var(--gold); max-width: calc(100vw - 32px);
+}
+@media (max-width: 720px) {
+  .upg-add { grid-template-columns: 1fr; }
+  .upg-grp > span { width: 100%; }
+}
+
+/* ── Log audit ───────────────────────────────────────── */
+.upg-orgnama { font-size: 11.5px; color: var(--t3); margin-top: 4px; min-height: 16px; }
+.upg-orgnama.ada { color: var(--t1); font-weight: 700; }
+.sk-form { display: grid; grid-template-columns: 1fr 1.6fr 1fr 1fr auto; gap: 8px; align-items: end; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.sk-form label, .upg-add label { display: block; font-size: 11px; font-weight: 600; color: var(--t2); margin-bottom: 4px; }
+.sk-btns { display: flex; gap: 6px; }
+.btn-ghost-sm { border: 1px solid var(--border); background: var(--surface); color: var(--t2); border-radius: 8px; padding: 0 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.sk-tw { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.sk-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sk-tbl th, .sk-tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+.sk-tbl th { background: var(--surface-2); font-size: 11.5px; color: var(--t2); }
+.sk-tbl tr:last-child td { border-bottom: 0; }
+.sk-tbl td.kod { font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
+.sk-act { display: flex; gap: 6px; justify-content: flex-end; }
+.sk-act button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--t2); }
+.sk-act button.del { color: var(--red); }
+.sk-jenis { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); }
+@media (max-width: 760px) { .sk-form { grid-template-columns: 1fr 1fr; } .sk-form > div:nth-child(3) { grid-column: 1 / -1; } }
+.upg-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.upg-tab { border: 0; background: none; padding: 10px 14px; font: inherit; font-size: 13px; font-weight: 700; color: var(--t3); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.upg-tab.on { color: var(--t1); border-bottom-color: var(--gold); }
+.aud-list { display: flex; flex-direction: column; }
+.aud-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.aud-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; background: var(--accent); }
+.aud-beri .aud-dot { background: var(--ok); } .aud-tarik .aud-dot, .aud-padam .aud-dot { background: var(--red); }
+.aud-t { font-size: 13px; color: var(--t1); line-height: 1.45; }
+.aud-m { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+.aud-kosong { padding: 18px 0; text-align: center; color: var(--t3); font-size: 13px; }
+
+/* ── Saiz sentuhan (skrin sentuh sahaja) ─────────────── */
+@media (pointer: coarse) {
+  .lv-pill, .ub-admin, .btn-navy, .btn-ghost, .tg, .upg-del, .mi, .profile-chip { min-height: 44px; }
+  .nav a { min-height: 44px; display: inline-flex; align-items: center; }
+  .links a { min-height: 48px; }
+  .inp, select, textarea { min-height: 44px; font-size: 16px; }
+}
+
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 980px) {
-  .main { grid-template-columns: 1fr; }
+  .side { grid-template-columns: 1fr 1fr; }
+  .side > :first-child { grid-column: 1 / -1; }
   .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer-grid > :first-child { grid-column: 1 / -1; }
@@ -280,6 +419,8 @@ img { max-width: 100%; }
   .kpi { padding: 12px; gap: 10px; }
   .kpi-ic { width: 36px; height: 36px; }
   .kpi-num { font-size: 18px; }
+  .side { grid-template-columns: 1fr; }
+  .side > :first-child { grid-column: auto; }
   .footer-grid { grid-template-columns: 1fr; }
 }
 </style>
@@ -305,7 +446,7 @@ img { max-width: 100%; }
         <span class="brand-line"></span>
       </span>
     </a>
-    <button class="profile-chip" id="profile-chip" type="button" aria-label="Tukar pengguna">
+    <button class="profile-chip" id="profile-chip" type="button" aria-label="Menu profil" aria-haspopup="menu" aria-expanded="false">
       <span class="profile-av" id="profile-av">?</span>
       <span class="profile-info">
         <span class="profile-name" id="profile-name" style="display:block">—</span>
@@ -328,36 +469,28 @@ img { max-width: 100%; }
 <!-- Hero -->
 <section class="hero" id="utama">
   <div class="container">
-    <div class="crumb"><span>Utama</span><span>/</span><span>Portal Aplikasi Digital</span></div>
+    <div class="crumb"><span>Utama</span><span>/</span><span>Portal Pengurusan Digital</span></div>
     <div class="greet" id="greet">Selamat datang</div>
-    <h1>Portal Aplikasi Digital PPD Dalat</h1>
+    <h1>Portal Pengurusan Digital PPD Dalat</h1>
     <p>Satu pintu masuk untuk sistem pemantauan kualiti sekolah, analitik peperiksaan dan pengurusan fasiliti daerah.</p>
     <div class="user-banner" id="user-banner"></div>
   </div>
 </section>
 
 <main class="container">
-  <!-- KPI -->
-  <div class="kpis">
-    <div class="kpi">
-      <div class="kpi-ic" style="--k:#2f6fb3"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
-      <div><div class="kpi-num">3</div><div class="kpi-lbl">Aplikasi Aktif</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-ic" style="--k:#c8962a"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg></div>
-      <div><div class="kpi-num">47</div><div class="kpi-lbl">Sekolah Seliaan</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-ic" style="--k:#17935a"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div><div class="kpi-num">1,240</div><div class="kpi-lbl">Pengguna Berdaftar</div></div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-ic" style="--k:#c4321f"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-      <div><div class="kpi-num">2026</div><div class="kpi-lbl">Sesi Persekolahan</div></div>
-    </div>
-  </div>
+  <!-- KPI (diisi ikut peranan aktif) -->
+  <div class="kpis" id="kpis"></div>
 
   <div class="main">
+    <!-- Tugasan saya (Pengguna Biasa) -->
+    <section id="tugasan" hidden>
+      <div class="sec-head">
+        <h2 class="sec-title">Tugasan Saya</h2>
+        <span class="sec-meta" id="tugasan-meta"></span>
+      </div>
+      <div class="panel" id="tugasan-list"></div>
+    </section>
+
     <!-- Aplikasi -->
     <section id="aplikasi">
       <div class="sec-head">
@@ -488,6 +621,59 @@ img { max-width: 100%; }
   </div>
 </footer>
 
+<!-- Modal Urus Pengguna (Superadmin) -->
+<div id="modal-pengguna" class="modal-ov" hidden style="align-items:flex-start;padding-top:40px">
+  <div class="modal-box" style="max-width:860px;max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengguna &amp; Peranan</div>
+        <div style="font-size:12px;color:var(--t3)">Superadmin menetapkan Admin dan Pentadbir Sekolah bagi semua aplikasi. Admin setiap aplikasi boleh menetapkan Pentadbir Sekolah aplikasinya sendiri melalui butang Urus Peranan dalam aplikasi. Semua pengguna mempunyai akses Pengguna Biasa.</div>
+      </div>
+      <button onclick="closeUrusPengguna()" aria-label="Tutup" style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form id="upg-form" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px" novalidate>
+      <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Daftar Pengguna Baharu</div>
+      <div class="upg-add">
+        <div><label for="upg-nama">Nama penuh</label><input class="inp inp-besar" id="upg-nama" placeholder="SITI BINTI RAHMAN" autocomplete="off"></div>
+        <div><label for="upg-emel">Emel rasmi</label><input class="inp" id="upg-emel" type="email" placeholder="nama@moe-dl.edu.my"></div>
+        <div><label for="upg-org">Kod sekolah</label><select class="inp" id="upg-org"></select><div class="upg-orgnama" id="upg-orgnama">Pilih kod untuk papar nama sekolah</div></div>
+        <button class="btn-navy" type="submit">Daftar</button>
+      </div>
+      <div id="upg-err" style="font-size:12px;color:var(--red);margin-top:8px" hidden></div>
+    </form>
+
+    <div class="upg-tabs" role="tablist">
+      <button type="button" class="upg-tab on" data-upgtab="pengguna" role="tab" aria-selected="true">Pengguna &amp; Peranan</button>
+      <button type="button" class="upg-tab" data-upgtab="sekolah" role="tab" aria-selected="false">Senarai Sekolah</button>
+      <button type="button" class="upg-tab" data-upgtab="audit" role="tab" aria-selected="false">Log Audit</button>
+    </div>
+    <div id="upg-pane-pengguna">
+      <input class="inp" id="upg-cari" type="search" placeholder="Cari nama, emel atau organisasi" style="margin-bottom:12px">
+      <div id="upg-list"></div>
+    </div>
+    <div id="upg-pane-sekolah" hidden>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Senarai ini digunakan semasa pendaftaran: pengguna memilih <b>kod sekolah</b> dan nama sekolah dipaparkan secara automatik. Kod sekolah menentukan sekolah pengguna dalam semua aplikasi.</div>
+      <form id="sk-form" class="sk-form" novalidate>
+        <input type="hidden" id="sk-asal">
+        <div><label for="sk-kod">Kod sekolah</label><input class="inp inp-besar" id="sk-kod" placeholder="YEA6105" maxlength="10" autocomplete="off"></div>
+        <div><label for="sk-nama">Nama sekolah</label><input class="inp inp-besar" id="sk-nama" placeholder="SMK KUT" autocomplete="off"></div>
+        <div><label for="sk-lokasi">Lokasi</label><select class="inp" id="sk-lokasi"></select></div>
+        <div><label for="sk-jenis">Jenis</label><select class="inp" id="sk-jenis"></select></div>
+        <div class="sk-btns"><button class="btn-navy" type="submit" id="sk-simpan">Tambah</button><button class="btn-ghost-sm" type="button" id="sk-batal" hidden>Batal</button></div>
+      </form>
+      <div id="sk-err" style="font-size:12px;color:var(--red);margin:-4px 0 10px" hidden></div>
+      <div class="sk-tw"><table class="sk-tbl"><thead><tr><th>Kod</th><th>Nama</th><th>Lokasi</th><th>Jenis</th><th style="text-align:right">Pengguna</th><th></th></tr></thead><tbody id="sk-list"></tbody></table></div>
+    </div>
+    <div id="upg-pane-audit" hidden>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Semua perubahan peranan dan akaun, termasuk yang dibuat oleh Admin aplikasi melalui Urus Peranan.</div>
+      <div id="upg-audit" class="aud-list"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Urus Pengumuman -->
 <div id="modal-pengumuman" class="modal-ov" hidden style="align-items:flex-start;padding-top:60px">
   <div class="modal-box" style="max-width:520px;width:100%;max-height:80vh;overflow-y:auto">
@@ -545,40 +731,7 @@ img { max-width: 100%; }
 </div>
 
 <script>
-const DEMO_USERS = [
-  {
-    id: 'u_azlan', name: 'Azlan bin Hamid', initials: 'AH',
-    org: 'PPD Dalat', color: '#13406e',
-    appRoles: {
-      skpm:      [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#13406e' }],
-      spm:       [{ role:'ppd_admin', label:'Admin SPM', sub:'PPD Dalat', color:'#13406e' }],
-      efasiliti: [{ role:'ppd_admin', label:'Admin PPD', sub:'PPD Dalat', color:'#1d6fa5' }],
-    }
-  },
-  {
-    id: 'u_razif', name: 'Encik Razif bin Othman', initials: 'RO',
-    org: 'SK Wangsa Maju 1', color: '#6941c6',
-    appRoles: {
-      skpm: [
-        { role:'school_admin', label:'Admin SKPM', sub:'SK Wangsa Maju 1', color:'#6941c6' },
-        { role:'teacher',      label:'Guru',       sub:'SK Wangsa Maju 1', color:'#067647' },
-      ],
-      spm:       [{ role:'school_admin', label:'Admin SPM', sub:'SK Wangsa Maju 1', color:'#6941c6' }],
-      efasiliti: [{ role:'sekolah', label:'Pentadbir Sekolah', sub:'SK Wangsa Maju 1', color:'#6941c6' }],
-    }
-  },
-  {
-    id: 'u_azman', name: 'Cikgu Azman Harun', initials: 'AZ',
-    org: 'SK Wangsa Maju 1', color: '#067647',
-    appRoles: {
-      skpm:      [{ role:'teacher', label:'Guru',     sub:'SK Wangsa Maju 1', color:'#067647' }],
-      spm:       [{ role:'teacher', label:'Guru SPM', sub:'SK Wangsa Maju 1', color:'#067647' }],
-      efasiliti: [{ role:'sekolah', label:'Sekolah',  sub:'SK Wangsa Maju 1', color:'#067647' }],
-    }
-  },
-];
-
-const USER_KEY = 'ppd_dalat_user';
+const A = PPDAuth;
 const PENGUMUMAN_KEY = 'ppd_pengumuman';
 const BULAN_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
 const DEFAULT_PENGUMUMAN = [
@@ -598,8 +751,8 @@ function savePengumuman(arr) {
   try { localStorage.setItem(PENGUMUMAN_KEY, JSON.stringify(arr)); } catch {}
 }
 function isPpdAdmin() {
-  const u = getUser();
-  return Object.values(u.appRoles || {}).flat().some(r => r.role === 'ppd_admin');
+  const lv = activeLevel();
+  return lv === 'admin' || lv === 'superadmin';
 }
 function isAktif(n) {
   if (!n.tarikhAkhir) return true;
@@ -699,7 +852,7 @@ function tambahPengumuman() {
   const tag = document.getElementById('pengumuman-tag').value;
   const tarikhVal = document.getElementById('pengumuman-tarikh').value;
   const tamatVal = document.getElementById('pengumuman-tamat').value;
-  if (!teks) { alert('Sila isi kandungan pengumuman.'); return; }
+  if (!teks) { PPDUI.alert('Kandungan diperlukan', 'Sila isi kandungan pengumuman sebelum menyimpan.'); return; }
   const d = tarikhVal ? new Date(tarikhVal) : new Date();
   const newItem = {
     id: 'p' + Date.now(),
@@ -715,44 +868,73 @@ function tambahPengumuman() {
   document.getElementById('pengumuman-teks').value = '';
   document.getElementById('pengumuman-tamat').value = '';
 }
-function padamPengumuman(id) {
-  if (!confirm('Padam pengumuman ini?')) return;
+async function padamPengumuman(id) {
+  if (!(await PPDUI.confirm('Padam pengumuman ini?', 'Pengumuman akan dibuang daripada portal untuk semua pengguna.'))) return;
   const list = loadPengumuman().filter(n => n.id !== id);
   savePengumuman(list);
   renderPengumuman();
   renderModalNoticeList();
 }
-let _currentUserId = (function() {
-  try { return localStorage.getItem(USER_KEY) || 'u_azman'; } catch { return 'u_azman'; }
-})();
+const APP_CARDS = [
+  ['skpm-card',      'skas',      'skpm-role-strip'],
+  ['spm-card',       'spm',       'spm-role-strip'],
+  ['efasiliti-card', 'efasiliti', 'efasiliti-role-strip'],
+];
+const ICON_USERS = '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
 
-function getUserId() { return _currentUserId; }
-function saveUserId(id) {
-  _currentUserId = id;
-  try { localStorage.setItem(USER_KEY, id); } catch {}
-}
-function getUser() {
-  return DEMO_USERS.find(u => u.id === _currentUserId) || DEMO_USERS[2];
+function getUser() { return A.currentUser(); }
+function activeLevel() { const s = A.session(); return s ? s.level : 'pengguna'; }
+
+function roleView(u, lv, app) {
+  const role = A.appRoleFor(u, lv, app);
+  const appLbl = A.APPS[app].label;
+  if (role === 'ppd_admin')    return { label: lv === 'superadmin' ? 'Superadmin' : 'Admin ' + appLbl, color: A.LEVELS[lv].color };
+  if (role === 'school_admin') return { label: 'Pentadbir Sekolah ' + appLbl, color: A.LEVELS.sekolah.color };
+  return { label: 'Pengguna Biasa', color: A.LEVELS.pengguna.color };
 }
 
-function buildRoleStrip(appKey, stripId) {
-  const u = getUser();
-  const roles = (u.appRoles || {})[appKey] || [];
+function buildRoleStrip(app, stripId) {
+  const u = getUser(), lv = activeLevel();
   const el = document.getElementById(stripId);
-  if (!el) return;
-  if (roles.length === 0) {
-    el.innerHTML = `<div class="app-role-strip"><div style="font-size:12px;color:var(--t3);font-style:italic">Tiada peranan ditetapkan</div></div>`;
-    return;
-  }
-  const first = roles[0];
+  if (!el || !u) return;
+  const v = roleView(u, lv, app);
+  const lain = A.levelsFor(u).filter(l => l !== lv && A.appRoleFor(u, l, app) !== 'teacher' && A.appRoleFor(u, lv, app) === 'teacher');
   el.innerHTML = `<div class="app-role-strip">
-    <div class="app-role-av" style="background:${first.color}">${u.initials}</div>
+    <div class="app-role-av" style="background:${v.color}">${A.esc(A.initials(u.nama))}</div>
     <div style="flex:1;min-width:0">
-      <div class="app-role-label">${first.label}</div>
-      <div class="app-role-sub">${first.sub}</div>
+      <div class="app-role-label">${v.label}</div>
+      <div class="app-role-sub">${A.esc(u.org)}</div>
     </div>
-    ${roles.length > 1 ? `<div class="app-role-multi">${roles.length} peranan &rsaquo;</div>` : ''}
+    ${lain.length ? `<div class="app-role-multi">${A.LEVELS[lain[lain.length - 1]].label} tersedia</div>` : ''}
   </div>`;
+}
+
+function renderLevelPills() {
+  const u = getUser(), lv = activeLevel(), lvs = A.levelsFor(u);
+  const pills = lvs.map(l => {
+    const apps = A.rolesAtLevel(u, l).map(r => A.ROLES[r].app).filter(Boolean).map(a => A.APPS[a].label);
+    const on = l === lv;
+    return `<button type="button" class="lv-pill${on ? ' on' : ''}" role="radio" aria-checked="${on}" data-lv="${l}" style="--lv:${A.LEVELS[l].color}">
+      <span class="dot"></span>${A.LEVELS[l].label}${apps.length ? ` <small>· ${apps.join(', ')}</small>` : ''}</button>`;
+  }).join('');
+  const el = document.getElementById('user-banner');
+  el.innerHTML = `<span class="ub-lbl">${lvs.length > 1 ? 'Guna peranan:' : 'Peranan:'}</span>
+    <div class="lv-pills" role="radiogroup" aria-label="Pilih peranan aktif">${pills}</div>
+    ${lv === 'superadmin' ? `<button type="button" class="ub-admin" onclick="openUrusPengguna()">${ICON_USERS}Urus Pengguna</button>` : ''}`;
+  el.querySelectorAll('.lv-pill').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.lv === activeLevel()) return;
+    A.setLevel(b.dataset.lv);
+    updateUI();
+    toast(`Kini menggunakan peranan ${A.LEVELS[b.dataset.lv].label}`);
+  }));
+}
+
+let _toastT;
+function toast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(_toastT); _toastT = setTimeout(() => { t.hidden = true; }, 2600);
 }
 
 function salam() {
@@ -763,23 +945,87 @@ function salam() {
   return 'Selamat malam';
 }
 
+/* ── KPI, tugasan & lencana ikut peranan aktif ─ */
+const KPI_IC = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  school: '<path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  award: '<circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+};
+const kpiHTML = (ic, warna, num, lbl) => `<div class="kpi"><div class="kpi-ic" style="--k:${warna}"><svg viewBox="0 0 24 24">${KPI_IC[ic]}</svg></div><div><div class="kpi-num">${num}</div><div class="kpi-lbl">${lbl}</div></div></div>`;
+
+function renderKPI(u, lv) {
+  const el = document.getElementById('kpis');
+  if (lv === 'pengguna') {
+    const kelas = PPDData.spm.kelasGuru(u.id);
+    const marks = PPDData.spm.marks();
+    const belum = kelas.reduce((a, k) => a + PPDData.spm.belumIsi(k, PPDData.PEPERIKSAAN_SEMASA.key, marks), 0);
+    const rekod = PPDData.skas.rekod(u.id);
+    const aduan = PPDData.efasiliti.tiket().filter(t => t.pelaporId === u.id && PPDData.efasiliti.aktif(t)).length;
+    el.innerHTML = kpiHTML('book', '#2f6fb3', kelas.length, 'Kelas Saya')
+      + kpiHTML('pen', belum ? '#b54708' : '#17935a', belum, 'Markah Percubaan Belum Diisi')
+      + kpiHTML('award', '#0f9e94', rekod.filter(r => r.status === 'approved').length + '/' + rekod.length, 'Rekod SK@S Disahkan')
+      + kpiHTML('wrench', '#1d6fa5', aduan, 'Aduan Aktif Saya');
+  } else {
+    el.innerHTML = kpiHTML('grid', '#2f6fb3', 3, 'Aplikasi Aktif')
+      + kpiHTML('school', '#c8962a', PPDData.SEKOLAH.length, 'Sekolah Seliaan')
+      + kpiHTML('users', '#17935a', A.users().length, 'Pengguna Berdaftar')
+      + kpiHTML('cal', '#c4321f', 2026, 'Sesi Persekolahan');
+  }
+}
+
+const APP_GAYA = { spm: ['Analitik SPM', '#b7791f', 'chart'], skas: ['SK@S', '#0f9e94', 'award'], efasiliti: ['e-Fasiliti', '#1d6fa5', 'wrench'] };
+const TAHAP_WARNA = { merah: '#b42318', kuning: '#b54708', biru: '#13406e', abu: '#475467' };
+function bakiTeks(baki) { return baki > 1 ? `${baki} hari lagi` : baki === 1 ? 'Esok' : baki === 0 ? 'Hari ini' : `Lewat ${-baki} hari`; }
+
+function renderTugasan(u, lv) {
+  const sec = document.getElementById('tugasan');
+  sec.hidden = lv !== 'pengguna';
+  if (sec.hidden) return;
+  const list = PPDData.tugasan(u);
+  document.getElementById('tugasan-meta').textContent = list.length ? `${list.length} perkara perlu perhatian` : '';
+  document.getElementById('tugasan-list').innerHTML = list.length ? list.map(t => {
+    const [lbl, c, ic] = APP_GAYA[t.app];
+    const due = t.tarikh ? `<span class="tg-due" style="--tc:${TAHAP_WARNA[t.tahap]}">${bakiTeks(t.baki)}</span>` : '';
+    return `<a class="tg-item" href="${A.esc(t.url)}" style="--c:${c}">
+      <span class="tg-ic"><svg viewBox="0 0 24 24">${KPI_IC[ic]}</svg></span>
+      <span class="tg-body"><span class="tg-app">${lbl}</span><span class="tg-t" style="display:block">${A.esc(t.tajuk)}</span><span class="tg-d" style="display:block">${A.esc(t.butiran)}</span></span>
+      ${due}<svg class="tg-go" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>`;
+  }).join('') : `<div class="tg-kosong"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Tiada tugasan tertunggak. Semua markah, rekod dan aduan anda terkini.</div>`;
+}
+
+function renderLencana(u, lv) {
+  const lc = lv === 'pengguna' ? PPDData.lencana(u) : {};
+  APP_CARDS.forEach(([cardId, app]) => {
+    const b = document.querySelector(`#${cardId} .app-badge`);
+    const x = lc[app];
+    b.classList.toggle('perlu', !!x);
+    b.style.setProperty('--bc', x ? TAHAP_WARNA[x.tahap] : '');
+    b.textContent = x ? x.teks : 'Aktif';
+  });
+}
+
 function updateUI() {
   const u = getUser();
+  if (!u) { A.logout(); return; }
+  const lv = activeLevel();
+  renderKPI(u, lv);
+  renderTugasan(u, lv);
+  renderLencana(u, lv);
   const av = document.getElementById('profile-av');
-  av.textContent = u.initials;
-  av.style.background = u.color;
-  document.getElementById('profile-name').textContent = u.name;
-  document.getElementById('profile-org').textContent = u.org;
-  document.getElementById('greet').textContent = `${salam()}, ${u.name}`;
-  buildRoleStrip('skpm',      'skpm-role-strip');
-  buildRoleStrip('spm',       'spm-role-strip');
-  buildRoleStrip('efasiliti', 'efasiliti-role-strip');
-  const allRoles = Object.values(u.appRoles || {}).flat();
-  const uniqueRoles = [...new Map(allRoles.map(r => [r.label, r])).values()];
-  document.getElementById('user-banner').innerHTML =
-    `<span class="ub-lbl">${u.org} · Peranan:</span>` +
-    uniqueRoles.map(r => `<span class="ub-role-badge">${r.label}</span>`).join('');
-  // Tunjuk butang admin pengumuman jika ppd_admin
+  av.textContent = A.initials(u.nama);
+  av.style.background = A.LEVELS[lv].color;
+  document.getElementById('profile-name').textContent = u.nama;
+  document.getElementById('profile-org').textContent = `${u.org} · ${A.LEVELS[lv].label}`;
+  document.getElementById('greet').textContent = `${salam()}, ${u.nama}`;
+  APP_CARDS.forEach(([, app, strip]) => buildRoleStrip(app, strip));
+  renderLevelPills();
+  if (lv !== 'superadmin') closeUrusPengguna();
   const btnAdmin = document.getElementById('btn-pengumuman-admin');
   if (btnAdmin) {
     const isAdmin = isPpdAdmin();
@@ -789,37 +1035,221 @@ function updateUI() {
   renderPengumuman();
 }
 
-function handleAppCardClick(appKey, appUrl) {
-  const roles = (getUser().appRoles || {})[appKey] || [];
-  if (roles.length === 0) return;
-  window.location.href = appUrl + '?role=' + roles[0].role;
+function handleAppCardClick(app) {
+  const u = getUser();
+  if (!u) return;
+  window.location.href = A.APPS[app].url;
 }
 
-function openUserModal() {
-  const currentId = getUserId();
-  const ov = document.createElement('div');
-  ov.className = 'modal-ov';
-  ov.innerHTML = `<div class="modal-box">
-    <div style="font-size:16px;font-weight:800;color:var(--t1);margin-bottom:2px">Tukar Pengguna</div>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:18px">Demo — pilih pengguna untuk simulasi</div>
-    ${DEMO_USERS.map(u => `
-      <div class="role-opt${u.id===currentId?' active':''}" data-uid="${u.id}">
-        <div class="role-opt-av" style="background:${u.color}">${u.initials}</div>
-        <div style="flex:1;min-width:0">
-          <div class="role-opt-name">${u.name}</div>
-          <div class="role-opt-sub">${u.org} · ${[...new Set(Object.values(u.appRoles).flat().map(r=>r.label))].join(', ')}</div>
-        </div>
-        ${u.id===currentId?`<div class="role-opt-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
-      </div>`).join('')}
-    <button class="btn-ghost" id="user-modal-batal">Batal</button>
-  </div>`;
-  document.body.appendChild(ov);
-  ov.querySelector('#user-modal-batal').addEventListener('click', () => ov.remove());
-  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
-  ov.querySelectorAll('[data-uid]').forEach(el => {
-    el.addEventListener('click', () => { saveUserId(el.dataset.uid); ov.remove(); updateUI(); });
-  });
+/* ── Menu profil ─────────────────────────────── */
+function closeProfileMenu() {
+  const m = document.getElementById('pmenu');
+  if (m) m.remove();
+  document.getElementById('profile-chip').setAttribute('aria-expanded', 'false');
 }
+function toggleProfileMenu() {
+  if (document.getElementById('pmenu')) { closeProfileMenu(); return; }
+  const u = getUser(), lv = activeLevel();
+  const chips = (u.roles || []).map(r => `<span class="rchip" style="--lv:${A.LEVELS[A.ROLES[r].level].color}">${A.ROLES[r].label}</span>`).join('')
+    + `<span class="rchip" style="--lv:${A.LEVELS.pengguna.color}">Pengguna Biasa</span>`;
+  const m = document.createElement('div');
+  m.id = 'pmenu'; m.className = 'pmenu'; m.setAttribute('role', 'menu');
+  m.innerHTML = `
+    <div class="pmenu-h">
+      <span class="profile-av" style="background:${A.LEVELS[lv].color};width:40px;height:40px">${A.esc(A.initials(u.nama))}</span>
+      <div style="min-width:0">
+        <div style="font-weight:700;font-size:14px">${A.esc(u.nama)}</div>
+        <div style="font-size:12px;color:var(--t3);overflow-wrap:anywhere">${A.esc(u.emel)}</div>
+      </div>
+    </div>
+    <div class="pmenu-roles"><span class="lbl">Peranan diberi</span>${chips}</div>
+    ${lv === 'superadmin' ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}Urus Pengguna &amp; Peranan</button>` : ''}
+    <button class="mi out" role="menuitem" onclick="A.logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log keluar</button>`;
+  document.querySelector('.masthead-top').appendChild(m);
+  document.getElementById('profile-chip').setAttribute('aria-expanded', 'true');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pmenu') && !e.target.closest('#profile-chip')) closeProfileMenu();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeProfileMenu(); closeUrusPengguna(); } });
+
+/* ── Urus pengguna (Superadmin) ──────────────── */
+const ROLE_GROUPS = [
+  ['Admin',             ['admin_skas', 'admin_spm', 'admin_efasiliti']],
+  ['Pentadbir Sekolah', ['sekolah_skas', 'sekolah_spm', 'sekolah_efasiliti']],
+  ['Superadmin',        ['superadmin']],
+];
+function isiPilihanOrg() {
+  const sel = document.getElementById('upg-org');
+  sel.innerHTML = '<option value="">Pilih kod</option>' + A.organisasi().map(o => `<option value="${A.esc(o.kod)}">${A.esc(o.kod)}</option>`).join('');
+  paparNamaOrg();
+}
+function paparNamaOrg() {
+  const o = A.orgByKod(document.getElementById('upg-org').value);
+  const el = document.getElementById('upg-orgnama');
+  el.textContent = o ? `${o.nama} · ${o.lokasi}` : 'Pilih kod untuk papar nama sekolah';
+  el.classList.toggle('ada', !!o);
+}
+document.getElementById('upg-org').addEventListener('change', paparNamaOrg);
+function openUrusPengguna() {
+  if (activeLevel() !== 'superadmin') return;
+  isiPilihanOrg();
+  document.getElementById('upg-err').hidden = true;
+  renderUrusPengguna();
+  document.getElementById('modal-pengguna').hidden = false;
+}
+function closeUrusPengguna() {
+  const m = document.getElementById('modal-pengguna');
+  if (m) m.hidden = true;
+}
+function renderUrusPengguna() {
+  const me = getUser();
+  const q = A.normEmail(document.getElementById('upg-cari').value);
+  const list = A.users().filter(u => !q || [u.nama, u.emel, u.org].some(s => String(s).toLowerCase().includes(q)));
+  const superCount = A.users().filter(u => u.roles.includes('superadmin')).length;
+  document.getElementById('upg-list').innerHTML = list.length ? list.map(u => {
+    const lvs = A.levelsFor(u), top = lvs[lvs.length - 1];
+    const isMe = u.id === me.id;
+    const groups = ROLE_GROUPS.map(([nama, keys]) => `<div class="upg-grp"><span>${nama}</span>${keys.map(k => {
+      const on = u.roles.includes(k);
+      const lock = k === 'superadmin' && on && (isMe || superCount <= 1);
+      const lbl = A.ROLES[k].app ? A.APPS[A.ROLES[k].app].label : 'Superadmin';
+      return `<button type="button" class="tg" aria-pressed="${on}" data-uid="${A.esc(u.id)}" data-role="${k}" style="--lv:${A.LEVELS[A.ROLES[k].level].color}"${lock ? ' disabled title="Sekurang-kurangnya satu Superadmin diperlukan dan anda tidak boleh membuang peranan sendiri"' : ''}>${lbl}</button>`;
+    }).join('')}</div>`).join('');
+    return `<div class="upg-row">
+      <div class="upg-top">
+        <span class="upg-av" style="background:${A.LEVELS[top].color}">${A.esc(A.initials(u.nama))}</span>
+        <div style="min-width:0"><div class="upg-n">${A.esc(u.nama)}${isMe ? ' <span class="rchip" style="--lv:var(--gold)">Anda</span>' : ''}</div><div class="upg-e">${A.esc(u.emel)} · ${u.kodSekolah ? `<b>${A.esc(u.kodSekolah)}</b> ` : ''}${A.esc(u.org || '—')}</div></div>
+        ${isMe ? '' : `<button type="button" class="upg-del" data-del="${A.esc(u.id)}">Padam</button>`}
+      </div>
+      ${groups}
+    </div>`;
+  }).join('') : '<div style="padding:16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengguna sepadan</div>';
+  document.getElementById('upg-audit').innerHTML = A.auditHTML(A.auditLog());
+}
+document.querySelectorAll('[data-upgtab]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-upgtab]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+  document.getElementById('upg-pane-pengguna').hidden = b.dataset.upgtab !== 'pengguna';
+  document.getElementById('upg-pane-audit').hidden = b.dataset.upgtab !== 'audit';
+  document.getElementById('upg-pane-sekolah').hidden = b.dataset.upgtab !== 'sekolah';
+  if (b.dataset.upgtab === 'sekolah') renderSenaraiSekolah();
+}));
+document.getElementById('upg-list').addEventListener('click', async e => {
+  const tg = e.target.closest('.tg');
+  const del = e.target.closest('[data-del]');
+  const users = A.users();
+  if (tg && !tg.disabled) {
+    const r = tg.dataset.role;
+    const res = A.toggleRole(tg.dataset.uid, r);
+    if (!res.ok) return toast('Anda tiada kebenaran untuk menukar peranan ini.');
+    renderUrusPengguna();
+    updateUI();
+    toast(`${A.ROLES[r].label} ${res.on ? 'diberikan kepada' : 'ditarik daripada'} ${res.user.nama}`);
+  } else if (del) {
+    const u = users.find(x => x.id === del.dataset.del);
+    if (!(await PPDUI.confirm(`Padam ${u.nama}?`, `${u.emel}\nPengguna ini tidak lagi boleh log masuk dan semua peranannya akan ditarik.`))) return;
+    A.saveUsers(A.users().filter(x => x.id !== u.id));
+    A.logAudit({ tindakan: 'padam', sasaranId: u.id, sasaranNama: u.nama });
+    renderUrusPengguna();
+    toast(`${u.nama} telah dipadam`);
+  }
+});
+/* ── Senarai sekolah induk (Superadmin) ──────── */
+function renderSenaraiSekolah() {
+  document.getElementById('sk-lokasi').innerHTML = A.LOKASI.map(l => `<option>${l}</option>`).join('');
+  document.getElementById('sk-jenis').innerHTML = A.JENIS_ORG.map(j => `<option>${j}</option>`).join('');
+  const kiraPengguna = kod => A.users().filter(u => u.kodSekolah === kod).length;
+  document.getElementById('sk-list').innerHTML = A.organisasi().map(o => `<tr>
+    <td class="kod">${A.esc(o.kod)}</td>
+    <td>${A.esc(o.nama)}</td>
+    <td>${A.esc(o.lokasi)}</td>
+    <td><span class="sk-jenis">${A.esc(o.jenis)}</span></td>
+    <td style="text-align:right">${kiraPengguna(o.kod)}</td>
+    <td><div class="sk-act"><button type="button" data-sk-ubah="${A.esc(o.kod)}">Edit</button><button type="button" class="del" data-sk-padam="${A.esc(o.kod)}">Padam</button></div></td>
+  </tr>`).join('');
+  resetBorangSekolah();
+}
+function resetBorangSekolah() {
+  document.getElementById('sk-form').reset();
+  document.getElementById('sk-asal').value = '';
+  document.getElementById('sk-kod').readOnly = false;
+  document.getElementById('sk-simpan').textContent = 'Tambah';
+  document.getElementById('sk-batal').hidden = true;
+  document.getElementById('sk-err').hidden = true;
+}
+document.getElementById('sk-batal').addEventListener('click', resetBorangSekolah);
+document.getElementById('sk-list').addEventListener('click', async e => {
+  const ubah = e.target.closest('[data-sk-ubah]'), padam = e.target.closest('[data-sk-padam]');
+  if (ubah) {
+    const o = A.orgByKod(ubah.dataset.skUbah);
+    document.getElementById('sk-asal').value = o.kod;
+    document.getElementById('sk-kod').value = o.kod;
+    document.getElementById('sk-kod').readOnly = true;
+    document.getElementById('sk-nama').value = o.nama;
+    document.getElementById('sk-lokasi').value = o.lokasi;
+    document.getElementById('sk-jenis').value = o.jenis;
+    document.getElementById('sk-simpan').textContent = 'Simpan';
+    document.getElementById('sk-batal').hidden = false;
+    document.getElementById('sk-nama').focus();
+  } else if (padam) {
+    const o = A.orgByKod(padam.dataset.skPadam);
+    const n = A.users().filter(u => u.kodSekolah === o.kod).length;
+    if (n) return PPDUI.alert('Tidak boleh dipadam', `${n} pengguna berdaftar di ${o.nama}. Pindahkan pengguna ke sekolah lain dahulu.`);
+    if (!(await PPDUI.confirm(`Padam ${o.nama}?`, `Kod ${o.kod} tidak lagi boleh dipilih semasa pendaftaran.`))) return;
+    A.saveOrganisasi(A.organisasi().filter(x => x.kod !== o.kod));
+    A.logAudit({ tindakan: 'sekolah-padam', sasaranId: o.kod, sasaranNama: `${o.kod} ${o.nama}` });
+    renderSenaraiSekolah();
+    toast(`${o.nama} dipadam daripada senarai`);
+  }
+});
+document.getElementById('sk-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const asal = document.getElementById('sk-asal').value;
+  const kod = document.getElementById('sk-kod').value.replace(/\s+/g, '').toUpperCase();
+  const nama = A.besar(document.getElementById('sk-nama').value);
+  const lokasi = document.getElementById('sk-lokasi').value, jenis = document.getElementById('sk-jenis').value;
+  const err = document.getElementById('sk-err');
+  const fail = m => { err.textContent = m; err.hidden = false; };
+  if (!/^[A-Z0-9]{4,10}$/.test(kod)) return fail('Kod sekolah mestilah 4–10 huruf/angka, contohnya YEA6105.');
+  if (nama.length < 3) return fail('Masukkan nama sekolah.');
+  const list = A.organisasi();
+  if (!asal && list.some(o => o.kod === kod)) return fail(`Kod ${kod} sudah wujud dalam senarai.`);
+  if (list.some(o => o.nama === nama && o.kod !== (asal || kod))) return fail(`Nama ${nama} sudah digunakan oleh kod lain.`);
+  const item = { kod, nama, lokasi, jenis };
+  A.saveOrganisasi(asal ? list.map(o => o.kod === asal ? item : o) : [...list, item]);
+  A.logAudit({ tindakan: asal ? 'sekolah-ubah' : 'sekolah-tambah', sasaranId: kod, sasaranNama: `${kod} ${nama}` });
+  renderSenaraiSekolah();
+  isiPilihanOrg();
+  renderUrusPengguna();
+  updateUI();
+  toast(asal ? `${nama} dikemas kini` : `${nama} ditambah ke senarai sekolah`);
+});
+
+document.getElementById('upg-cari').addEventListener('input', renderUrusPengguna);
+document.getElementById('upg-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const nama = A.besar(document.getElementById('upg-nama').value);
+  const emel = A.normEmail(document.getElementById('upg-emel').value);
+  const kodSekolah = document.getElementById('upg-org').value;
+  const err = document.getElementById('upg-err');
+  const fail = m => { err.textContent = m; err.hidden = false; };
+  if (!nama) return fail('Masukkan nama penuh pengguna.');
+  if (!kodSekolah) return fail('Pilih kod sekolah pengguna.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel)) return fail('Masukkan emel yang sah, contohnya nama@moe-dl.edu.my.');
+  if (A.findByEmail(emel)) return fail('Emel ini sudah didaftarkan.');
+  err.hidden = true;
+  const uid = 'u_' + Date.now().toString(36);
+  A.saveUsers([...A.users(), { id: uid, nama, emel, kodSekolah, roles: [] }]);
+  A.logAudit({ tindakan: 'daftar', sasaranId: uid, sasaranNama: nama });
+  e.target.reset();
+  paparNamaOrg();
+  document.getElementById('upg-cari').value = '';
+  renderUrusPengguna();
+  toast(`${nama} didaftarkan sebagai Pengguna Biasa. Tetapkan peranan di bawah.`);
+});
+document.getElementById('modal-pengguna').addEventListener('click', function (e) {
+  if (e.target === this) closeUrusPengguna();
+});
 
 // Navigasi aktif mengikut seksyen
 const navLinks = [...document.querySelectorAll('.nav a')];
@@ -836,16 +1266,15 @@ sections.forEach(s => io.observe(s));
 document.getElementById('gov-date').textContent =
   new Date().toLocaleDateString('ms-MY', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 updateUI();
-document.getElementById('profile-chip').addEventListener('click', openUserModal);
+document.getElementById('profile-chip').addEventListener('click', toggleProfileMenu);
 document.getElementById('modal-pengumuman').addEventListener('click', function(e) {
   if (e.target === this) closePengumumanModal();
 });
-[['skpm-card','skpm','skas-preview.html'],['spm-card','spm','spm-analytics.html'],['efasiliti-card','efasiliti','e-fasiliti.html']]
-  .forEach(([id, key, url]) => {
-    const el = document.getElementById(id);
-    el.addEventListener('click', () => handleAppCardClick(key, url));
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAppCardClick(key, url); } });
-  });
+APP_CARDS.forEach(([id, app]) => {
+  const el = document.getElementById(id);
+  el.addEventListener('click', () => handleAppCardClick(app));
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAppCardClick(app); } });
+});
 </script>
 
 </body>

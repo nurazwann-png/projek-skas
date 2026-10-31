@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Log Masuk · Portal PPD Dalat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap">
+<script src="assets/ppd-auth.js"></script>
+<script>
+  (function () {
+    if (!PPDAuth.session()) return;
+    const next = PPDAuth.safeNext(new URLSearchParams(location.search).get('next'));
+    location.replace(next || 'ppd-dalat.html');
+  })();
+</script>
+<style>
+:root {
+  --navy-0: #061829;
+  --navy:   #0b2a4a;
+  --navy-2: #13406e;
+  --gold:   #c8962a;
+  --gold-2: #e5c066;
+  --bg:        #f4f6f9;
+  --surface:   #ffffff;
+  --surface-2: #f4f7fb;
+  --border:    #dbe2ea;
+  --border-2:  #c3cdd9;
+  --t1: #14202e;
+  --t2: #46546a;
+  --t3: #6b7686;
+  --accent:   #13406e;
+  --danger:   #b42318;
+  --ok:       #067647;
+  --focus:    rgba(200,150,42,.35);
+  font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b131d; --surface: #111c29; --surface-2: #162333; --border: #243548; --border-2: #33485f;
+    --t1: #eef2f7; --t2: #b3bfcd; --t3: #8392a5;
+    --accent: #8db8e8; --danger: #f38b80; --ok: #5fd39a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b131d; --surface: #111c29; --surface-2: #162333; --border: #243548; --border-2: #33485f;
+  --t1: #eef2f7; --t2: #b3bfcd; --t3: #8392a5;
+  --accent: #8db8e8; --danger: #f38b80; --ok: #5fd39a;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body { background: var(--navy-0); color: var(--t1); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Pentas penuh ─────────────────────────────────────── */
+.stage {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: 100vh; display: flex; flex-direction: column;
+  background: var(--navy-0); color: #fff;
+}
+.stage::before {
+  content: ''; position: absolute; inset: 0; z-index: -2;
+  background: url('assets/ppd-bangunan.jpg') center bottom / cover no-repeat;
+  opacity: .13; filter: grayscale(1) contrast(1.1);
+}
+.stage::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(60% 55% at 70% 28%, rgba(19,64,110,.6), transparent 70%),
+    linear-gradient(180deg, rgba(6,24,41,.94) 0%, rgba(6,24,41,.78) 55%, rgba(6,24,41,.92) 100%);
+}
+#net { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.stage > *:not(canvas) { position: relative; z-index: 1; }
+
+.stage-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 14px max(28px, env(safe-area-inset-left, 0px)) 14px max(28px, env(safe-area-inset-right, 0px));
+  padding-top: max(14px, env(safe-area-inset-top, 0px));
+  font-size: 12px; color: #b9c6d6; border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.stage-top b { color: #fff; font-weight: 600; }
+.flag {
+  display: inline-block; vertical-align: -2px; margin-right: 8px;
+  width: 20px; height: 13px; border-radius: 1px;
+  background:
+    linear-gradient(#010066,#010066) 0 0 / 50% 53.8% no-repeat,
+    repeating-linear-gradient(#cc0001 0 7.14%, #fff 7.14% 14.28%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.2);
+}
+.clock { font-variant-numeric: tabular-nums; color: #dfe7f1; }
+
+.main {
+  flex: 1; width: min(1060px, 100%); margin: 0 auto;
+  padding: 28px max(24px, env(safe-area-inset-left, 0px)) 28px max(24px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 20px;
+}
+
+/* Nama portal */
+.head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(140px, 300px); align-items: center; gap: 24px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand img { height: 48px; width: auto; border-radius: 6px; background: #fff; padding: 3px; }
+.brand-org { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9fb4cc; }
+.brand-name { font-size: 16px; font-weight: 800; line-height: 1.25; }
+h1 {
+  font-size: clamp(32px, 4.6vw, 54px); font-weight: 800; line-height: 1.04; letter-spacing: -.025em;
+  text-wrap: balance; margin-top: 18px;
+}
+h1 em { font-style: normal; color: var(--gold-2); position: relative; white-space: nowrap; }
+h1 em::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: .02em; height: .1em;
+  background: var(--gold); opacity: .55; border-radius: 2px;
+  transform-origin: left; animation: underline 1s .5s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes underline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.lede { font-size: 15px; color: #c3d0df; max-width: 52ch; margin-top: 14px; line-height: 1.6; }
+.hubspot { align-self: stretch; min-height: 170px; }
+
+/* Baris kad */
+.cards { display: grid; grid-template-columns: 2fr 3fr; gap: 12px; align-items: stretch; }
+.cards > * { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
+.cards > .ccard { animation-delay: .12s; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* Kad log masuk */
+.lcard {
+  position: relative; overflow: hidden;
+  background: var(--surface); color: var(--t1);
+  border-radius: 14px; padding: 14px 14px 12px;
+  box-shadow: 0 24px 60px -24px rgba(0,0,0,.7);
+  display: flex; flex-direction: column; gap: 7px;
+}
+.lcard::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-2) 60%, transparent); }
+.salam { font-size: 10px; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 5px; }
+.salam svg { width: 11px; height: 11px; }
+.lcard h2 { font-size: 14px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; margin-top: 0; }
+.gate-sub { font-size: 10.5px; color: var(--t2); margin-top: 0; }
+
+form { display: flex; flex-direction: column; gap: 5px; }
+.field {
+  display: flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 9px; border-radius: 7px;
+  border: 1.5px solid var(--border-2); background: var(--surface);
+  transition: border-color .15s, box-shadow .15s;
+}
+.field:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px var(--focus); }
+.field.err { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+.field.err.shake { animation: shake .4s; }
+@keyframes shake { 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+.field svg { width: 13px; height: 13px; flex-shrink: 0; stroke: var(--t3); }
+.field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 12px; height: 100%; }
+.field input::placeholder { color: var(--t3); opacity: .8; }
+.clear-btn { border: 0; background: none; cursor: pointer; padding: 3px; border-radius: 5px; display: grid; }
+.clear-btn svg { width: 13px; height: 13px; }
+.clear-btn:hover svg { stroke: var(--t1); }
+
+.err-msg { font-size: 11.5px; color: var(--danger); display: flex; gap: 6px; align-items: flex-start; }
+.err-msg svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 2px; }
+
+.who {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  animation: rise .3s cubic-bezier(.2,.7,.2,1) both;
+}
+.av { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 10px; flex-shrink: 0; }
+.who-n { font-size: 11px; font-weight: 700; line-height: 1.25; }
+.who-o { font-size: 10px; color: var(--t3); }
+.who-into { margin-left: auto; text-align: right; font-size: 9.5px; color: var(--t3); line-height: 1.3; flex-shrink: 0; }
+.who-into b { display: block; font-size: 10.5px; color: var(--lv, var(--accent)); }
+
+.btn {
+  height: 32px; border: 0; border-radius: 7px; cursor: pointer;
+  background: var(--navy); color: #fff; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  position: relative; overflow: hidden; transition: background .15s, transform .1s;
+}
+:root[data-theme="dark"] .btn { background: var(--navy-2); }
+.btn::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .25s; }
+.btn:hover { background: var(--navy-2); }
+.btn:hover::after { transform: scaleX(1); }
+.btn:active { transform: scale(.99); }
+.btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.btn svg { width: 14px; height: 14px; stroke-width: 2.5; transition: transform .15s; }
+.btn:hover svg { transform: translateX(3px); }
+.btn.loading { pointer-events: none; }
+.btn.loading .btn-t, .btn.loading svg { opacity: 0; }
+.btn.loading::before {
+  content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Pendaftaran kali pertama */
+.daftar { display: flex; flex-direction: column; gap: 5px; }
+.d-emel { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 7px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12px; font-weight: 600; min-width: 0; }
+.d-emel svg { width: 13px; height: 13px; stroke: var(--t3); flex-shrink: 0; }
+.d-emel span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.d-emel button { border: 0; background: none; color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 4px; }
+.d-lbl { font-size: 10.5px; font-weight: 700; color: var(--t2); margin-top: 3px; }
+.field select { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 12px; height: 100%; color: var(--t1); font-family: inherit; }
+.d-sekolah { font-size: 11.5px; color: var(--t3); min-height: 16px; }
+.d-sekolah b { color: var(--t1); }
+.demo-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); margin-top: 1px; }
+.demo { display: flex; flex-wrap: wrap; gap: 5px; }
+.dchip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 2px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2);
+  font-size: 10.5px; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s;
+}
+.dchip:hover, .dchip:focus-visible { border-color: var(--gold); outline: 0; }
+.dchip .av { width: 18px; height: 18px; border-radius: 50%; font-size: 7px; }
+.note { font-size: 9.5px; color: var(--t3); display: flex; gap: 5px; line-height: 1.5; margin-top: auto; }
+.note svg { width: 12px; height: 12px; flex-shrink: 0; margin-top: 1px; }
+
+/* Kejayaan */
+.done {
+  position: absolute; inset: 0; z-index: 5; background: var(--surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 20px;
+  animation: fade .25s both;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.tick { width: 60px; height: 60px; }
+.tick circle { stroke: var(--ok); stroke-width: 3; stroke-dasharray: 214; stroke-dashoffset: 214; animation: draw .6s ease-out forwards; }
+.tick path { stroke: var(--ok); stroke-width: 4; stroke-dasharray: 48; stroke-dashoffset: 48; animation: draw .35s .5s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.done h3 { font-size: 15px; font-weight: 800; }
+.done p { color: var(--t2); font-size: 11px; }
+.bar { width: 160px; height: 3px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; background: var(--gold); animation: fill 1.5s .2s linear forwards; transform-origin: left; transform: scaleX(0); }
+@keyframes fill { to { transform: scaleX(1); } }
+
+/* Kad carousel */
+.ccard {
+  --c: #2fd1c4;
+  position: relative; overflow: hidden; border-radius: 14px; padding: 16px 18px 14px;
+  background: linear-gradient(155deg, rgba(255,255,255,.1), rgba(255,255,255,.035));
+  border: 1px solid rgba(255,255,255,.13);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px -28px rgba(0,0,0,.7);
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color .5s;
+}
+.ccard::before {
+  content: ''; position: absolute; width: 280px; height: 280px; right: -90px; top: -110px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 32%, transparent), transparent 68%);
+  transition: background .6s; pointer-events: none;
+}
+.c-label { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: rgba(255,255,255,.5); position: relative; }
+.c-count { font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.c-count b { color: #fff; }
+.slides { display: grid; flex: 1; position: relative; }
+.sl {
+  grid-area: 1 / 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 140px); gap: 14px; align-items: center;
+  opacity: 0; visibility: hidden; transform: translateX(22px);
+  transition: opacity .45s, transform .55s cubic-bezier(.2,.7,.2,1), visibility 0s .45s;
+}
+.sl.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.sl-head { display: flex; align-items: center; gap: 9px; }
+.sl-ic { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; background: color-mix(in srgb, var(--c) 20%, transparent); color: var(--c); }
+.sl-ic svg { width: 16px; height: 16px; }
+.sl-tag { font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c); }
+.sl-name { font-size: 22px; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-top: 8px; }
+.sl-full { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.sl-desc { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.8); max-width: 44ch; margin-top: 7px; }
+.sl-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.sl-chips span { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); }
+.sl-viz {
+  aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; color: var(--c);
+  background: rgba(6,24,41,.45); border: 1px solid rgba(255,255,255,.1);
+}
+.sl-viz svg { width: 88%; height: 88%; stroke-width: 2; }
+.sl-viz .fill { fill: color-mix(in srgb, var(--c) 22%, transparent); stroke: none; }
+.sl-viz .dim { stroke: rgba(255,255,255,.18); }
+.sl-viz .dot { fill: var(--c); stroke: none; }
+.sl.on .sl-viz .draw { stroke-dasharray: 300; stroke-dashoffset: 300; animation: draw2 1.1s .15s ease-out forwards; }
+@keyframes draw2 { to { stroke-dashoffset: 0; } }
+
+.c-nav { display: flex; align-items: center; gap: 12px; position: relative; }
+.segs { display: flex; gap: 6px; flex: 1; }
+.seg { flex: 1; height: 18px; padding: 8px 0; border: 0; background: none; cursor: pointer; }
+.seg span { display: block; height: 2px; border-radius: 2px; background: rgba(255,255,255,.2); overflow: hidden; }
+.seg i { display: block; height: 100%; background: var(--c); transform: scaleX(0); transform-origin: left; }
+.seg.done i { transform: scaleX(1); }
+.seg.on i { animation: seg 5.5s linear forwards; }
+.ccard:hover .seg.on i, .ccard:focus-within .seg.on i { animation-play-state: paused; }
+.ccard.static .seg.on i { animation: none; transform: scaleX(1); }
+@keyframes seg { to { transform: scaleX(1); } }
+.arr {
+  width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.06);
+  color: #fff; display: grid; place-items: center; cursor: pointer; transition: background .15s;
+}
+.arr:hover { background: rgba(255,255,255,.16); }
+.arr svg { width: 10px; height: 10px; stroke-width: 2.5; }
+
+@media (max-width: 900px) {
+  .head { grid-template-columns: 1fr; }
+  .hubspot { display: none; }
+  .cards { grid-template-columns: 1fr; }
+  .main { padding-block: 28px; gap: 22px; }
+}
+@media (max-width: 520px) {
+  .stage-top { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .brand img { height: 40px; }
+  .ccard { padding: 18px 18px 14px; }
+  .sl { grid-template-columns: 1fr; }
+  .sl-viz { display: none; }
+  .sl-name { font-size: 26px; }
+  .who-into { display: none; }
+}
+@media (pointer: coarse) {
+  .field, .btn { height: 44px; }
+  .field input { font-size: 16px; }
+  .clear-btn { padding: 10px; margin-right: -8px; }
+  .dchip { min-height: 40px; padding: 4px 12px 4px 4px; font-size: 12px; }
+  .dchip .av { width: 30px; height: 30px; font-size: 10px; }
+  .demo { gap: 8px; }
+  .arr { width: 44px; height: 44px; }
+  .seg { height: 44px; padding: 21px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition: none !important; }
+  .sl.on .sl-viz .draw { stroke-dashoffset: 0; }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="net" aria-hidden="true"></canvas>
+
+  <div class="stage-top">
+    <span><span class="flag" aria-hidden="true"></span>Portal rasmi <b>Kementerian Pendidikan Malaysia</b></span>
+    <span class="clock" id="clock"></span>
+  </div>
+
+  <main class="main">
+    <header class="head">
+      <div>
+        <div class="brand">
+          <img src="assets/logo-kpm.jpg" alt="Jata Negara — Kementerian Pendidikan Malaysia">
+          <div>
+            <div class="brand-org">Kementerian Pendidikan Malaysia</div>
+            <div class="brand-name">Pejabat Pendidikan Daerah Dalat</div>
+          </div>
+        </div>
+        <h1>Portal Pengurusan Digital<br><em>PPD Dalat</em></h1>
+        <p class="lede">Pemantauan kualiti sekolah, analitik SPM dan pengurusan fasiliti — semuanya di bawah satu log masuk, mengikut peranan anda.</p>
+      </div>
+      <div class="hubspot" id="hubspot" aria-hidden="true"></div>
+    </header>
+
+    <div class="cards">
+
+      <section class="lcard" aria-labelledby="gate-title">
+        <div>
+          <div class="salam" id="salam"></div>
+          <h2 id="gate-title">Log masuk</h2>
+          <p class="gate-sub" id="gate-sub">Gunakan emel rasmi anda. Kali pertama? Anda akan didaftarkan selepas memilih sekolah.</p>
+        </div>
+
+        <form id="form" novalidate>
+          <div class="field" id="field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>
+            <input id="emel" type="email" inputmode="email" autocomplete="username" spellcheck="false"
+                   placeholder="nama@moe.gov.my" aria-label="Emel rasmi" aria-describedby="err" required>
+            <button type="button" class="clear-btn" id="clear" aria-label="Kosongkan emel" hidden>
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="err-msg" id="err" role="alert" hidden></div>
+          <div id="who" hidden></div>
+          <button class="btn" id="btn" type="submit">
+            <span class="btn-t">Log masuk</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <form id="daftar" class="daftar" novalidate hidden>
+          <div class="d-emel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg><span id="d-emel"></span><button type="button" id="d-tukar">Tukar</button></div>
+          <label class="d-lbl" for="d-nama">Nama penuh</label>
+          <div class="field" id="d-f-nama"><input id="d-nama" type="text" autocomplete="name" placeholder="SEPERTI DALAM REKOD RASMI" style="text-transform:uppercase" required></div>
+          <label class="d-lbl" for="d-kod">Kod sekolah</label>
+          <div class="field" id="d-f-kod"><select id="d-kod" required></select></div>
+          <div class="d-sekolah" id="d-sekolah" aria-live="polite"></div>
+          <div class="err-msg" id="d-err" role="alert" hidden></div>
+          <button class="btn" id="d-btn" type="submit">
+            <span class="btn-t">Daftar &amp; log masuk</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <div id="demo-wrap">
+          <div class="demo-lbl">Akaun demo prototaip</div>
+          <div class="demo" id="demo" style="margin-top:6px"></div>
+        </div>
+
+        <div class="note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Akses terhad warga PPD Dalat &amp; sekolah seliaan.</span>
+        </div>
+
+        <div class="done" id="done" hidden aria-live="polite">
+          <svg class="tick" viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="34"/><path d="M22 37l10 10 19-21"/></svg>
+          <h3 id="done-t"></h3>
+          <p id="done-p"></p>
+          <div class="bar"><i></i></div>
+        </div>
+      </section>
+
+      <section class="ccard" id="ccard" aria-roledescription="carousel" aria-label="Aplikasi dalam portal">
+        <div class="c-label"><span>Aplikasi dalam portal</span><span class="c-count" id="c-count"><b>01</b> / 03</span></div>
+
+        <div class="slides">
+          <article class="sl on" data-c="#2fd1c4">
+            <div>
+              <div class="sl-head">
+                <div class="sl-ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <span class="sl-tag">Kualiti Sekolah</span>
+              </div>
+              <div class="sl-name">SK@S</div>
+              <div class="sl-full">Sistem Kualiti @Sekolah</div>
+              <p class="sl-desc">Pemantauan SKPM Kualiti@Sekolah standard 5.4 untuk 47 sekolah daerah Dalat. Pantau pencapaian, kenal pasti jurang dan jana laporan dalam satu paparan.</p>
+              <div class="sl-chips"><span>Pemantauan SKPM</span><span>Laporan Guru</span><span>Standard 5.4</span></div>
+            </div>
+            <div class="sl-viz" aria-hidden="true">
+              <svg viewBox="0 0 100 100">
+                <line class="dim" x1="14" y1="86" x2="86" y2="86"/>
+                <path class="draw" d="M18 30h50"/><path class="draw" d="M18 50h64"/><path class="draw" d="M18 70h38"/>
+                <circle class="dot" cx="76" cy="30" r="3"/><circle class="dot" cx="88" cy="50" r="3"/><circle class="dot" cx="64" cy="70" r="3"/>
+              </svg>
+            </div>
+          </article>
+
+          <article class="sl" data-c="#5aa9e6">
+            <div>
+              <div class="sl-head">
+                <div class="sl-ic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <span class="sl-tag">Infrastruktur</span>
+              </div>
+              <div class="sl-name">e-Fasiliti</div>
+              <div class="sl-full">Pengurusan Fasiliti &amp; Infrastruktur</div>
+              <p class="sl-desc">Urus aduan kerosakan, permohonan bajet dan kelulusan infrastruktur sekolah secara digital. Jejak status dari sekolah hingga peringkat PPD.</p>
+              <div class="sl-chips"><span>Aduan Kerosakan</span><span>Permohonan Bajet</span><span>Kelulusan PPD</span></div>
+            </div>
+            <div class="sl-viz" aria-hidden="true">
+              <svg viewBox="0 0 100 100">
+                <path class="draw" d="M22 28v44"/><path class="draw" d="M22 28h0"/>
+                <circle class="dot" cx="22" cy="28" r="6"/><circle class="dot" cx="22" cy="50" r="6"/><circle cx="22" cy="72" r="6" class="dim"/>
+                <path class="draw" d="M38 28h44"/><path class="draw" d="M38 50h34"/><path class="dim" d="M38 72h40"/>
+              </svg>
+            </div>
+          </article>
+
+          <article class="sl" data-c="#e2b04a">
+            <div>
+              <div class="sl-head">
+                <div class="sl-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
+                <span class="sl-tag">Peperiksaan</span>
+              </div>
+              <div class="sl-name">Analitik SPM</div>
+              <div class="sl-full">Analisis Prestasi Peperiksaan SPM</div>
+              <p class="sl-desc">Pantau trend GPS, jurang SES, jantina dan lokasi, serta kenal pasti pelajar berisiko merentas sekolah daerah Dalat.</p>
+              <div class="sl-chips"><span>Trend GPS</span><span>Jurang SES</span><span>Pelajar Berisiko</span></div>
+            </div>
+            <div class="sl-viz" aria-hidden="true">
+              <svg viewBox="0 0 100 100">
+                <line class="dim" x1="14" y1="86" x2="86" y2="86"/>
+                <path class="fill" d="M14 70L36 52L54 62L86 26V86H14Z"/>
+                <path class="draw" d="M14 70L36 52L54 62L86 26"/>
+                <circle class="dot" cx="86" cy="26" r="4"/>
+              </svg>
+            </div>
+          </article>
+        </div>
+
+        <div class="c-nav">
+          <button class="arr" id="c-prev" type="button" aria-label="Sebelumnya"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="segs" id="segs">
+            <button class="seg on" type="button" aria-label="SK@S"><span><i></i></span></button>
+            <button class="seg" type="button" aria-label="e-Fasiliti"><span><i></i></span></button>
+            <button class="seg" type="button" aria-label="Analitik SPM"><span><i></i></span></button>
+          </div>
+          <button class="arr" id="c-next" type="button" aria-label="Seterusnya"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="stage-foot" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px max(28px, env(safe-area-inset-left, 0px));padding-bottom:max(14px, env(safe-area-inset-bottom, 0px));font-size:11px;letter-spacing:.04em;color:#7f93ab;border-top:1px solid rgba(255,255,255,.07)">
+    <span>2°44′ U · 111°56′ T &nbsp;·&nbsp; Dalat, Bahagian Mukah, Sarawak</span>
+    <span>PPD Dalat · Sekolah seliaan</span>
+  </div>
+</div>
+
+<script>
+const A = PPDAuth;
+const $ = id => document.getElementById(id);
+const nextUrl = A.safeNext(new URLSearchParams(location.search).get('next')) || 'ppd-dalat.html';
+
+/* ── Jam & salam ─────────────────────────────── */
+function salam() {
+  const h = new Date().getHours();
+  if (h < 12) return ['Selamat pagi', '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'];
+  if (h < 14) return ['Selamat tengah hari', '<circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>'];
+  if (h < 19) return ['Selamat petang', '<path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7M4.2 10.2l1.4 1.4M1 18h2M21 18h2M18.4 11.6l1.4-1.4M23 22H1"/>'];
+  return ['Selamat malam', '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'];
+}
+function tick() {
+  const d = new Date();
+  $('clock').textContent = d.toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const [t, ic] = salam();
+  $('salam').innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg>${t}`;
+}
+tick(); setInterval(tick, 15000);
+
+/* ── Paparan pengguna ─────────────────────────── */
+function avatar(u, lv) {
+  return `<span class="av" style="background:${A.LEVELS[lv].color}">${A.esc(A.initials(u.nama))}</span>`;
+}
+function renderDemo() {
+  $('demo').innerHTML = A.users().map(u => {
+    const lvs = A.levelsFor(u);
+    const top = lvs[lvs.length - 1];
+    const extra = lvs.filter(l => l !== 'pengguna' && l !== top).length;
+    const first = u.nama.split(/\s+(bin|binti|a\/l|a\/p)\s+/i)[0];
+    return `<button type="button" class="dchip" data-emel="${A.esc(u.emel)}" title="${A.esc(u.nama)} · ${A.LEVELS[top].label}${extra ? ' +' + extra : ''}">
+      ${avatar(u, top)}${A.esc(first)}
+    </button>`;
+  }).join('');
+  $('demo').querySelectorAll('.dchip').forEach(b => b.addEventListener('click', () => {
+    $('emel').value = b.dataset.emel;
+    onInput();
+    $('emel').focus();
+  }));
+}
+
+function showWho(u) {
+  if (!u) { $('who').hidden = true; return; }
+  const lv = A.defaultLevel(u);
+  $('who').hidden = false;
+  $('who').className = 'who';
+  $('who').innerHTML = `${avatar(u, lv)}
+    <div style="min-width:0"><div class="who-n">${A.esc(u.nama)}</div><div class="who-o">${A.esc(u.org)}</div></div>
+    <div class="who-into" style="--lv:${A.LEVELS[lv].color}">Masuk sebagai<b>${A.LEVELS[lv].label}</b></div>`;
+}
+
+function setErr(msg) {
+  const f = $('field');
+  if (!msg) { f.classList.remove('err', 'shake'); $('err').hidden = true; $('emel').removeAttribute('aria-invalid'); return; }
+  f.classList.remove('shake'); void f.offsetWidth;
+  f.classList.add('err', 'shake');
+  $('emel').setAttribute('aria-invalid', 'true');
+  $('err').hidden = false;
+  $('err').innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>${msg}</span>`;
+}
+
+function onInput() {
+  const v = $('emel').value;
+  $('clear').hidden = !v;
+  setErr('');
+  showWho(A.findByEmail(v));
+  net.focus(!!A.findByEmail(v));
+}
+$('emel').addEventListener('input', onInput);
+$('clear').addEventListener('click', () => { $('emel').value = ''; onInput(); $('emel').focus(); });
+
+$('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = A.normEmail($('emel').value);
+  if (!v) { setErr('Masukkan emel rasmi anda untuk log masuk.'); $('emel').focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { setErr('Format emel tidak sah. Contoh: nama@moe.gov.my'); $('emel').focus(); return; }
+  const btn = $('btn');
+  btn.classList.add('loading');
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    const r = A.login(v);
+    if (!r.ok) {
+      if (!A.domainRasmi(v)) {
+        setErr(`Emel ini belum berdaftar. Pendaftaran hanya untuk emel rasmi KPM (${A.DOMAIN_RASMI.map(d => '@' + d).join(' atau ')}).`);
+        $('emel').focus();
+        return;
+      }
+      bukaDaftar(v);
+      return;
+    }
+    berjaya(r);
+  }, 650);
+});
+
+function berjaya(r, baru) {
+    const first = r.user.nama.split(/\s+(bin|binti|a\/l|a\/p)\s+/i)[0];
+    $('done-t').textContent = `Selamat datang, ${first}`;
+    $('done-p').textContent = r.level === 'pengguna' && A.levelsFor(r.user).length > 1
+      ? 'Anda masuk sebagai Pengguna Biasa. Tukar peranan melalui pil di papan pemuka.'
+      : `Anda masuk sebagai ${A.LEVELS[r.level].label}.`;
+    if (baru) $('done-p').textContent = `Akaun anda didaftarkan di ${r.user.org}. Anda masuk sebagai Pengguna Biasa.`;
+    $('done').hidden = false;
+    net.burst();
+    setTimeout(() => location.replace(nextUrl), 1800);
+}
+
+/* ── Pendaftaran kali pertama ─────────────────── */
+function modDaftar(on) {
+  $('form').hidden = on;
+  $('daftar').hidden = !on;
+  $('demo-wrap').hidden = on;
+  $('gate-title').textContent = on ? 'Daftar akaun' : 'Log masuk';
+  $('gate-sub').textContent = on ? 'Emel ini belum berdaftar. Lengkapkan maklumat untuk mendaftar.' : 'Gunakan emel rasmi anda. Kali pertama? Anda akan didaftarkan selepas memilih sekolah.';
+}
+function bukaDaftar(emel) {
+  $('d-emel').textContent = emel;
+  $('d-kod').innerHTML = '<option value="">Pilih kod sekolah</option>' + A.organisasi().map(o => `<option value="${A.esc(o.kod)}">${A.esc(o.kod)}</option>`).join('');
+  $('d-nama').value = '';
+  dErr('');
+  paparSekolah();
+  modDaftar(true);
+  $('d-nama').focus();
+}
+function paparSekolah() {
+  const o = A.orgByKod($('d-kod').value);
+  $('d-sekolah').innerHTML = o ? `<b>${A.esc(o.nama)}</b> · ${A.esc(o.lokasi)}` : 'Nama sekolah dipaparkan selepas kod dipilih.';
+}
+function dErr(msg, medan) {
+  ['d-f-nama', 'd-f-kod'].forEach(id => $(id).classList.remove('err'));
+  $('d-err').hidden = !msg;
+  if (!msg) return;
+  $('d-err').innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>${A.esc(msg)}</span>`;
+  const f = medan === 'nama' ? 'd-f-nama' : medan === 'kod' ? 'd-f-kod' : null;
+  if (f) { $(f).classList.add('err'); $(f).querySelector('input,select').focus(); }
+}
+$('d-kod').addEventListener('change', () => { paparSekolah(); dErr(''); });
+$('d-nama').addEventListener('input', () => dErr(''));
+$('d-tukar').addEventListener('click', () => { modDaftar(false); $('emel').focus(); });
+$('daftar').addEventListener('submit', e => {
+  e.preventDefault();
+  const r = A.daftar({ emel: $('d-emel').textContent, nama: $('d-nama').value, kodSekolah: $('d-kod').value });
+  if (!r.ok) {
+    if (r.medan === 'emel') { modDaftar(false); setErr(r.msg); return; }
+    dErr(r.msg, r.medan);
+    return;
+  }
+  berjaya(r, true);
+});
+
+renderDemo();
+
+/* ── Carousel aplikasi ────────────────────────── */
+(function () {
+  const card = $('ccard');
+  const slides = [...card.querySelectorAll('.sl')];
+  const segs = [...card.querySelectorAll('.seg')];
+  const total = slides.length;
+  let cur = 0;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) card.classList.add('static');
+
+  function go(idx) {
+    cur = (idx + total) % total;
+    slides.forEach((s, i) => s.classList.toggle('on', i === cur));
+    segs.forEach((s, i) => {
+      s.classList.remove('on', 'done');
+      void s.offsetWidth;
+      if (i < cur) s.classList.add('done');
+      if (i === cur) s.classList.add('on');
+    });
+    card.style.setProperty('--c', slides[cur].dataset.c);
+    $('c-count').innerHTML = `<b>${String(cur + 1).padStart(2, '0')}</b> / ${String(total).padStart(2, '0')}`;
+  }
+
+  segs.forEach((s, i) => {
+    s.addEventListener('click', () => go(i));
+    s.querySelector('i').addEventListener('animationend', () => go(cur + 1));
+  });
+  $('c-prev').addEventListener('click', () => go(cur - 1));
+  $('c-next').addEventListener('click', () => go(cur + 1));
+  go(0);
+})();
+
+/* ── Rangkaian daerah (kanvas) ────────────────── */
+const net = (() => {
+  const cv = $('net'), ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, hub, nodes = [], links = [], pulses = [], mouse = { x: -1e4, y: -1e4 };
+  let flash = 0, focusAmt = 0, focusTarget = 0, last = 0, spawn = 0;
+
+  function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+
+  function layout() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const R = rng(47);
+    const hs = $('hubspot');
+    if (hs && hs.offsetParent) {
+      const q = hs.getBoundingClientRect();
+      hub = { x: q.left + q.width / 2 - r.left, y: q.top + q.height / 2 - r.top };
+    } else hub = { x: W * 0.5, y: Math.min(H * 0.16, 130) };
+    const span = Math.max(W, H);
+    nodes = [];
+    for (let i = 0; i < 47; i++) {
+      const a = (i / 47) * Math.PI * 2 + R() * 0.5;
+      const d = (0.12 + Math.pow(R(), 0.8) * 0.5) * span;
+      nodes.push({
+        x: hub.x + Math.cos(a) * d * 1.15, y: hub.y + Math.sin(a) * d * 0.8,
+        r: 1.5 + R() * 1.8, ph: R() * Math.PI * 2, glow: 0,
+      });
+    }
+    links = [];
+    nodes.forEach((n, i) => nodes.forEach((m, j) => {
+      if (j <= i) return;
+      const dd = Math.hypot(n.x - m.x, n.y - m.y);
+      if (dd < span * 0.11) links.push([n, m, dd]);
+    }));
+    if (reduce) draw(0);
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    focusAmt += (focusTarget - focusAmt) * 0.06;
+
+    nodes.forEach(n => {
+      ctx.strokeStyle = `rgba(229,192,102,${0.05 + focusAmt * 0.07})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(hub.x, hub.y); ctx.lineTo(n.x, n.y); ctx.stroke();
+    });
+    ctx.strokeStyle = 'rgba(143,182,221,.07)';
+    links.forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); });
+
+    nodes.forEach(n => {
+      const dm = Math.hypot(n.x - mouse.x, n.y - mouse.y);
+      const near = Math.max(0, 1 - dm / 160);
+      if (near > 0) {
+        ctx.strokeStyle = `rgba(229,192,102,${near * 0.5})`;
+        ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+      }
+      n.glow = Math.max(n.glow * 0.94, near);
+      const tw = 0.5 + 0.35 * Math.sin(t / 900 + n.ph);
+      const rr = n.r + n.glow * 2.5;
+      if (n.glow > 0.05) {
+        ctx.fillStyle = `rgba(229,192,102,${n.glow * 0.25})`;
+        ctx.beginPath(); ctx.arc(n.x, n.y, rr + 6, 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = n.glow > 0.05 ? `rgba(240,212,140,${0.6 + n.glow * 0.4})` : `rgba(143,182,221,${tw})`;
+      ctx.beginPath(); ctx.arc(n.x, n.y, rr, 0, 7); ctx.fill();
+    });
+
+    pulses = pulses.filter(p => p.k < 1);
+    pulses.forEach(p => {
+      p.k += p.v;
+      const e = p.k * p.k * (3 - 2 * p.k);
+      const x = p.n.x + (hub.x - p.n.x) * e, y = p.n.y + (hub.y - p.n.y) * e;
+      const tx = p.n.x + (hub.x - p.n.x) * Math.max(0, e - 0.08), ty = p.n.y + (hub.y - p.n.y) * Math.max(0, e - 0.08);
+      const g = ctx.createLinearGradient(tx, ty, x, y);
+      g.addColorStop(0, 'rgba(229,192,102,0)'); g.addColorStop(1, 'rgba(229,192,102,.9)');
+      ctx.strokeStyle = g; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke();
+      ctx.fillStyle = '#f3d68a'; ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill();
+      if (p.k >= 1) { flash = Math.min(1, flash + 0.35); p.n.glow = Math.max(p.n.glow, 0.4); }
+    });
+    ctx.lineWidth = 1;
+
+    flash *= 0.95;
+    const breathe = reduce ? 0 : (Math.sin(t / 1400) + 1) / 2;
+    for (let i = 3; i >= 1; i--) {
+      ctx.strokeStyle = `rgba(229,192,102,${(0.1 + flash * 0.25) / i})`;
+      ctx.beginPath(); ctx.arc(hub.x, hub.y, 10 + i * 12 + breathe * 4 + flash * 8, 0, 7); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(229,192,102,.18)';
+    ctx.beginPath(); ctx.arc(hub.x, hub.y, 14 + flash * 4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#e5c066';
+    ctx.beginPath(); ctx.arc(hub.x, hub.y, 6, 0, 7); ctx.fill();
+    if (W < 700) return;
+    ctx.font = '700 10px "Public Sans", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(229,192,102,.85)';
+    ctx.fillText('P P D   D A L A T', hub.x, hub.y + 62);
+  }
+
+  function loop(t) {
+    const dt = t - last; last = t;
+    spawn -= dt;
+    if (spawn <= 0) {
+      pulses.push({ n: nodes[(Math.random() * nodes.length) | 0], k: 0, v: 0.006 + Math.random() * 0.006 });
+      spawn = 260 - focusAmt * 160;
+    }
+    draw(t);
+    requestAnimationFrame(loop);
+  }
+
+  addEventListener('resize', layout);
+  addEventListener('load', layout);
+  const stage = cv.parentElement;
+  stage.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+  stage.addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
+
+  layout();
+  if (!reduce) requestAnimationFrame(t => { last = t; loop(t); });
+
+  return {
+    focus(on) { focusTarget = on ? 1 : 0; if (reduce) draw(0); },
+    burst() { if (reduce) return; nodes.forEach(n => pulses.push({ n, k: Math.random() * 0.3, v: 0.012 + Math.random() * 0.01 })); },
+  };
+})();
+</script>
+</body>
+</html>
