@@ -1,4 +1,4 @@
-<meta charset="UTF-8">
+﻿<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SKPM Kualiti@Sekolah</title>
 <link rel="stylesheet" href="assets/ppd-theme.css">
@@ -683,18 +683,18 @@ const DEMO_SCHOOLS = [
 /* -- State ----------------------------------------------------- */
 let S = {
   role: 'teacher',
-  view: 'dashboard',   // dashboard | form | detail | record_detail | announcements
+  view: 'dashboard',   // dashboard | form | detail | record_detail
   detailId: null,
 
   // school admin sub-views
-  saView: 'analysis',  // analysis | users | teacher_detail | school_achievements | school_form | school_profile | announcements
+  saView: 'analysis',  // analysis | users | teacher_detail | school_achievements | school_form | school_profile
   selectedTeacherId: null,
   saFilter: null,      // active detail panel: 'guru_layak' | 'guru_tidak' | 'skl_layak' | 'skl_tidak'
   _profileEdit: false,
   _profileReadOnly: false,
 
   // ppd admin sub-views
-  ppdView: 'analysis',  // analysis | charts | schools | school_detail | reset_password | announcements | user_mgmt
+  ppdView: 'analysis',  // analysis | charts | schools | school_detail | reset_password | user_mgmt
   selectedSchoolId: null,
   ppdFilter: null,
   resetDone: [],       // schoolIds that have been reset
@@ -750,14 +750,6 @@ let S = {
   // records (in session)
   records: [...DEMO_RECORDS],
 
-  // siaran & hebahan
-  announcements: [
-    { id:'ann1', tajuk:'Taklimat SKPM 5.4 Sesi 2026', kandungan:'Semua sekolah diwajibkan memastikan rekod pencapaian guru dan sekolah dikemaskini sebelum 30 Jun 2026. PPD akan melakukan semakan pada bulan Julai.', kategori:'penting', sasaran:'semua', tarikh:'2026-10-01', author:'PPD Gombak', dibaca:[] },
-    { id:'ann2', tajuk:'Peringatan: Hantar Rekod Sebelum Tarikh Akhir', kandungan:'Ini adalah peringatan kepada semua sekolah yang belum menghantar rekod pencapaian. Tarikh akhir penyerahan adalah 15 Oktober 2026.', kategori:'segera', sasaran:'sekolah', tarikh:'2026-10-10', author:'PPD Gombak', dibaca:[] },
-    { id:'ann3', tajuk:'Takwim Latihan Dalaman PPD', kandungan:'Latihan dalaman untuk guru-guru berkenaan pengisian rekod SKPM akan diadakan pada 5 November 2026 di Dewan Seminar PPD Gombak.', kategori:'umum', sasaran:'guru', tarikh:'2026-10-15', author:'PPD Gombak', dibaca:[] },
-  ],
-  annFormOpen: false,
-  annForm: { tajuk:'', kandungan:'', kategori:'penting', sasaran:'semua' },
 };
 
 /* -- Render ---------------------------------------------------- */
@@ -787,19 +779,13 @@ function sidebar() {
     { v:'dashboard',     label:'Papan Pemuka',          icon:IC.dash },
     { v:'records',       label:'Rekod Pencapaian Saya', icon:i('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
     { v:'form',          label:'Tambah Pencapaian',     icon:IC.plus },
-    { v:'announcements', label:'Siaran Diterima',       icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
     <div class="sb-section">
       <div class="sb-section-lbl">Menu Guru</div>
       ${navTeacher.map((n)=>{
-        const unreadBadge = n.v==='announcements' ? (()=>{
-          const valid=['semua','guru'];
-          const unread=S.announcements.filter(a=>valid.includes(a.sasaran)&&!a.dibaca.includes('teacher1')).length;
-          return unread>0?`<span style="min-width:16px;height:16px;background:#ef4444;border-radius:8px;font-size:9px;font-weight:800;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;line-height:1">${unread}</span>`:'';
-        })() : '';
-        return `<button class="sb-btn${S.view===n.v?' active':''}" data-view="${n.v}">${n.icon}<span>${n.label}</span>${unreadBadge}</button>`;
+        return `<button class="sb-btn${S.view===n.v?' active':''}" data-view="${n.v}">${n.icon}<span>${n.label}</span></button>`;
       }).join('')}
     </div>
     <div class="sb-footer">
@@ -809,50 +795,9 @@ function sidebar() {
   </aside>`;
 }
 
-/* -- Notif helpers -------------------------------------------- */
-function bellBadgeHtml(unread) {
-  if(unread<=0) return '';
-  return `<span class="bell-badge">${unread>9?'9+':unread}</span>`;
-}
-
-function buildNotifPanel(anns, userId, validSasaran, annViewState) {
-  const filtered = anns.filter(a => validSasaran.includes(a.sasaran));
-  const unread = filtered.filter(a => !a.dibaca.includes(userId));
-  const katColor = k => k==='segera'?'#dc2626':k==='penting'?'#d97706':'#13406e';
-  const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
-  const items = filtered.slice(0,6).map(a => {
-    const isUnread = !a.dibaca.includes(userId);
-    return `<div class="notif-item${isUnread?' unread':''}" data-notif-read="${a.id}" data-notif-goto="${annViewState}">
-      <div class="notif-dot${isUnread?'':' read'}"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:${isUnread?700:600};color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.tajuk)}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
-          <span style="font-size:10px;font-weight:700;background:${katColor(a.kategori)}18;color:${katColor(a.kategori)};border-radius:5px;padding:1px 6px">${katLabel(a.kategori)}</span>
-          <span style="font-size:11px;color:var(--t3)">${a.tarikh}</span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  return `<div class="notif-panel" id="notif-panel">
-    <div class="notif-hdr">
-      <div class="notif-hdr-title">Notifikasi${unread.length>0?` <span style="background:#ef444420;color:#ef4444;border-radius:6px;font-size:11px;padding:1px 6px">${unread.length} baru</span>`:''}</div>
-      <button id="notif-close" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;line-height:1;padding:2px 6px">&times;</button>
-    </div>
-    ${filtered.length===0
-      ? `<div class="notif-empty">Tiada siaran untuk anda.</div>`
-      : items + (unread.length>0
-          ? `<div style="padding:10px 16px;border-top:1px solid var(--border)"><button id="notif-mark-all" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer">Tandakan Semua Dibaca</button></div>`
-          : `<div style="padding:10px 16px;text-align:center;color:var(--t3);font-size:12px">Semua siaran telah dibaca</div>`)
-    }
-  </div>`;
-}
-
 /* -- Topbar ---------------------------------------------------- */
 function topbar(title) {
   const back = S.view==='form'||S.view==='detail'||S.view==='record_detail';
-  const validSasaran = ['semua','guru'];
-  const unread = S.announcements.filter(a=>validSasaran.includes(a.sasaran)&&!a.dibaca.includes('teacher1')).length;
-
   return `<div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
       ${back?`<button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" id="btn-back">${IC.arrow} Kembali</button>`:''}
@@ -860,9 +805,6 @@ function topbar(title) {
         <div class="g">Guru &middot; SK Wangsa Maju 1</div>
         <div class="n">${title}</div>
       </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button id="teacher-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadgeHtml(unread)}</button>
     </div>
   </div>`;
 }
@@ -1722,7 +1664,6 @@ function sidebarAdmin() {
       { pv:'charts',          label:'Carta & Analitik',  icon:i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>') },
       { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
       { pv:'reset_password',  label:'Urus Kata Laluan',  icon:i('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>') },
-      { pv:'announcements',   label:'Siaran & Hebahan',  icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
     ];
     return `<aside class="sidebar">
       <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -1731,11 +1672,7 @@ function sidebarAdmin() {
         <div class="sb-section-lbl">Menu Admin PPD</div>
         ${ppdItems.map(n=>{
           const active = S.ppdView===n.pv || (['school_detail','school_landing','school_users'].includes(S.ppdView)&&n.pv==='schools');
-          const unreadBadge = n.pv==='announcements' ? (()=>{
-            const unread = S.announcements.filter(a=>!a.dibaca.includes('ppd')).length;
-            return unread>0 ? `<span style="min-width:16px;height:16px;background:#ef4444;border-radius:8px;font-size:9px;font-weight:800;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;line-height:1">${unread}</span>` : '';
-          })() : '';
-          return `<button class="sb-btn${active?' active':''}" data-ppdview="${n.pv}">${n.icon}<span>${n.label}</span>${unreadBadge}</button>`;
+          return `<button class="sb-btn${active?' active':''}" data-ppdview="${n.pv}">${n.icon}<span>${n.label}</span></button>`;
         }).join('')}
       </div>
       <div class="sb-footer">
@@ -1752,7 +1689,6 @@ function sidebarAdmin() {
     { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
     { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
     { sv:'school_profile',     label:'Profil Sekolah',            icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
-    { sv:'announcements',      label:'Siaran Diterima',           icon:i('<path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -1761,12 +1697,7 @@ function sidebarAdmin() {
       <div class="sb-section-lbl">Menu Pentadbir</div>
       ${navItems.map(n=>{
         const active = S.saView===n.sv || (S.saView==='teacher_detail'&&n.sv==='users');
-        const unreadBadge = n.sv==='announcements' ? (()=>{
-          const valid=['semua','sekolah'];
-          const unread=S.announcements.filter(a=>valid.includes(a.sasaran)&&!a.dibaca.includes('school1')).length;
-          return unread>0?`<span style="min-width:16px;height:16px;background:#ef4444;border-radius:8px;font-size:9px;font-weight:800;color:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;line-height:1">${unread}</span>`:'';
-        })() : '';
-        return `<button class="sb-btn${active?' active':''}" data-saview="${n.sv}">${n.icon}<span>${n.label}</span>${unreadBadge}</button>`;
+        return `<button class="sb-btn${active?' active':''}" data-saview="${n.sv}">${n.icon}<span>${n.label}</span></button>`;
       }).join('')}
     </div>
     <button class="sb-footer sb-footer-btn" data-pfooter title="Kemaskini Profil Sekolah">
@@ -3091,151 +3022,6 @@ function viewPPDUserMgmt() {
   </div>`;
 }
 
-function viewPPDAnnouncements() {
-  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#13406e';
-  const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
-  const sasLabel = s => s==='semua'?'Semua':s==='sekolah'?'Sekolah Sahaja':'Guru Sahaja';
-  const sasIcon  = s => s==='semua'?'🌐':s==='sekolah'?'🏫':'👩‍🏫';
-
-  const annList = [...S.announcements].sort((a,b)=>new Date(b.tarikh)-new Date(a.tarikh));
-
-  const formHtml = S.annFormOpen ? `
-    <div class="card" style="padding:22px;margin-bottom:20px;border:2px solid var(--accent)">
-      <div style="font-size:14px;font-weight:800;color:var(--t1);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-        <span style="width:28px;height:28px;border-radius:8px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:14px">📢</span>
-        Buat Siaran Baru
-      </div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Tajuk Siaran</label>
-          <input id="ann-tajuk" type="text" placeholder="Contoh: Peringatan Hantar Rekod SKPM..." value="${esc(S.annForm.tajuk)}" style="width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--t1);font-size:13.5px;box-sizing:border-box;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Kandungan Siaran</label>
-          <textarea id="ann-kandungan" rows="4" placeholder="Tulis kandungan siaran di sini..." style="width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--bg);color:var(--t1);font-size:13px;box-sizing:border-box;resize:vertical;outline:none;font-family:inherit;line-height:1.6;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--bdr)'">${esc(S.annForm.kandungan)}</textarea>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Kategori</label>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              ${['umum','penting','segera'].map(k=>`
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border-radius:8px;border:1.5px solid ${S.annForm.kategori===k?katColor(k):'var(--bdr)'};background:${S.annForm.kategori===k?katColor(k)+'18':'transparent'};transition:all .15s">
-                  <input type="radio" name="ann-kat" data-ann-kat="${k}" ${S.annForm.kategori===k?'checked':''} style="accent-color:${katColor(k)}">
-                  <span style="font-size:12.5px;font-weight:600;color:${S.annForm.kategori===k?katColor(k):'var(--t2)'}">${katLabel(k)}</span>
-                </label>`).join('')}
-            </div>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Sasaran</label>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              ${[['semua','🌐 Semua'],['sekolah','🏫 Sekolah'],['guru','👩‍🏫 Guru']].map(([v,l])=>`
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border-radius:8px;border:1.5px solid ${S.annForm.sasaran===v?'var(--accent)':'var(--bdr)'};background:${S.annForm.sasaran===v?'color-mix(in srgb,var(--accent) 12%,transparent)':'transparent'};transition:all .15s">
-                  <input type="radio" name="ann-sas" data-ann-sas="${v}" ${S.annForm.sasaran===v?'checked':''} style="accent-color:var(--accent)">
-                  <span style="font-size:12.5px;font-weight:600;color:${S.annForm.sasaran===v?'var(--accent)':'var(--t2)'}">${l}</span>
-                </label>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px">
-          <button id="ann-cancel" style="padding:9px 20px;border-radius:9px;border:1.5px solid var(--bdr);background:transparent;color:var(--t1);font-weight:600;font-size:13px;cursor:pointer">Batal</button>
-          <button id="ann-send" style="padding:9px 22px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">📢 Hantar Siaran</button>
-        </div>
-      </div>
-    </div>` : '';
-
-  const cardHtml = annList.length === 0
-    ? `<div style="text-align:center;padding:48px 20px;color:var(--t3);font-size:14px">Tiada siaran lagi. Klik "Buat Siaran" untuk bermula.</div>`
-    : annList.map(ann => {
-      const col = katColor(ann.kategori);
-      const totalRecipients = ann.sasaran==='semua' ? 'Semua pengguna' : ann.sasaran==='sekolah' ? `${DEMO_SCHOOLS.length} sekolah` : `${DEMO_TEACHERS.length} guru`;
-      return `<div class="card" style="padding:0;overflow:hidden;border-left:4px solid ${col}">
-        <div style="padding:16px 18px">
-          <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-                <span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:${col}20;color:${col};border:1px solid ${col}40;text-transform:uppercase;letter-spacing:.05em">${katLabel(ann.kategori)}</span>
-                <span style="font-size:10px;color:var(--t3)">${sasIcon(ann.sasaran)} ${sasLabel(ann.sasaran)}</span>
-                <span style="font-size:10px;color:var(--t3)">${fmtDate(ann.tarikh)}</span>
-              </div>
-              <div style="font-size:14px;font-weight:700;color:var(--t1);margin-bottom:6px">${esc(ann.tajuk)}</div>
-              <div style="font-size:12.5px;color:var(--t2);line-height:1.65">${esc(ann.kandungan)}</div>
-            </div>
-            <div style="flex-shrink:0;text-align:right">
-              <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${totalRecipients}</div>
-              <button data-ann-del="${ann.id}" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s" onmouseover="this.style.background='#ef444418'" onmouseout="this.style.background='none'">Padam</button>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-  return `<div class="sa-wrap">
-    <div class="ppd-analysis-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--t1)">Siaran & Hebahan</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Gombak &middot; ${S.announcements.length} siaran dihantar</div>
-      </div>
-      <button id="btn-ann-new" class="btn btn-pri" style="flex-shrink:0">${S.annFormOpen ? '✕ Tutup' : '📢 Buat Siaran'}</button>
-    </div>
-    ${formHtml}
-    <div style="display:flex;flex-direction:column;gap:12px">
-      ${cardHtml}
-    </div>
-  </div>`;
-}
-
-function viewAnnouncementsInbox(role) {
-  const userId = role === 'school_admin' ? 'school1' : 'teacher1';
-  const validSasaran = role === 'school_admin' ? ['semua','sekolah'] : ['semua','guru'];
-  const myAnn = S.announcements
-    .filter(a => validSasaran.includes(a.sasaran))
-    .sort((a,b) => new Date(b.tarikh) - new Date(a.tarikh));
-
-  const katColor = k => k==='segera'?'#ef4444':k==='penting'?'#f59e0b':'#13406e';
-  const katLabel = k => k==='segera'?'Segera':k==='penting'?'Penting':'Umum';
-
-  const cards = myAnn.length === 0
-    ? `<div style="text-align:center;padding:60px 20px">
-        <div style="font-size:40px;margin-bottom:12px">📭</div>
-        <div style="font-size:14px;color:var(--t3)">Tiada siaran diterima setakat ini.</div>
-      </div>`
-    : myAnn.map(ann => {
-        const isRead = ann.dibaca.includes(userId);
-        const col = katColor(ann.kategori);
-        return `<div class="card ann-read-card" data-ann-read="${ann.id}" data-ann-uid="${userId}" style="padding:0;overflow:hidden;border-left:4px solid ${col};${!isRead?'box-shadow:0 0 0 2px '+col+'40;':''}cursor:pointer;transition:all .15s">
-          <div style="padding:16px 18px">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              ${!isRead ? `<div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;margin-top:5px"></div>` : `<div style="width:8px;flex-shrink:0"></div>`}
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
-                  <span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:12px;background:${col}20;color:${col};border:1px solid ${col}40;text-transform:uppercase;letter-spacing:.05em">${katLabel(ann.kategori)}</span>
-                  <span style="font-size:10px;color:var(--t3)">${fmtDate(ann.tarikh)}</span>
-                  <span style="font-size:10px;color:var(--t3)">daripada PPD Gombak</span>
-                  ${!isRead ? `<span style="font-size:9px;font-weight:700;color:${col};background:${col}18;padding:1px 7px;border-radius:10px">BARU</span>` : ''}
-                </div>
-                <div style="font-size:14px;font-weight:${isRead?'600':'800'};color:var(--t1);margin-bottom:6px">${esc(ann.tajuk)}</div>
-                <div style="font-size:12.5px;color:var(--t2);line-height:1.65">${esc(ann.kandungan)}</div>
-              </div>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
-
-  const unread = myAnn.filter(a => !a.dibaca.includes(userId)).length;
-
-  return `<div class="sa-wrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--t1)">Siaran Diterima</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">${myAnn.length} siaran &middot; ${unread > 0 ? `<span style="color:#ef4444;font-weight:700">${unread} belum dibaca</span>` : 'Semua telah dibaca'}</div>
-      </div>
-      ${unread > 0 ? `<button id="ann-read-all" style="font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;border:1.5px solid var(--bdr);background:transparent;color:var(--t2);cursor:pointer">Tandakan Semua Dibaca</button>` : ''}
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      ${cards}
-    </div>
-  </div>`;
-}
 
 function viewPPDAnalysis() {
   // Cadangan B: year filter
@@ -3880,7 +3666,6 @@ function buildContent() {
       : S.ppdView==='schools'           ? viewPPDSchools()
       : S.ppdView==='charts'            ? viewPPDCharts()
       : S.ppdView==='reset_password'    ? viewPPDResetPassword()
-      : S.ppdView==='announcements'     ? viewPPDAnnouncements()
       : viewPPDAnalysis();
   }
   if (S.role === 'school_admin') {
@@ -3890,25 +3675,23 @@ function buildContent() {
       : S.saView==='school_achievement_detail'       ? viewSchoolAchievementDetail()
       : S.saView==='school_form'                     ? viewSchoolForm()
       : S.saView==='school_profile'                  ? viewSchoolProfile()
-      : S.saView==='announcements'                   ? viewAnnouncementsInbox('school_admin')
       : viewSchoolAdmin();
   }
   return S.view==='dashboard'      ? viewDashboard()
     : S.view==='records'            ? viewRecords()
     : S.view==='record_detail'      ? viewRecordDetail()
     : S.view==='form'               ? viewForm()
-    : S.view==='announcements'      ? viewAnnouncementsInbox('teacher')
     : viewDetail();
 }
 
 function buildTopbarTitle() {
   if (S.role === 'ppd_admin') {
-    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', reset_password:'Urus Kata Laluan', announcements:'Siaran & Hebahan' }[S.ppdView] || 'SK@S';
+    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', reset_password:'Urus Kata Laluan' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
-    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah', announcements:'Siaran Diterima' }[S.saView] || 'SK@S';
+    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
   }
-  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian', announcements:'Siaran Diterima' }[S.view] || 'SK@S';
+  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian' }[S.view] || 'SK@S';
 }
 
 function buildApp() {
@@ -3933,12 +3716,10 @@ function buildApp() {
     </div>`;
   }
   if (S.role === 'school_admin') {
-    const saUnread = S.announcements.filter(a=>['semua','sekolah'].includes(a.sasaran)&&!a.dibaca.includes('school1')).length;
     return `${sidebarAdmin()}
     <div class="main">
       <div class="topbar">
         <div class="tb-info"><div class="g">Pentadbir Sekolah &middot; SK Wangsa Maju 1</div><div class="n">${buildTopbarTitle()}</div></div>
-        <button id="sa-bell-btn" class="bell-btn" style="position:relative">${IC.bell}${bellBadgeHtml(saUnread)}</button>
       </div>
       <div class="content">${contentHtml}</div>
     </div>`;
@@ -4270,57 +4051,6 @@ function bind() {
   // ppd jenis filter chips (cadangan 3)
   document.querySelectorAll('[data-jenis]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolJenis:b.dataset.jenis,ppdView:'schools'})));
   document.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',()=>setState({ppdSchoolStatus:b.dataset.status,ppdView:'schools'})));
-
-  // Bell notification dropdown (shared helper)
-  function openNotifPanel(btn, anns, userId, validSasaran, annViewState) {
-    const existing = document.getElementById('notif-panel');
-    if(existing){ existing.remove(); return; }
-    document.body.insertAdjacentHTML('beforeend', buildNotifPanel(anns, userId, validSasaran, annViewState));
-    const panel = document.getElementById('notif-panel');
-    // Position relative to button
-    const rect = btn.getBoundingClientRect();
-    panel.style.top = (rect.bottom + 8) + 'px';
-    panel.style.right = (window.innerWidth - rect.right) + 'px';
-    panel.style.left = 'auto';
-    panel.style.width = '320px';
-    // Close button
-    document.getElementById('notif-close').addEventListener('click', ()=>panel.remove());
-    // Mark all read
-    const markAllBtn = document.getElementById('notif-mark-all');
-    if(markAllBtn) markAllBtn.addEventListener('click', ()=>{
-      const updated = anns.map(a => validSasaran.includes(a.sasaran) ? {...a, dibaca:[...new Set([...a.dibaca, userId])]} : a);
-      panel.remove();
-      setState({announcements: updated});
-    });
-    // Click item to go to announcements & mark read
-    panel.querySelectorAll('[data-notif-read]').forEach(el => {
-      el.addEventListener('click', ()=>{
-        const aid = el.dataset.notifRead;
-        const goto = el.dataset.notifGoto;
-        const updated = anns.map(a => a.id===aid ? {...a, dibaca:[...new Set([...a.dibaca, userId])]} : a);
-        panel.remove();
-        if(goto==='ppd') setState({announcements:updated, ppdView:'announcements'});
-        else if(goto==='sa') setState({announcements:updated, saView:'announcements'});
-        else setState({announcements:updated, view:'announcements'});
-      });
-    });
-    // Close on outside click
-    setTimeout(()=>document.addEventListener('click', function outsideClick(e){
-      if(!panel.contains(e.target)&&e.target!==btn){ panel.remove(); document.removeEventListener('click',outsideClick); }
-    }),10);
-  }
-
-  // ppd bell button
-  const bellBtn=document.getElementById('ppd-bell-btn');
-  if(bellBtn)bellBtn.addEventListener('click',()=>openNotifPanel(bellBtn, S.announcements, 'ppd', ['semua','sekolah','guru'], 'ppd'));
-
-  // school admin bell button
-  const saBellBtn=document.getElementById('sa-bell-btn');
-  if(saBellBtn)saBellBtn.addEventListener('click',()=>openNotifPanel(saBellBtn, S.announcements, 'school1', ['semua','sekolah'], 'sa'));
-
-  // teacher bell button
-  const teacherBellBtn=document.getElementById('teacher-bell-btn');
-  if(teacherBellBtn)teacherBellBtn.addEventListener('click',()=>openNotifPanel(teacherBellBtn, S.announcements, 'teacher1', ['semua','guru'], 'teacher'));
 
   // ppd print button (cadangan 5)
   const printBtn=document.getElementById('btn-ppd-print');
@@ -4692,67 +4422,6 @@ function bind() {
       setState({view:'records',selectedRecordId:null});
     });
   }
-
-  // -- Siaran & Hebahan handlers --
-
-  // btn-ann-new toggle (PPD create form)
-  const btnAnnNew=document.getElementById('btn-ann-new');
-  if(btnAnnNew)btnAnnNew.addEventListener('click',()=>setState({annFormOpen:!S.annFormOpen,annForm:{tajuk:'',kandungan:'',kategori:'penting',sasaran:'semua'}}));
-
-  // ann form cancel
-  const btnAnnCancel=document.getElementById('ann-cancel');
-  if(btnAnnCancel)btnAnnCancel.addEventListener('click',()=>setState({annFormOpen:false}));
-
-  // ann form text fields (no re-render on input — stored in S.annForm directly)
-  const annTajuk=document.getElementById('ann-tajuk');
-  if(annTajuk)annTajuk.addEventListener('input',()=>{S.annForm.tajuk=annTajuk.value;});
-  const annKandungan=document.getElementById('ann-kandungan');
-  if(annKandungan)annKandungan.addEventListener('input',()=>{S.annForm.kandungan=annKandungan.value;});
-
-  // ann form radios — kategori & sasaran (re-render to update styling)
-  document.querySelectorAll('[data-ann-kat]').forEach(r=>r.addEventListener('change',()=>{S.annForm.kategori=r.dataset.annKat;render();}));
-  document.querySelectorAll('[data-ann-sas]').forEach(r=>r.addEventListener('change',()=>{S.annForm.sasaran=r.dataset.annSas;render();}));
-
-  // ann send (create new announcement)
-  const btnAnnSend=document.getElementById('ann-send');
-  if(btnAnnSend)btnAnnSend.addEventListener('click',()=>{
-    if(!S.annForm.tajuk.trim()||!S.annForm.kandungan.trim())return;
-    const newAnn={
-      id:'ann'+Date.now(),
-      tajuk:S.annForm.tajuk.trim(),
-      kandungan:S.annForm.kandungan.trim(),
-      kategori:S.annForm.kategori,
-      sasaran:S.annForm.sasaran,
-      tarikh:new Date().toISOString().slice(0,10),
-      author:'PPD Gombak',
-      dibaca:['ppd'],
-    };
-    setState({announcements:[newAnn,...S.announcements],annFormOpen:false,annForm:{tajuk:'',kandungan:'',kategori:'penting',sasaran:'semua'}});
-  });
-
-  // ann delete (PPD view)
-  document.querySelectorAll('[data-ann-del]').forEach(b=>b.addEventListener('click',()=>{
-    const id=b.dataset.annDel;
-    if(!confirm('Padam siaran ini?'))return;
-    setState({announcements:S.announcements.filter(a=>a.id!==id)});
-  }));
-
-  // ann read card — mark individual announcement as read
-  document.querySelectorAll('.ann-read-card').forEach(card=>card.addEventListener('click',()=>{
-    const id=card.dataset.annRead, uid=card.dataset.annUid;
-    if(!id||!uid)return;
-    const updated=S.announcements.map(a=>a.id===id&&!a.dibaca.includes(uid)?{...a,dibaca:[...a.dibaca,uid]}:a);
-    setState({announcements:updated});
-  }));
-
-  // ann read-all button
-  const btnReadAll=document.getElementById('ann-read-all');
-  if(btnReadAll)btnReadAll.addEventListener('click',()=>{
-    const uid=S.role==='school_admin'?'school1':'teacher1';
-    const validSasaran=S.role==='school_admin'?['semua','sekolah']:['semua','guru'];
-    const updated=S.announcements.map(a=>validSasaran.includes(a.sasaran)&&!a.dibaca.includes(uid)?{...a,dibaca:[...a.dibaca,uid]}:a);
-    setState({announcements:updated});
-  });
 
   // -- Pengurusan Pengguna handlers --
 
