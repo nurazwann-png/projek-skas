@@ -247,6 +247,133 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 /* --- Page heading --------------------------------------------- */
 .pg-title{font-family:var(--h);font-size:20px;font-weight:800;text-wrap:balance;letter-spacing:-.3px}
 .pg-sub{font-size:12px;color:var(--t3);margin-top:3px}
+.semak-wrap{display:flex;flex-direction:column;gap:16px;max-width:980px}
+.semak-wrap .btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
+.semak-wrap .pg-sub{max-width:70ch;line-height:1.55}
+.semak-zon{display:block;border:2px dashed var(--border);border-radius:12px;padding:22px;cursor:pointer;transition:border-color .15s,background .15s}
+.semak-zon:hover,.semak-zon:focus-visible,.semak-zon.seret{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent);outline:none}
+.semak-zon.ada{border-style:solid;padding:14px}
+.semak-kosong{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:var(--t3);font-size:12.5px}
+.semak-kosong svg{width:30px;height:30px;color:var(--accent)}
+.semak-kosong b{color:var(--t1);font-size:14px}
+.semak-senarai{display:flex;flex-direction:column;gap:8px;border-radius:12px;padding:4px;outline:none;transition:background .15s}
+.semak-senarai.seret{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.semak-fail{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);min-width:0}
+.semak-fail img{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;background:var(--chip)}
+.semak-fail .semak-pdf{width:44px;height:54px;font-size:11px}
+.semak-pdf{border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--ppd-danger) 10%,transparent);color:var(--ppd-danger);font-weight:800;border:1px solid color-mix(in srgb,var(--ppd-danger) 30%,transparent);flex-shrink:0}
+.semak-fi{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;font-size:11.5px;color:var(--t3)}
+.semak-fi b{color:var(--t1);font-size:13px;overflow-wrap:anywhere}
+.semak-peranan{align-self:flex-start;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--t2);margin-bottom:2px}
+.semak-peranan.utama{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.semak-fbtn{display:flex;gap:6px;flex-shrink:0}
+.semak-kecil{border:1px solid var(--border);background:var(--surface);color:var(--t2);border-radius:6px;padding:4px 10px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;min-height:30px}
+.semak-kecil:hover{border-color:var(--accent);color:var(--accent)}
+.semak-kecil.buang:hover{border-color:var(--ppd-danger);color:var(--ppd-danger)}
+.semak-tambah{display:flex;align-items:center;gap:12px;padding:12px;border:2px dashed var(--border);border-radius:10px;cursor:pointer;color:var(--t3);transition:border-color .15s,background .15s}
+.semak-tambah:hover,.semak-tambah:focus-visible{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent);outline:none}
+.semak-tambah svg{width:18px;height:18px;color:var(--accent);flex-shrink:0}
+.semak-tambah span{display:flex;flex-direction:column;font-size:11.5px}.semak-tambah b{color:var(--t1);font-size:13px}
+.semak-jumlah{font-size:11.5px;color:var(--t3);margin-top:8px;text-align:right}
+.semak-asal{display:inline-block;align-self:flex-start;margin-top:3px;font-style:normal;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px}
+.asal-sokongan .semak-asal{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.semak-m.asal-simpul{background:color-mix(in srgb,var(--ppd-warn) 10%,var(--chip));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ppd-warn) 45%,transparent)}
+.asal-simpul .semak-asal{background:color-mix(in srgb,var(--ppd-warn) 18%,transparent);color:var(--ppd-warn)}
+.semak-sekolah{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.55;padding:10px 12px;border-radius:8px;margin-bottom:12px;border:1px solid}
+.semak-sekolah>span{font-weight:800;flex-shrink:0}
+.semak-sekolah.sp-ok{background:color-mix(in srgb,var(--ppd-ok) 8%,transparent);border-color:color-mix(in srgb,var(--ppd-ok) 35%,transparent);color:var(--t1)}
+.semak-sekolah.sp-ok>span{color:var(--ppd-ok)}
+.semak-sekolah.sp-gagal{background:color-mix(in srgb,var(--ppd-danger) 8%,transparent);border-color:color-mix(in srgb,var(--ppd-danger) 35%,transparent);color:var(--t1)}
+.semak-sekolah.sp-gagal>span{color:var(--ppd-danger)}
+.semak-sekolah.sp-ragu{background:color-mix(in srgb,var(--ppd-warn) 8%,transparent);border-color:color-mix(in srgb,var(--ppd-warn) 35%,transparent);color:var(--t1)}
+.semak-sekolah.sp-ragu>span{color:var(--ppd-warn)}
+.semak-amaran{display:block;margin-top:3px;font-size:11px;font-weight:600;color:var(--ppd-warn)}
+.semak-kamera{margin-top:10px;width:100%;justify-content:center;min-height:44px}
+.semak-setuju{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--chip);font-size:12px;line-height:1.55;color:var(--t2);cursor:pointer}
+.semak-setuju input{margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:var(--accent)}
+.semak-setuju small{display:block;margin-top:2px;color:var(--t3)}
+.semak-tab{display:inline-flex;gap:4px;padding:4px;border-radius:10px;background:var(--chip);align-self:flex-start}
+.semak-tab button{border:0;background:transparent;padding:8px 14px;min-height:36px;border-radius:7px;font:inherit;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer}
+.semak-tab button.aktif{background:var(--card,var(--surface));color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.semak-sekolah.sp-ok,.semak-sekolah.sp-ragu,.semak-sekolah.sp-gagal{margin-bottom:12px}
+.pk-wrap{overflow-x:auto}
+.pk-jadual{width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px}
+.pk-jadual th{text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--t3);padding:8px;border-bottom:1px solid var(--bdr,var(--border))}
+.pk-jadual td{padding:10px 8px;border-bottom:1px solid var(--bdr,var(--border));vertical-align:top;line-height:1.45}
+.pk-fail{overflow-wrap:anywhere}
+.pk-jadual td:first-child{width:18%;min-width:110px}
+.pk-kecil{font-size:11px;color:var(--t3);margin-top:2px}
+.pk-ralat{font-size:11.5px;color:var(--ppd-danger)}
+.pk-kep{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.pk-kep.sp-ok,.pk-slot.sp-ok{background:color-mix(in srgb,var(--ppd-ok) 14%,transparent);color:var(--ppd-ok)}
+.pk-kep.sp-ragu,.pk-slot.sp-ragu{background:color-mix(in srgb,var(--ppd-warn) 16%,transparent);color:var(--ppd-warn)}
+.pk-kep.sp-gagal,.pk-slot.sp-gagal{background:color-mix(in srgb,var(--ppd-danger) 12%,transparent);color:var(--ppd-danger)}
+.pk-slot{display:inline-block;font-size:11px;line-height:1.4;padding:3px 8px;border-radius:8px}
+.pk-aksi{width:120px;text-align:right}
+.pk-aksi .pk-btn{display:flex;width:100%;justify-content:center;margin:0 0 6px}
+.pk-aksi .semak-kecil{margin-left:auto}
+.pk-btn{padding:6px 10px;font-size:12px;min-height:32px}
+.pk-ok{font-size:12px;font-weight:700;color:var(--ppd-ok)}
+.pk-nota{font-size:11.5px;color:var(--t3);line-height:1.55;border-top:1px solid var(--bdr,var(--border))}
+.mb-wrap{margin-top:12px;padding-top:12px;border-top:1px dashed var(--bdr,var(--border))}
+.mb-pautan{border:0;background:none;padding:6px 0;font:inherit;font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.mb-terima{font-size:12px;color:var(--ppd-ok);font-weight:600}
+.mb-borang{display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+.mb-pilih{display:flex;flex-wrap:wrap;gap:6px 14px}
+.mb-pilih label{display:flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.mb-pilih input{width:16px;height:16px;accent-color:var(--accent)}
+.mb-aksi{display:flex;gap:8px;justify-content:flex-end}
+.mb-ringkas{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mb-ringkas .chip b{margin-left:5px}
+.chip-ai{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;margin:3px 6px 0 0}
+.chip-ai.ok{background:color-mix(in srgb,var(--ppd-ok) 14%,transparent);color:var(--ppd-ok)}
+.chip-ai.ubah{background:color-mix(in srgb,var(--ppd-warn) 18%,transparent);color:var(--ppd-warn)}
+.chip-ai.manual{background:var(--chip);color:var(--t3)}
+.ai-ubah-teks{font-size:11px;color:var(--ppd-warn)}
+.ai-ubah{margin:4px 0 0;padding-left:18px}
+.evidens-pdf{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.evidens-pdf.borang{margin-top:8px}
+.evidens-pdf>span{font-size:11px;color:var(--t3);line-height:1.5;flex:1 1 200px}
+.ai-label{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:auto;white-space:nowrap}
+.ai-sijil{background:color-mix(in srgb,var(--ppd-ok) 14%,transparent);color:var(--ppd-ok)}
+.ai-sokongan{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.ai-simpul{background:color-mix(in srgb,var(--ppd-warn) 18%,transparent);color:var(--ppd-warn)}
+.ai-kosong{background:color-mix(in srgb,var(--ppd-danger) 12%,transparent);color:var(--ppd-danger)}
+.fg.perlu-isi .fi,.fg.perlu-isi .cdd-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--ppd-danger) 35%,transparent)}
+.fg.perlu-sah .fi,.fg.perlu-sah .cdd-btn{box-shadow:0 0 0 2px color-mix(in srgb,var(--ppd-warn) 40%,transparent)}
+.semak-simpul-nota{font-size:12px;color:var(--t2);line-height:1.55;padding:9px 12px;border-radius:8px;margin-bottom:12px;background:color-mix(in srgb,var(--ppd-warn) 8%,transparent);border:1px solid color-mix(in srgb,var(--ppd-warn) 30%,transparent)}
+@media (max-width:560px){.semak-fail{flex-wrap:wrap}.semak-fbtn{width:100%;justify-content:flex-end}}
+.semak-aksi{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}
+.semak-nota{font-size:11.5px;color:var(--t3);flex:1 1 240px}
+.semak-spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:semakPusing .8s linear infinite;vertical-align:-2px;margin-right:8px}
+.semak-spin.besar{width:26px;height:26px;border-width:3px;color:var(--accent);margin:0;flex-shrink:0}
+@keyframes semakPusing{to{transform:rotate(360deg)}}
+.semak-muat{display:flex;gap:14px;align-items:center}
+.semak-muat div{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--t3)}
+.semak-muat b{color:var(--t1);font-size:14px}
+.notice-danger{background:color-mix(in srgb,var(--ppd-danger) 8%,transparent);border:1px solid color-mix(in srgb,var(--ppd-danger) 30%,transparent);color:var(--t1)}
+.semak-hasil{--sc:var(--ppd-warn);border-radius:12px;padding:18px 20px;background:color-mix(in srgb,var(--sc) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--sc) 35%,transparent);border-left:5px solid var(--sc)}
+.semak-hasil.semak-layak{--sc:var(--ppd-ok)}.semak-hasil.semak-tidak{--sc:var(--ppd-danger)}.semak-hasil.semak-sumbangan{--sc:var(--ppd-accent)}
+.semak-sumbangan .semak-ic{font-family:Georgia,serif;font-style:italic}
+.semak-kep{display:flex;align-items:center;gap:12px}
+.semak-ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--sc);color:#fff;font-weight:900;font-size:18px;flex-shrink:0}
+.semak-kt{font-size:16px;font-weight:800;color:var(--t1)}
+.semak-kat{font-size:12px;color:var(--t2);margin-top:2px}
+.semak-ring{font-size:14px;font-weight:600;color:var(--t1);margin:12px 0 4px;line-height:1.5}
+.semak-pen{font-size:13px;color:var(--t2);line-height:1.65;margin:0}
+.semak-mlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px 20px}
+.semak-m{display:flex;flex-direction:column;gap:3px;min-width:0;padding:10px 12px;border-radius:8px;background:var(--chip);font-size:13px}
+.semak-m.penuh{grid-column:1/-1}
+.semak-m span{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--t3)}
+.semak-m b{color:var(--t1);line-height:1.45;overflow-wrap:anywhere}.semak-m i{color:var(--t3);font-weight:400}
+.semak-m small{font-size:11px;color:var(--t3)}
+.semak-klist{display:flex;flex-direction:column;gap:10px}
+.semak-k{display:flex;gap:10px;font-size:12.5px;line-height:1.5}
+.semak-k>span{font-weight:900;width:16px;flex-shrink:0;text-align:center}
+.semak-k div{display:flex;flex-direction:column;gap:1px}
+.semak-k b{color:var(--t1)}.semak-k div span{color:var(--t2)}
+.semak-cad{font-size:13px;line-height:1.65;color:var(--t1);margin:0}
+.semak-ruj{font-size:11.5px;color:var(--t3);margin-top:10px;line-height:1.6}
 .st-rekod{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;color:var(--sc);background:color-mix(in srgb,var(--sc) 12%,transparent);border:1px solid color-mix(in srgb,var(--sc) 30%,transparent)}
 .sah-btns{display:flex;gap:6px}
 .btn-sah,.btn-tolak{padding:4px 10px;font-size:11.5px;min-height:28px}
@@ -680,7 +807,7 @@ function bacaDraf() { try { return JSON.parse(localStorage.getItem(DRAF_KEY) || 
 function drafAtauKosong() {
   const d = bacaDraf();
   S._drafMasa = d && drafAda(d.f) ? d.t : null;
-  return S._drafMasa ? { ...F_KOSONG(), ...d.f, hasSijil:false } : F_KOSONG();
+  return S._drafMasa ? { ...F_KOSONG(), ...d.f, hasSijil:false, _ai:undefined, namaSijil:'' } : F_KOSONG();
 }
 let _rekodTersimpan = null;
 function simpanAutoSkas(dariInput) {
@@ -790,6 +917,7 @@ function sidebar() {
     { v:'dashboard',     label:'Papan Pemuka',          icon:IC.dash },
     { v:'records',       label:'Rekod Pencapaian Saya', icon:i('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>') },
     { v:'form',          label:'Tambah Pencapaian',     icon:IC.plus },
+    { v:'semak',         label:'Semak Pencapaian',      icon:i('<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>') },
   ];
   return `<aside class="sidebar">
     <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -1320,6 +1448,8 @@ function viewRecordDetail() {
       </div>
     </div>
 
+    ${panelSemakanAI(r.semakanAI)}
+
     <!-- AI Verdict -->
     <div style="border-radius:12px;border:2px solid ${verdictBorder};overflow:hidden">
       <div style="padding:13px 16px;background:${verdictBg};display:flex;align-items:center;gap:10px">
@@ -1394,6 +1524,812 @@ function cdd(id, opts, val, placeholder) {
   </div>`;
 }
 
+/* -- Semak Pencapaian (AI baca gambar / PDF) ------------------- */
+// Satu sijil utama + sehingga 4 dokumen sokongan (surat keputusan, buku program, surat iringan)
+const SEMAK_JENIS = ['image/jpeg','image/png','image/webp','application/pdf'];
+const SEMAK_MAKS = 10 * 1024 * 1024;
+const SEMAK_MAKS_FAIL = 5;
+const PERINGKAT_KE_KEY = { 'Antarabangsa':'INT', 'Kebangsaan':'NAT', 'Negeri':'NEG', 'Bahagian':'BAH', 'Daerah':'DAE', 'Sekolah':'SKL' };
+const TAHAP_KE_KEY = { 'Tempat Pertama / Anugerah / Pengiktirafan':'T1', 'Tempat Kedua':'T2', 'Tempat Ketiga':'T3', 'Saguhati':'SH', 'Penyertaan':'SY' };
+const PERANAN_KE_VAL = { 'Peserta':'Peserta', 'Penerima Anugerah':'Peserta', 'Jurulatih':'Jurulatih', 'Penyelidik':'Penyelidik' };
+const saizTeks = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+// Saiz sebenar yang dihantar (selepas gambar dikecilkan), daripada panjang base64
+const saizHantar = f => Math.round((f.dataUrl.length - f.dataUrl.indexOf(',') - 1) * 3 / 4);
+// Pentadbir sekolah menyemak Pencapaian Sekolah (5.4.2); keadaan disimpan berasingan daripada semakan guru
+const semakSekolah = () => S.role === 'school_admin';
+const SK_KUNCI = () => semakSekolah() ? 'semakSkl' : 'semak';
+const SK = () => S[SK_KUNCI()];
+const KATEGORI_KE_VAL = { 'Akademik':'AKD', 'Ko-Akademik':'KAK', 'Kokurikulum':'KOK', 'Hal Ehwal Murid':'HEM', 'Pengurusan Sekolah':'PGS' };
+const semakFail = () => (SK() && SK().fail) || [];
+
+function bacaFail(file) {
+  return new Promise((ok, gagal) => {
+    const rd = new FileReader();
+    rd.onload = async () => {
+      let dataUrl = rd.result, jenis = file.type, kualiti = null;
+      if (jenis !== 'application/pdf') {
+        try { ({ dataUrl, jenis } = await kecilkanGambar(dataUrl, jenis)); } catch {}
+        kualiti = await nilaiKualiti(dataUrl);
+      }
+      ok({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nama: file.name, jenis, saiz: file.size, dataUrl, kualiti });
+    };
+    rd.onerror = gagal;
+    rd.readAsDataURL(file);
+  });
+}
+
+async function semakTambahFail(senarai) {
+  const files = [...(senarai || [])];
+  if (!files.length) return;
+  const salah = files.filter(f => !SEMAK_JENIS.includes(f.type));
+  if (salah.length) { PPDUI.alert('Jenis fail tidak disokong', `${salah.map(f => f.name).join(', ')}\nMuat naik gambar (JPG, PNG, WebP) atau fail PDF sahaja.`); return; }
+  const ada = semakFail();
+  if (ada.length + files.length > SEMAK_MAKS_FAIL) { PPDUI.alert('Terlalu banyak fail', `Maksimum ${SEMAK_MAKS_FAIL} fail: satu sijil utama dan ${SEMAK_MAKS_FAIL - 1} dokumen sokongan.`); return; }
+  let baru;
+  try { baru = await Promise.all(files.map(bacaFail)); }
+  catch { PPDUI.alert('Fail tidak dapat dibaca', 'Cuba pilih fail sekali lagi.'); return; }
+  const semua = [...ada, ...baru];
+  const jumlah = semua.reduce((a, f) => a + saizHantar(f), 0);
+  if (jumlah > SEMAK_MAKS) { PPDUI.alert('Jumlah saiz terlalu besar', `Jumlah ${saizTeks(jumlah)} melebihi had 10 MB. Mampatkan PDF atau buang dokumen yang tidak perlu.`); return; }
+  setState({ [SK_KUNCI()]: { fail: semua, status: 'sedia', hasil: null, ralat: '' } });
+}
+
+function semakBuangFail(id) {
+  const fail = semakFail().filter(f => f.id !== id);
+  setState({ [SK_KUNCI()]: fail.length ? { fail, status: 'sedia', hasil: null, ralat: '' } : null });
+}
+function semakJadikanUtama(id) {
+  const f = semakFail();
+  const i = f.findIndex(x => x.id === id);
+  if (i > 0) setState({ [SK_KUNCI()]: { fail: [f[i], ...f.filter((_, j) => j !== i)], status: 'sedia', hasil: null, ralat: '' } });
+}
+
+// Anggaran kualiti gambar sebelum dihantar: purata kecerahan (gelap) dan varians Laplacian (kabur).
+// Diukur pada salinan 500px supaya pantas; ambang dipilih untuk gambar dokumen bertulis.
+function nilaiKualiti(dataUrl) {
+  return new Promise(ok => {
+    const img = new Image();
+    img.onload = () => {
+      const sk = Math.min(1, 500 / Math.max(img.width, img.height));
+      const w = Math.max(3, Math.round(img.width * sk)), h = Math.max(3, Math.round(img.height * sk));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+      const d = g.getImageData(0, 0, w, h).data, L = new Float32Array(w * h);
+      let jum = 0;
+      for (let k = 0; k < w * h; k++) { L[k] = 0.299 * d[k * 4] + 0.587 * d[k * 4 + 1] + 0.114 * d[k * 4 + 2]; jum += L[k]; }
+      let s1 = 0, s2 = 0, n = 0;
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const k = y * w + x, lap = 4 * L[k] - L[k - 1] - L[k + 1] - L[k - w] - L[k + w];
+        s1 += lap; s2 += lap * lap; n++;
+      }
+      const purata = jum / (w * h), varians = n ? s2 / n - (s1 / n) ** 2 : 0;
+      ok({ gelap: purata < 70, kabur: varians < 80, purata: Math.round(purata), varians: Math.round(varians) });
+    };
+    img.onerror = () => ok(null);
+    img.src = dataUrl;
+  });
+}
+const amaranKualiti = q => q && (q.kabur || q.gelap)
+  ? [q.kabur && 'Gambar kelihatan kabur', q.gelap && 'Gambar terlalu gelap'].filter(Boolean).join(' · ') : '';
+async function sahkanKualiti(fail) {
+  const lemah = fail.filter(f => amaranKualiti(f.kualiti));
+  if (!lemah.length) return true;
+  return PPDUI.confirm('Kualiti gambar rendah', `${lemah.map(f => `• ${f.nama}: ${amaranKualiti(f.kualiti)}`).join('\n')}\n\nAI mungkin tidak dapat membaca teks sijil dengan tepat. Ambil gambar semula di tempat yang terang dan pegang telefon dengan stabil, atau teruskan juga.`, { ok: 'Teruskan', cancel: 'Ambil semula', tone: 'warn' });
+}
+
+// Gambar telefon biasanya 4000px+; 2200px sudah cukup untuk AI membaca teks sijil
+function kecilkanGambar(dataUrl, jenis, maks = 2200) {
+  return new Promise((ok, gagal) => {
+    const img = new Image();
+    img.onload = () => {
+      const skala = Math.min(1, maks / Math.max(img.width, img.height));
+      if (skala === 1 && dataUrl.length < 3e6) return ok({ dataUrl, jenis });
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * skala); c.height = Math.round(img.height * skala);
+      const g = c.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(img, 0, 0, c.width, c.height);
+      ok({ dataUrl: c.toDataURL('image/jpeg', 0.88), jenis: 'image/jpeg' });
+    };
+    img.onerror = gagal;
+    img.src = dataUrl;
+  });
+}
+
+async function hantarSemakan(fail) {
+  let res;
+  try {
+    res = await fetch('/api/ai/semak-pencapaian', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dokumen: fail.map(f => ({ fail: f.dataUrl, mimeType: f.jenis, namaFail: f.nama })), namaGuru: ME.nama,
+        ...(semakSekolah() ? { jenis: 'sekolah', namaSekolah: SEKOLAH_SAYA, kodSekolah: SEKOLAH_KOD } : {}) }),
+    });
+  } catch { throw new Error('Tidak dapat menghubungi pelayan. Semak sambungan internet anda.'); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.hasil) throw new Error(data.ralat || (res.status === 404 ? 'Perkhidmatan semakan AI tidak tersedia pada pelayan ini.' : 'Semakan gagal. Cuba lagi.'));
+  return data.hasil;
+}
+
+async function semakJalankan() {
+  const sk = SK(), kunci = SK_KUNCI();
+  if (!sk || !sk.fail || !sk.fail.length) return;
+  if (!(await sahkanKualiti(sk.fail))) return;
+  setState({ [kunci]: { ...sk, status: 'memuat', hasil: null, ralat: '', mb: null } });
+  try {
+    const hasil = await hantarSemakan(sk.fail);
+    setState({ [kunci]: { ...S[kunci], status: 'siap', hasil } });
+  } catch (e) {
+    setState({ [kunci]: { ...S[kunci], status: 'ralat', ralat: e.message } });
+  }
+}
+
+async function semakGunaUntukBorang() {
+  if (semakSekolah()) return semakGunaUntukBorangSekolah();
+  const h = S.semak?.hasil || {};
+  const m = h.maklumat || {}, a = h.asal || {};
+  // Hanya tarikh penuh diterima; tahun sahaja atau tiada tarikh dibiarkan kosong untuk guru isi
+  const tarikh = /^\d{4}-\d{2}-\d{2}$/.test(m.tarikh || '') ? m.tarikh : '';
+  const adaSokongan = (S.semak?.fail || []).length > 1;
+  const f = { ...F_KOSONG(),
+    program: m.program || '',
+    tarikhmula: tarikh,
+    level: PERINGKAT_KE_KEY[m.peringkat] || '',
+    tahap: TAHAP_KE_KEY[m.tahap] || '',
+    peranan: PERANAN_KE_VAL[m.peranan] || '',
+    pengesahan: m.penganjur ? `Sijil ${m.penganjur}${adaSokongan ? ' dan dokumen sokongan' : ''}` : '',
+    catatan: h.ringkasan ? `Semakan AI: ${h.ringkasan}` : '',
+    hasSijil: true,
+    namaSijil: S.semak?.fail?.[0]?.nama || '',
+  };
+  // Sumber setiap medan untuk label dalam borang; medan kosong ditanda "perlu diisi"
+  const sumber = (nilai, asal) => nilai ? (asal || 'sijil') : 'kosong';
+  f._ai = {
+    program: sumber(f.program, a.program),
+    tarikhmula: sumber(f.tarikhmula, a.tarikh),
+    tahunSahaja: !tarikh && /^\d{4}/.test(m.tarikh || '') ? String(m.tarikh).slice(0, 4) : '',
+    level: sumber(f.level, a.peringkat),
+    peranan: sumber(f.peranan, a.peranan),
+    tahap: sumber(f.tahap, a.tahap),
+    pengesahan: sumber(f.pengesahan, a.penganjur),
+  };
+  if (!(await sahkanPendua({ program: f.program, tarikh: f.tarikhmula || m.tarikh || '', level: f.level }, 'guru'))) return;
+  f._semak = jejakSemakan(h, f, MEDAN_AI_GURU);
+  setState({ view: 'form', formStep: 1, editingId: null, f, extracting: false, extracted: false, generating: false, draftText: '', draftDone: false });
+}
+
+function borangSekolahDariHasil(h) {
+  const m = h.maklumat || {}, a = h.asal || {};
+  const tarikh = /^\d{4}-\d{2}-\d{2}$/.test(m.tarikh || '') ? m.tarikh : '';
+  const sf = { pautanEviden:'', guruId:'',
+    program: m.program || '',
+    tarikh,
+    level: PERINGKAT_KE_KEY[m.peringkat] || '',
+    tahap: TAHAP_KE_KEY[m.tahap] || '',
+    kategori: KATEGORI_KE_VAL[m.bidang] || '',
+    catatan: h.ringkasan ? `Semakan AI: ${h.ringkasan}` : '',
+  };
+  const sumber = (nilai, asal) => nilai ? (asal || 'sijil') : 'kosong';
+  sf._ai = {
+    program: sumber(sf.program, a.program),
+    tarikh: sumber(sf.tarikh, a.tarikh),
+    tahunSahaja: !tarikh && /^\d{4}/.test(m.tarikh || '') ? String(m.tarikh).slice(0, 4) : '',
+    level: sumber(sf.level, a.peringkat),
+    tahap: sumber(sf.tahap, a.tahap),
+    // Bidang ialah klasifikasi AI, bukan maklumat tertulis
+    kategori: sf.kategori ? 'disimpulkan' : 'kosong',
+    namaSekolah: h.namaSekolahDikesan || '',
+  };
+  return sf;
+}
+
+async function semakGunaUntukBorangSekolah() {
+  const h = S.semakSkl?.hasil || {};
+  // Syarat wajib 5.4.2: sekolah pengguna mesti tertulis sebagai penerima
+  if (h.sekolahSepadan !== 'sepadan') return;
+  const sf = borangSekolahDariHasil(h);
+  if (!(await sahkanPendua({ program: sf.program, tarikh: sf.tarikh || h.maklumat?.tarikh || '', level: sf.level }, 'sekolah'))) return;
+  sf._semak = jejakSemakan(h, sf, MEDAN_AI_SEKOLAH);
+  setState({ saView: 'school_form', sfEditingId: null, saFilter: null, sf });
+}
+
+// Label sumber bagi medan borang yang diisi daripada Semak Pencapaian (borang guru S.f atau borang sekolah S.sf)
+function labelAI(kunci, o = S.f) {
+  const s = o?._ai?.[kunci];
+  if (!s) return '';
+  const L = { sijil: ['ai-sijil', 'Daripada sijil'], sokongan: ['ai-sokongan', 'Daripada dokumen sokongan'],
+    disimpulkan: ['ai-simpul', 'Disimpulkan AI — sila sahkan'], kosong: ['ai-kosong', 'Tidak dikesan — sila isi'] };
+  if (s === 'kosong' && o[kunci]) return '';
+  const [cls, t] = L[s] || L.sijil;
+  return `<span class="ai-label ${cls}">${t}</span>`;
+}
+const fgAI = (kunci, o = S.f) => {
+  const s = o?._ai?.[kunci];
+  if (!s) return 'fg';
+  if (!o[kunci]) return 'fg perlu-isi';
+  return s === 'disimpulkan' ? 'fg perlu-sah' : 'fg';
+};
+// Nota ringkasan di atas borang yang diisi daripada Semak Pencapaian
+function notaIsiAI(o, medan) {
+  if (!o?._ai) return '';
+  const kosong = medan.filter(x => !o[x]).length, simpul = medan.filter(x => o[x] && o._ai[x] === 'disimpulkan').length;
+  return `<div class="semak-simpul-nota" style="margin:0"><b>Diisi daripada Semak Pencapaian.</b> ${medan.length - kosong} daripada ${medan.length} medan wajib telah diisi.${kosong ? ` <b>${kosong} medan</b> bertanda merah tidak dikesan pada dokumen. Sila isi sendiri.` : ''}${simpul ? ` ${simpul} medan disimpulkan oleh AI. Sila sahkan.` : ''}</div>`;
+}
+
+/* -- Rekod berganda: Panduan ms 55 mengira bilangan pencapaian, bukan bilangan guru -- */
+const KATA_ABAI = new Set(['DAN','BAGI','YANG','UNTUK','PERINGKAT','TAHUN','DAERAH','NEGERI','KEBANGSAAN','ANTARABANGSA','THE','AND','FOR']);
+const kataKunci = t => new Set(String(t || '').toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').split(/\s+/)
+  .filter(w => w.length > 2 && !KATA_ABAI.has(w) && !/^\d{4}$/.test(w)));
+function samaProgram(a, b) {
+  const x = kataKunci(a), y = kataKunci(b);
+  if (!x.size || !y.size) return false;
+  let sama = 0; x.forEach(w => { if (y.has(w)) sama++; });
+  return sama / (x.size + y.size - sama) >= 0.6;
+}
+// Tarikh kosong tidak menolak padanan; tarikh berbeza lebih seminggu dianggap pencapaian lain
+function tarikhDekat(a, b) {
+  if (!a || !b) return true;
+  if (a.slice(0, 4) !== b.slice(0, 4)) return false;
+  return a.length < 10 || b.length < 10 || Math.abs(new Date(a) - new Date(b)) <= 7 * 864e5;
+}
+function cariPendua(rec, jenis, abaiId) {
+  const calon = jenis === 'sekolah'
+    ? S.schoolRecords.map(r => ({ r, oleh: 'rekod sekolah' }))
+    : [...S.records.map(r => ({ r, oleh: 'anda' })),
+       ...S.teachers.filter(t => t.uid !== ME.id).flatMap(t => (t.records || []).map(r => ({ r, oleh: t.name })))];
+  return calon.filter(({ r }) => r.id !== abaiId && samaProgram(r.program, rec.program)
+    && tarikhDekat(r.tarikh, rec.tarikh) && (!rec.level || !r.level || r.level === rec.level));
+}
+async function sahkanPendua(rec, jenis, abaiId) {
+  const p = cariPendua(rec, jenis, abaiId);
+  if (!p.length) return true;
+  const senarai = p.slice(0, 3).map(({ r, oleh }) => `• ${r.program} (${r.tarikh ? fmtDate(r.tarikh) : 'tiada tarikh'}) — ${oleh === 'rekod sekolah' ? 'sudah ada dalam rekod sekolah' : 'direkod oleh ' + oleh}`).join('\n');
+  const nota = jenis === 'sekolah'
+    ? 'Setiap pencapaian sekolah hanya perlu direkod sekali.'
+    : 'Panduan SKPM (ms 55) mengira bilangan pencapaian, bukan bilangan guru. Pencapaian kumpulan hanya perlu direkod sekali.';
+  return PPDUI.confirm('Pencapaian ini mungkin sudah direkod', `${senarai}${p.length > 3 ? `\n• dan ${p.length - 3} lagi` : ''}\n\n${nota} Teruskan juga?`, { ok: 'Teruskan', tone: 'warn' });
+}
+
+/* -- Jejak semakan AI pada rekod: nilai asal AI disimpan supaya perubahan pengguna boleh dilihat -- */
+const tarikhPapar = v => fmtDate(v);
+const MEDAN_AI_GURU = {
+  program: ['Nama program', v => v], tarikhmula: ['Tarikh', tarikhPapar], level: ['Peringkat', v => LVL[v]?.label || v],
+  peranan: ['Peranan', v => v], tahap: ['Tahap', v => TAHAP_MAP[v]?.short || v], pengesahan: ['Jenis pengesahan', v => v],
+};
+const MEDAN_AI_SEKOLAH = {
+  program: ['Nama program', v => v], tarikh: ['Tarikh', tarikhPapar], level: ['Peringkat', v => LVL[v]?.label || v],
+  tahap: ['Tahap', v => TAHAP_MAP[v]?.short || v], kategori: ['Kategori', v => (KATEGORI.find(k => k.val === v) || {}).label || v],
+};
+function jejakSemakan(h, o, medan, fail = semakFail()) {
+  return { keputusan: h.keputusan, kategori: h.kategori, keyakinan: h.keyakinan, ringkasan: h.ringkasan, t: Date.now(),
+    fail: fail.map(x => x.nama), nilai: Object.fromEntries(Object.keys(medan).map(k => [k, o[k] || ''])) };
+}
+function rekodSemakanAI(o, medan) {
+  const s = o._semak;
+  if (!s) return null;
+  const diubah = [], diisi = [];
+  Object.entries(medan).forEach(([k, [lbl, fmt]]) => {
+    const ai = s.nilai?.[k] || '', kini = o[k] || '';
+    if (!ai && kini) diisi.push(lbl);
+    else if (ai !== kini) diubah.push({ lbl, ai: ai ? fmt(ai) : '—', kini: kini ? fmt(kini) : '—' });
+  });
+  return { ...s, diubah, diisi };
+}
+function barisSemakanAI(r) {
+  const s = r.semakanAI;
+  if (!s) return `<div class="ach-row-meta"><span class="chip-ai manual">Direkod tanpa semakan AI</span></div>`;
+  const ubah = s.diubah || [];
+  return `<div class="ach-row-meta"><span class="chip-ai ${ubah.length ? 'ubah' : 'ok'}">${ubah.length ? `Semakan AI · ${ubah.length} medan diubah` : 'Semakan AI · tiada perubahan'}</span>${ubah.length ? `<span class="ai-ubah-teks">${ubah.map(d => `${esc(d.lbl)}: ${esc(d.ai)} → ${esc(d.kini)}`).join('; ')}</span>` : ''}</div>`;
+}
+function panelSemakanAI(s) {
+  if (!s) return '';
+  const KEP = { layak: 'Layak', tidak_layak: 'Tidak layak', perlu_semakan: 'Perlu semakan' };
+  const ubah = s.diubah || [];
+  return `<div class="panel">
+    <div class="ph"><span class="pt">Semakan AI semasa direkod</span><span class="chip" style="font-size:11px">${new Date(s.t).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;line-height:1.55">
+      <div><b>${KEP[s.keputusan] || esc(s.keputusan || '')}</b> · ${esc(s.kategori || '')} · Keyakinan AI ${Math.round((s.keyakinan || 0) * 100)}%${(s.fail || []).length ? ` · ${s.fail.length} dokumen: ${s.fail.map(esc).join(', ')}` : ''}</div>
+      ${s.ringkasan ? `<div style="color:var(--t2)">${esc(s.ringkasan)}</div>` : ''}
+      ${ubah.length
+        ? `<div class="semak-sekolah sp-ragu" style="margin:0"><span>!</span><div><b>Diubah oleh pengguna selepas semakan AI:</b><ul class="ai-ubah">${ubah.map(d => `<li>${esc(d.lbl)}: <s>${esc(d.ai)}</s> → <b>${esc(d.kini)}</b></li>`).join('')}</ul></div></div>`
+        : `<div class="semak-sekolah sp-ok" style="margin:0"><span>✓</span><div>Maklumat yang diisi AI tidak diubah.</div></div>`}
+      ${(s.diisi || []).length ? `<div style="color:var(--t3)">Diisi sendiri oleh pengguna (tidak dikesan AI): ${s.diisi.map(esc).join(', ')}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+/* -- Evidens PDF: gabung sijil utama + dokumen sokongan menjadi satu fail (Panduan ms 58) -- */
+let _pdfLib = null;
+function muatPdfLib() {
+  if (window.PDFLib) return Promise.resolve(window.PDFLib);
+  return _pdfLib || (_pdfLib = new Promise((ok, gagal) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+    sc.onload = () => ok(window.PDFLib);
+    sc.onerror = () => { _pdfLib = null; gagal(new Error('Pustaka PDF tidak dapat dimuatkan. Semak sambungan internet.')); };
+    document.head.appendChild(sc);
+  }));
+}
+const dataUrlKeBait = u => Uint8Array.from(atob(u.slice(u.indexOf(',') + 1)), c => c.charCodeAt(0));
+// pdf-lib hanya menyokong JPG dan PNG; WebP ditukar melalui kanvas
+function gambarKeJpeg(dataUrl) {
+  return new Promise((ok, gagal) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0);
+      ok(c.toDataURL('image/jpeg', 0.9));
+    };
+    img.onerror = gagal; img.src = dataUrl;
+  });
+}
+async function janaEvidensPdf(fail, nama) {
+  const { PDFDocument } = await muatPdfLib();
+  const doc = await PDFDocument.create();
+  const A4 = [595.28, 841.89], M = 24;
+  for (const f of fail) {
+    if (f.jenis === 'application/pdf') {
+      let src;
+      try { src = await PDFDocument.load(dataUrlKeBait(f.dataUrl), { ignoreEncryption: true }); }
+      catch { throw new Error(`${f.nama} tidak dapat dibaca (mungkin rosak atau dilindungi kata laluan).`); }
+      (await doc.copyPages(src, src.getPageIndices())).forEach(pg => doc.addPage(pg));
+    } else {
+      const url = ['image/jpeg', 'image/png'].includes(f.jenis) ? f.dataUrl : await gambarKeJpeg(f.dataUrl);
+      const bait = dataUrlKeBait(url);
+      const img = url.startsWith('data:image/png') ? await doc.embedPng(bait) : await doc.embedJpg(bait);
+      const [W, H] = img.width > img.height ? [A4[1], A4[0]] : A4;
+      const sk = Math.min((W - 2 * M) / img.width, (H - 2 * M) / img.height);
+      doc.addPage([W, H]).drawImage(img, { x: (W - img.width * sk) / 2, y: (H - img.height * sk) / 2, width: img.width * sk, height: img.height * sk });
+    }
+  }
+  doc.setTitle(nama);
+  const url = URL.createObjectURL(new Blob([await doc.save()], { type: 'application/pdf' }));
+  const a = document.createElement('a'); a.href = url; a.download = nama + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+function namaEvidens() {
+  const prog = SK()?.hasil?.maklumat?.program || (semakSekolah() ? S.sf.program : S.f.program) || 'PENCAPAIAN';
+  const pemilik = semakSekolah() ? SEKOLAH_KOD || SEKOLAH_SAYA : ME.nama;
+  return `EVIDENS_${prog}_${pemilik}`.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 120);
+}
+function butangEvidens(dalamBorang) {
+  const fail = semakFail();
+  if (!fail.length) return '';
+  return `<div class="evidens-pdf${dalamBorang ? ' borang' : ''}">
+    <button type="button" class="btn btn-ghost" id="btn-evidens-pdf">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>', 14)} Muat turun evidens PDF${fail.length > 1 ? ` (${fail.length} dokumen digabung)` : ''}</button>
+    ${dalamBorang ? `<span>Muat naik fail ini ke Google Drive DELIMa sekolah, tetapkan "Sesiapa yang ada pautan — Penonton", kemudian tampal pautannya di sini.</span>` : ''}
+  </div>`;
+}
+async function muatTurunEvidens(e) {
+  const btn = e.currentTarget, asal = btn.innerHTML;
+  btn.disabled = true; btn.textContent = 'Menjana PDF…';
+  try { await janaEvidensPdf(semakFail(), namaEvidens()); }
+  catch (err) { PPDUI.alert('PDF tidak dapat dijana', err.message || 'Cuba lagi.'); }
+  finally { btn.disabled = false; btn.innerHTML = asal; }
+}
+
+/* -- #7 Slot 5.4.2: 20 ruangan bagi setiap peringkat, keutamaan pencapaian tertinggi (Panduan ms 54) -- */
+const SLOT_MAKS = 20;
+const TAHAP_TERTIB = ['T1', 'T2', 'T3', 'SH', 'SY'];
+const pangkatTahap = t => { const k = TAHAP_TERTIB.indexOf(t); return k < 0 ? 9 : k; };
+// Rekod yang menduduki slot: peringkat diiktiraf, tahap diisi, tahun semasa (pautan evidens tidak diambil kira)
+const dudukSlot = r => LEVELS_SEKOLAH.includes(LEVEL_MAP_SKPM[r.level] || r.level) && r.tahap
+  && (!r.tarikh || new Date(r.tarikh).getFullYear() >= TAHUN_SEMASA);
+function kesanSlot(level, tahap, abaiId) {
+  if (!level || !tahap) return null;
+  const lv = LEVEL_MAP_SKPM[level] || level, label = LVL[lv]?.label || lv;
+  if (!LEVELS_SEKOLAH.includes(lv)) return { jenis: 'gagal', teks: `Peringkat ${LVL[level]?.label || level} tiada slot dalam SKPM 5.4.2.` };
+  const ada = S.schoolRecords.filter(r => r.id !== abaiId && (LEVEL_MAP_SKPM[r.level] || r.level) === lv && dudukSlot(r));
+  if (ada.length < SLOT_MAKS) return { jenis: 'ok', teks: `Akan mengisi slot ke-${ada.length + 1} daripada ${SLOT_MAKS} bagi peringkat ${label}.` };
+  const terendah = ada.reduce((x, r) => pangkatTahap(r.tahap) > pangkatTahap(x.tahap) ? r : x);
+  if (pangkatTahap(tahap) < pangkatTahap(terendah.tahap))
+    return { jenis: 'ragu', teks: `Slot ${label} sudah penuh (${SLOT_MAKS}/${SLOT_MAKS}). Pencapaian ini (${TAHAP_MAP[tahap]?.short}) lebih tinggi dan akan menggantikan "${terendah.program}" (${TAHAP_MAP[terendah.tahap]?.short}).` };
+  return { jenis: 'gagal', teks: `Slot ${label} sudah penuh (${SLOT_MAKS}/${SLOT_MAKS}) dengan pencapaian setaraf atau lebih tinggi. Ia boleh direkod tetapi tidak dikira dalam 5.4.2.` };
+}
+function kotakSlot(level, tahap, abaiId) {
+  const k = kesanSlot(level, tahap, abaiId);
+  if (!k) return '';
+  return `<div class="semak-sekolah sp-${k.jenis}"><span>${k.jenis === 'ok' ? '◫' : k.jenis === 'ragu' ? '⇅' : '!'}</span><div><b>Slot 5.4.2:</b> ${esc(k.teks)}</div></div>`;
+}
+
+/* -- #10 Persetujuan penghantaran dokumen kepada perkhidmatan AI -- */
+const SETUJU_KEY = 'ppd_skas_setuju_ai_' + ME.id;
+const setujuAI = () => { try { return !!localStorage.getItem(SETUJU_KEY); } catch { return !!S._setujuAI; } };
+function tetapSetujuAI(ya) {
+  try { ya ? localStorage.setItem(SETUJU_KEY, String(Date.now())) : localStorage.removeItem(SETUJU_KEY); } catch {}
+  S._setujuAI = ya;
+}
+function kotakSetuju() {
+  return `<label class="semak-setuju"><input type="checkbox" id="semak-setuju" ${setujuAI() ? 'checked' : ''}>
+    <span>Saya faham bahawa dokumen yang dimuat naik akan dihantar melalui pelayan PPD Dalat kepada perkhidmatan AI pihak ketiga (Anthropic) untuk dianalisis, dan SK@S tidak menyimpan fail tersebut. Saya akan menutup maklumat peribadi yang tidak berkaitan, seperti nombor kad pengenalan, sebelum memuat naik. <small>Rujuk Akta Perlindungan Data Peribadi 2010 dan dasar keselamatan data KPM.</small></span>
+  </label>`;
+}
+
+/* -- #8 Maklum balas "Keputusan AI salah?" untuk memperbaiki peraturan semakan -- */
+const MB_KEY = 'ppd_skas_maklumbalas_ai';
+const MB_BAHAGIAN = ['Keputusan layak / tidak layak', 'Kategori', 'Nama penerima / sekolah', 'Program', 'Tarikh', 'Peringkat', 'Tahap / pingat', 'Lain-lain'];
+const mbSemua = () => { try { return JSON.parse(localStorage.getItem(MB_KEY) || '[]'); } catch { return []; } };
+function simpanMaklumBalas(item) {
+  try { localStorage.setItem(MB_KEY, JSON.stringify([item, ...mbSemua()].slice(0, 500))); return true; } catch { return false; }
+}
+function kotakMaklumBalas(sk) {
+  const mb = sk.mb;
+  if (mb === 'dihantar') return `<div class="mb-terima">✓ Terima kasih. Maklum balas anda direkod untuk semakan Penyelaras SKPM Daerah.</div>`;
+  if (mb !== 'buka') return `<button type="button" class="mb-pautan" id="mb-buka">Keputusan AI salah?</button>`;
+  return `<div class="mb-borang" id="mb-borang">
+    <b>Bahagian mana yang salah?</b>
+    <div class="mb-pilih">${MB_BAHAGIAN.map((b, k) => `<label><input type="checkbox" value="${esc(b)}" data-mb-pilih${k === 0 ? ' id="mb-pilih-0"' : ''}> ${esc(b)}</label>`).join('')}</div>
+    <label class="fl" for="mb-komen">Apa yang sepatutnya? (pilihan)</label>
+    <textarea class="fi" id="mb-komen" rows="2" placeholder="cth. Sijil ini peringkat Negeri, bukan Daerah. Penganjur ialah JPN Sarawak."></textarea>
+    <div class="mb-aksi"><button type="button" class="btn btn-ghost" id="mb-batal">Batal</button><button type="button" class="btn btn-primary" id="mb-hantar">Hantar maklum balas</button></div>
+  </div>`;
+}
+function hantarMaklumBalas() {
+  const sk = SK(), h = sk?.hasil;
+  if (!h) return;
+  const salah = [...document.querySelectorAll('[data-mb-pilih]:checked')].map(x => x.value);
+  const komen = (document.getElementById('mb-komen')?.value || '').trim();
+  if (!salah.length && !komen) { PPDUI.alert('Maklum balas kosong', 'Pilih sekurang-kurangnya satu bahagian atau tulis komen.'); return; }
+  simpanMaklumBalas({ t: Date.now(), olehId: ME.id, oleh: ME.nama, sekolah: SEKOLAH_SAYA, jenis: semakSekolah() ? 'sekolah' : 'guru',
+    fail: (sk.fail || []).map(f => f.nama), keputusan: h.keputusan, kategori: h.kategori, keyakinan: h.keyakinan,
+    maklumat: h.maklumat, salah, komen });
+  setState({ [SK_KUNCI()]: { ...sk, mb: 'dihantar' } });
+}
+
+/* -- #6 Semakan pukal Pencapaian Sekolah: setiap fail ialah satu pencapaian berasingan -- */
+const PUKAL_MAKS = 10;
+const pukalItem = () => S.semakPukalItem || [];
+function pukalKemas(id, ubah) { setState({ semakPukalItem: pukalItem().map(x => x.id === id ? { ...x, ...ubah } : x) }); }
+async function pukalTambah(senarai) {
+  const files = [...(senarai || [])];
+  if (!files.length) return;
+  const salah = files.filter(f => !SEMAK_JENIS.includes(f.type));
+  if (salah.length) { PPDUI.alert('Jenis fail tidak disokong', `${salah.map(f => f.name).join(', ')}\nMuat naik gambar (JPG, PNG, WebP) atau fail PDF sahaja.`); return; }
+  if (pukalItem().length + files.length > PUKAL_MAKS) { PPDUI.alert('Terlalu banyak fail', `Maksimum ${PUKAL_MAKS} sijil bagi satu semakan pukal.`); return; }
+  let baru;
+  try { baru = await Promise.all(files.map(bacaFail)); }
+  catch { PPDUI.alert('Fail tidak dapat dibaca', 'Cuba pilih fail sekali lagi.'); return; }
+  const besar = baru.filter(f => saizHantar(f) > SEMAK_MAKS);
+  if (besar.length) PPDUI.alert('Fail terlalu besar', `${besar.map(f => f.nama).join(', ')} melebihi 10 MB dan tidak ditambah.`);
+  const item = baru.filter(f => saizHantar(f) <= SEMAK_MAKS).map(f => ({ id: f.id, fail: f, status: 'sedia' }));
+  setState({ semakPukalItem: [...pukalItem(), ...item] });
+}
+async function pukalJalankan() {
+  const sasaran = pukalItem().filter(x => x.status === 'sedia' || x.status === 'ralat');
+  if (!sasaran.length) return;
+  if (!(await sahkanKualiti(sasaran.map(x => x.fail)))) return;
+  setState({ semakPukalItem: pukalItem().map(x => sasaran.includes(x) ? { ...x, status: 'menunggu', ralat: '' } : x) });
+  // Dua permintaan serentak: cukup pantas tanpa membebankan had kadar API
+  const giliran = sasaran.map(x => x.id);
+  const pekerja = async () => {
+    while (giliran.length) {
+      const id = giliran.shift(), item = pukalItem().find(x => x.id === id);
+      if (!item) continue;
+      pukalKemas(id, { status: 'memuat' });
+      try { pukalKemas(id, { status: 'siap', hasil: await hantarSemakan([item.fail]) }); }
+      catch (e) { pukalKemas(id, { status: 'ralat', ralat: e.message }); }
+    }
+  };
+  await Promise.all([pekerja(), pekerja()]);
+}
+function pukalLengkap(x) {
+  if (x.status !== 'siap' || x.disimpan || x.hasil?.keputusan !== 'layak' || x.hasil?.sekolahSepadan !== 'sepadan') return false;
+  const sf = borangSekolahDariHasil(x.hasil);
+  return !!(sf.program && sf.tarikh && sf.level && sf.tahap && sf.kategori);
+}
+async function pukalSimpan(id) {
+  const x = pukalItem().find(y => y.id === id);
+  if (!x || !pukalLengkap(x)) return false;
+  const sf = borangSekolahDariHasil(x.hasil);
+  if (!(await sahkanPendua({ program: sf.program, tarikh: sf.tarikh, level: sf.level }, 'sekolah'))) return false;
+  sf._semak = jejakSemakan(x.hasil, sf, MEDAN_AI_SEKOLAH, [x.fail]);
+  const semakanAI = rekodSemakanAI(sf, MEDAN_AI_SEKOLAH);
+  const { _ai, _semak, ...data } = sf;
+  const rec = { id: 'sr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ...data, semakanAI };
+  setState({ schoolRecords: [...S.schoolRecords, rec], semakPukalItem: pukalItem().map(y => y.id === id ? { ...y, disimpan: rec.id } : y) });
+  return true;
+}
+async function pukalSimpanSemua() {
+  const ids = pukalItem().filter(pukalLengkap).map(x => x.id);
+  let n = 0;
+  for (const id of ids) if (await pukalSimpan(id)) n++;
+  if (n) PPDUI.alert('Rekod disimpan', `${n} pencapaian sekolah disimpan. Lengkapkan pautan evidens Google Drive bagi setiap rekod dalam Pencapaian Sekolah.`, { tone: 'info', ok: 'OK' });
+}
+// Buka satu item pukal dalam paparan semakan biasa (butiran penuh, borang, evidens PDF)
+function pukalKeSatu(id, keBorang) {
+  const x = pukalItem().find(y => y.id === id);
+  if (!x?.hasil) return;
+  S.semakSkl = { fail: [x.fail], status: 'siap', hasil: x.hasil };
+  if (keBorang) semakGunaUntukBorangSekolah();
+  else setState({ semakPukal: false });
+}
+
+function viewSemakPukal() {
+  const item = pukalItem();
+  const KEP = { layak: ['ok', 'Layak'], tidak_layak: ['gagal', 'Tidak layak'], perlu_semakan: ['ragu', 'Perlu semakan'] };
+  const SP = { sepadan: '✓ Sekolah sepadan', tidak_sepadan: '✕ Sekolah lain', tiada: '? Tiada nama sekolah' };
+  const sedia = item.filter(x => x.status === 'sedia' || x.status === 'ralat').length;
+  const berjalan = item.some(x => x.status === 'memuat' || x.status === 'menunggu');
+  const lengkap = item.filter(pukalLengkap).length;
+  const baris = x => {
+    const h = x.hasil, m = h?.maklumat || {};
+    const sf = h ? borangSekolahDariHasil(h) : null;
+    const slot = sf && !x.disimpan && h.sekolahSepadan === 'sepadan' && h.keputusan !== 'tidak_layak' ? kesanSlot(sf.level, sf.tahap) : null;
+    const q = amaranKualiti(x.fail.kualiti);
+    return `<tr>
+      <td><b class="pk-fail">${esc(x.fail.nama)}</b>${q ? `<div class="semak-amaran">⚠ ${q}</div>` : ''}</td>
+      <td>${x.status === 'siap'
+        ? `<b>${esc(m.program || '—')}</b><div class="pk-kecil">${esc([m.peringkat, TAHAP_MAP[TAHAP_KE_KEY[m.tahap]]?.short || m.tahap, m.tarikh].filter(Boolean).join(' · ') || '—')}</div>`
+        : x.status === 'ralat' ? `<span class="pk-ralat">${esc(x.ralat)}</span>`
+        : x.status === 'sedia' ? '<span class="pk-kecil">Belum disemak</span>'
+        : `<span class="pk-kecil"><span class="semak-spin"></span> ${x.status === 'memuat' ? 'AI sedang membaca…' : 'Menunggu giliran…'}</span>`}</td>
+      <td>${h ? `<span class="pk-kep sp-${(KEP[h.keputusan] || KEP.perlu_semakan)[0]}">${(KEP[h.keputusan] || KEP.perlu_semakan)[1]}</span><div class="pk-kecil">${esc(SP[h.sekolahSepadan] || '')}</div>` : ''}</td>
+      <td>${slot ? `<span class="pk-slot sp-${slot.jenis}">${esc(slot.teks)}</span>` : ''}</td>
+      <td class="pk-aksi">
+        ${x.disimpan ? '<span class="pk-ok">✓ Disimpan</span>'
+          : pukalLengkap(x) ? `<button type="button" class="btn btn-primary pk-btn" data-pukal-simpan="${x.id}">Simpan</button>` : ''}
+        ${!x.disimpan && h && h.sekolahSepadan === 'sepadan' && h.keputusan !== 'tidak_layak' ? `<button type="button" class="btn btn-ghost pk-btn" data-pukal-borang="${x.id}">Buka borang</button>` : ''}
+        ${h ? `<button type="button" class="btn btn-ghost pk-btn" data-pukal-butiran="${x.id}">Butiran</button>` : ''}
+        ${x.status === 'sedia' || x.status === 'ralat' ? `<button type="button" class="semak-kecil buang" data-pukal-buang="${x.id}" aria-label="Buang ${esc(x.fail.nama)}">✕</button>` : ''}
+      </td>
+    </tr>`;
+  };
+  return `<div class="panel">
+      <div class="pb">
+        <input type="file" id="pukal-fail" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden>
+        <label for="pukal-fail" class="semak-zon pukal-zon" id="pukal-zon" tabindex="0">
+          <div class="semak-kosong">${IC.upload || ''}<b>Klik atau seret beberapa sijil ke sini</b><span>Setiap fail dikira sebagai SATU pencapaian · sehingga ${PUKAL_MAKS} fail, setiap fail 10 MB. Untuk sijil yang perlukan dokumen sokongan, guna mod "Satu pencapaian".</span></div>
+        </label>
+        ${sumberKamera('pukal-kamera')}
+        ${kotakSetuju()}
+        <div class="semak-aksi">
+          <span class="semak-nota">${item.length} sijil${lengkap ? ` · ${lengkap} lengkap dan sedia disimpan` : ''}</span>
+          <button class="btn btn-primary" id="pukal-jalan" ${!sedia || berjalan || !setujuAI() ? 'disabled' : ''}>${berjalan ? '<span class="semak-spin"></span>Menyemak…' : `Semak ${sedia || ''} sijil dengan AI`}</button>
+        </div>
+      </div>
+    </div>
+    ${item.length ? `<div class="panel">
+      <div class="ph"><span class="pt">Hasil semakan pukal</span>${lengkap > 1 ? `<button type="button" class="btn btn-primary pk-btn" id="pukal-simpan-semua">Simpan semua yang lengkap (${lengkap})</button>` : ''}</div>
+      <div class="pb pk-wrap"><table class="pk-jadual">
+        <thead><tr><th>Fail</th><th>Pencapaian dikesan</th><th>Keputusan</th><th>Slot 5.4.2</th><th></th></tr></thead>
+        <tbody>${item.map(baris).join('')}</tbody>
+      </table></div>
+      <div class="pb pk-nota">"Simpan" hanya muncul jika AI menilai <b>layak</b>, nama sekolah sepadan, dan semua medan wajib dikesan. Yang lain boleh dibuka dalam borang untuk dilengkapkan. Pautan evidens Google Drive perlu diisi kemudian bagi setiap rekod.</div>
+    </div>` : ''}`;
+}
+
+// Butang kamera untuk telefon/tablet (atribut capture membuka kamera belakang terus)
+function sumberKamera(id) {
+  if (!matchMedia('(pointer: coarse)').matches) return '';
+  return `<input type="file" id="${id}" accept="image/*" capture="environment" hidden>
+    <label for="${id}" class="btn btn-ghost semak-kamera" tabindex="0">${i('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>', 16)} Ambil gambar dengan kamera</label>`;
+}
+
+/* -- Paparan Maklum Balas AI untuk Admin PPD -- */
+function viewPPDMaklumBalasAI() {
+  const senarai = mbSemua();
+  const kira = Object.fromEntries(MB_BAHAGIAN.map(b => [b, senarai.filter(x => (x.salah || []).includes(b)).length]));
+  const KEP = { layak: 'Layak', tidak_layak: 'Tidak layak', perlu_semakan: 'Perlu semakan' };
+  return `<div class="pg-head"><div>
+      <div class="pg-title">Maklum Balas Semakan AI</div>
+      <div class="pg-sub">Laporan pengguna apabila keputusan AI Semak Pencapaian dirasakan salah. Gunakan untuk memperbaiki peraturan semakan.</div>
+    </div>${senarai.length ? `<button type="button" class="btn btn-ghost" id="mb-csv">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>', 14)} Muat turun CSV</button>` : ''}</div>
+    ${senarai.length ? `<div class="mb-ringkas">${MB_BAHAGIAN.filter(b => kira[b]).sort((a, b) => kira[b] - kira[a]).map(b => `<span class="chip">${esc(b)} <b>${kira[b]}</b></span>`).join('')}</div>` : ''}
+    <div class="panel"><div class="pb pk-wrap">${senarai.length ? `<table class="pk-jadual">
+      <thead><tr><th>Tarikh</th><th>Pengguna</th><th>Semakan AI</th><th>Bahagian salah</th><th>Komen</th></tr></thead>
+      <tbody>${senarai.map(x => `<tr>
+        <td>${new Date(x.t).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td><b>${esc(x.oleh)}</b><div class="pk-kecil">${esc(x.sekolah)} · ${x.jenis === 'sekolah' ? 'Pencapaian Sekolah' : 'Pencapaian Guru'}</div></td>
+        <td>${esc(KEP[x.keputusan] || x.keputusan || '')} · ${esc(x.kategori || '')}<div class="pk-kecil">${esc(x.maklumat?.program || '')}${(x.fail || []).length ? ' · ' + x.fail.map(esc).join(', ') : ''}</div></td>
+        <td>${(x.salah || []).map(esc).join(', ') || '—'}</td>
+        <td>${esc(x.komen || '—')}</td>
+      </tr>`).join('')}</tbody></table>`
+      : '<div class="empty">Belum ada maklum balas daripada pengguna.</div>'}</div></div>`;
+}
+function muatTurunCsvMaklumBalas() {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const baris = [['Tarikh', 'Pengguna', 'Sekolah', 'Jenis', 'Fail', 'Keputusan AI', 'Kategori AI', 'Keyakinan', 'Program', 'Peringkat', 'Tahap', 'Tarikh sijil', 'Bahagian salah', 'Komen']]
+    .concat(mbSemua().map(x => [new Date(x.t).toISOString(), x.oleh, x.sekolah, x.jenis, (x.fail || []).join('; '), x.keputusan, x.kategori, x.keyakinan,
+      x.maklumat?.program, x.maklumat?.peringkat, x.maklumat?.tahap, x.maklumat?.tarikh, (x.salah || []).join('; '), x.komen]));
+  const url = URL.createObjectURL(new Blob(['﻿' + baris.map(r => r.map(q).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = `maklum_balas_ai_skas_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function viewSemak() {
+  const skl = semakSekolah();
+  const sk = SK() || { status: 'kosong', fail: [] };
+  const fail = sk.fail || [];
+  const jenisP = skl ? 'Pencapaian Sekolah' : 'Pencapaian Guru';
+  const KEP = {
+    layak:         { ic: '✓', cls: 'semak-layak', t: `Layak sebagai ${jenisP}` },
+    tidak_layak:   { ic: '✕', cls: 'semak-tidak', t: `Tidak dikira sebagai ${jenisP}` },
+    perlu_semakan: { ic: '?', cls: 'semak-ragu', t: 'Perlu semakan lanjut' },
+  };
+  const ST = { lulus: ['✓', 'var(--ppd-ok)'], gagal: ['✕', 'var(--ppd-danger)'], tidak_pasti: ['?', 'var(--ppd-warn)'] };
+  const h = sk.hasil;
+  // Sumbangan bukan kegagalan: papar sebagai maklumat, bukan ✕ merah
+  const k = !h ? null : h.kategori === 'Sumbangan'
+    ? { ic: 'i', cls: 'semak-sumbangan', t: 'Direkod sebagai Sumbangan, bukan Pencapaian Guru (5.4.1)' }
+    : (KEP[h.keputusan] || KEP.perlu_semakan);
+  const m = h ? h.maklumat || {} : {};
+  const asal = h ? h.asal || {} : {};
+  const LBL_ASAL = { sokongan: ['dari dokumen sokongan', 'asal-sokongan'], disimpulkan: ['disimpulkan oleh AI — perlu disahkan', 'asal-simpul'] };
+  const baris = (lbl, medan, v, kelas = '', nota = '') => {
+    const a = v ? LBL_ASAL[asal[medan]] : null;
+    return `<div class="semak-m ${kelas} ${a ? a[1] : ''}"><span>${lbl}</span><b>${v ? esc(v) : '<i>Tidak dikesan</i>'}</b>${nota ? `<small>${nota}</small>` : ''}${a ? `<em class="semak-asal">${a[0]}</em>` : ''}</div>`;
+  };
+  const adaSimpul = h && Object.entries(asal).some(([kk, v]) => v === 'disimpulkan' && m[kk]);
+  const jumlah = fail.reduce((a, f) => a + saizHantar(f), 0);
+
+  const kadFail = (f, i) => `<div class="semak-fail">
+      ${f.jenis === 'application/pdf' ? `<div class="semak-pdf">PDF</div>` : `<img src="${f.dataUrl}" alt="Pratonton ${esc(f.nama)}">`}
+      <div class="semak-fi">
+        <span class="semak-peranan ${i === 0 ? 'utama' : ''}">${i === 0 ? 'Sijil utama' : 'Dokumen sokongan'}</span>
+        <b>${esc(f.nama)}</b>
+        <span>${f.jenis === 'application/pdf' ? 'Dokumen PDF' : 'Gambar'} · ${saizTeks(saizHantar(f))}</span>
+        ${amaranKualiti(f.kualiti) ? `<span class="semak-amaran">⚠ ${amaranKualiti(f.kualiti)}. Teks mungkin tidak dapat dibaca — ambil semula jika boleh.</span>` : ''}
+      </div>
+      <div class="semak-fbtn">
+        ${i > 0 ? `<button type="button" class="semak-kecil" data-semak-utama="${f.id}">Jadikan utama</button>` : ''}
+        <button type="button" class="semak-kecil buang" data-semak-buang="${f.id}" aria-label="Buang ${esc(f.nama)}">✕</button>
+      </div>
+    </div>`;
+
+  return `<div class="semak-wrap">
+    <div>
+      <div class="pg-title">${skl ? 'Semak Pencapaian Sekolah' : 'Semak Pencapaian'}</div>
+      <div class="pg-sub">${skl
+        ? `Muat naik sijil, plak atau surat penganugerahan (gambar atau PDF). <b>Nama ${esc(SEKOLAH_SAYA)} mesti tertulis sebagai penerima</b> pada sijil atau dokumen sokongan. AI akan menilai sama ada ia dikira sebagai Pencapaian Sekolah (SKPM 5.4.2) berdasarkan Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026.`
+        : 'Muat naik sijil (gambar atau PDF). Jika sijil tidak lengkap, sertakan dokumen sokongan seperti surat keputusan, buku program atau surat iringan penganjur. AI akan menilai sama ada ia dikira sebagai Pencapaian Guru (SKPM 5.4.1) berdasarkan Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026.'}</div>
+    </div>
+    ${skl ? `<div class="semak-tab" role="tablist">
+      <button type="button" role="tab" aria-selected="${!S.semakPukal}" class="${S.semakPukal ? '' : 'aktif'}" data-semak-mod="satu">Satu pencapaian</button>
+      <button type="button" role="tab" aria-selected="${!!S.semakPukal}" class="${S.semakPukal ? 'aktif' : ''}" data-semak-mod="pukal">Semakan pukal</button>
+    </div>` : ''}
+    ${skl && S.semakPukal ? viewSemakPukal() : `
+
+    <div class="panel">
+      <div class="pb">
+        <input type="file" id="semak-fail" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden>
+        ${fail.length ? `<div class="semak-senarai" id="semak-zon" tabindex="-1">
+            ${fail.map(kadFail).join('')}
+            ${fail.length < SEMAK_MAKS_FAIL ? `<label for="semak-fail" class="semak-tambah" tabindex="0">${IC.plus}<span><b>Tambah dokumen sokongan</b><small>Surat keputusan, buku program, surat iringan · boleh seret ke sini</small></span></label>` : ''}
+          </div>
+          <div class="semak-jumlah">${fail.length} fail · ${saizTeks(jumlah)} daripada 10 MB</div>`
+          : `<label for="semak-fail" class="semak-zon" id="semak-zon" tabindex="0">
+              <div class="semak-kosong">${IC.upload || ''}<b>Klik atau seret sijil ke sini</b><span>JPG, PNG, WebP atau PDF · sehingga ${SEMAK_MAKS_FAIL} fail, jumlah 10 MB</span></div>
+            </label>`}
+        ${fail.length < SEMAK_MAKS_FAIL ? sumberKamera('semak-kamera') : ''}
+        ${kotakSetuju()}
+        <div class="semak-aksi">
+          <span class="semak-nota">${fail.length ? '' : 'Belum ada fail.'}</span>
+          <button class="btn btn-primary" id="semak-btn" ${!fail.length || sk.status === 'memuat' || !setujuAI() ? 'disabled' : ''}>
+            ${sk.status === 'memuat' ? '<span class="semak-spin"></span>Menyemak…' : (sk.status === 'siap' ? 'Semak semula' : 'Semak dengan AI')}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    ${sk.status === 'memuat' ? `<div class="panel"><div class="pb semak-muat"><span class="semak-spin besar"></span><div><b>AI sedang membaca ${fail.length > 1 ? fail.length + ' dokumen' : 'dokumen'}…</b><span>Mengenal pasti penerima, program, peringkat, tahap dan tarikh, kemudian membandingkan dengan Panduan SKPM 2026. Biasanya 10–40 saat.</span></div></div></div>` : ''}
+
+    ${sk.status === 'ralat' ? `<div class="notice notice-danger" style="border-radius:10px"><b>Semakan tidak berjaya.</b>&nbsp;${esc(sk.ralat)}</div>` : ''}
+
+    ${h ? `<div class="semak-hasil ${k.cls}">
+      <div class="semak-kep">
+        <span class="semak-ic">${k.ic}</span>
+        <div><div class="semak-kt">${k.t}</div><div class="semak-kat">Kategori: <b>${esc(h.kategori)}</b> · Keyakinan AI ${Math.round((h.keyakinan || 0) * 100)}%</div></div>
+      </div>
+      <p class="semak-ring">${esc(h.ringkasan)}</p>
+      <p class="semak-pen">${esc(h.penerangan)}</p>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Semakan kriteria SKPM ${skl ? '5.4.2' : '5.4.1'}</span></div>
+      <div class="pb semak-klist">
+        ${(h.semakan || []).map(c => `<div class="semak-k"><span style="color:${(ST[c.status] || ST.tidak_pasti)[1]}">${(ST[c.status] || ST.tidak_pasti)[0]}</span><div><b>${esc(c.kriteria)}</b><span>${esc(c.nota)}</span></div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Maklumat dikesan</span></div>
+      <div class="pb">
+        ${skl ? (() => {
+          const SP = {
+            sepadan: ['ok', '✓', `Nama sekolah sepadan: <b>${esc(h.namaSekolahDikesan || SEKOLAH_SAYA)}</b> tertulis sebagai penerima.`],
+            tidak_sepadan: ['gagal', '✕', `Penerima ialah <b>${esc(h.namaSekolahDikesan || 'sekolah lain')}</b>, bukan ${esc(SEKOLAH_SAYA)}. Pencapaian ini tidak boleh direkod untuk sekolah anda.`],
+            tiada: ['ragu', '?', `Nama sekolah tidak dijumpai sebagai penerima. Lampirkan surat keputusan, senarai pemenang atau surat penganugerahan yang menamakan ${esc(SEKOLAH_SAYA)}.`],
+          }[h.sekolahSepadan] || null;
+          const slot = h.sekolahSepadan === 'sepadan' && h.keputusan !== 'tidak_layak' ? kotakSlot(PERINGKAT_KE_KEY[m.peringkat], TAHAP_KE_KEY[m.tahap]) : '';
+          return (SP ? `<div class="semak-sekolah sp-${SP[0]}"><span>${SP[1]}</span><div>${SP[2]}</div></div>` : '') + slot;
+        })() : ''}
+        ${adaSimpul ? `<div class="semak-simpul-nota">Maklumat bertanda <b>disimpulkan</b> tidak tertulis pada dokumen. AI menyimpulkannya daripada maklumat lain (contohnya penganjur). Sahkan sebelum menyimpan rekod.</div>` : ''}
+        <div class="semak-mlist">
+          ${baris('Penerima', 'namaPenerima', m.namaPenerima, 'penuh')}${baris('Program / pertandingan', 'program', m.program, 'penuh')}${baris('Penganjur', 'penganjur', m.penganjur, 'penuh')}
+          ${baris('Tarikh', 'tarikh', m.tarikh)}${baris('Peringkat', 'peringkat', m.peringkat)}${m.pingat ? baris('Pingat', 'pingat', m.pingat, '', 'tahap penilaian, bukan kedudukan') : ''}${baris('Tahap SKPM', 'tahap', m.tahap || (h.kategori === (skl ? 'Pencapaian Sekolah (5.4.2)' : 'Pencapaian Guru (5.4.1)') ? null : 'Tidak berkenaan'))}${skl ? baris('Bidang', 'bidang', m.bidang) : baris('Peranan', 'peranan', m.peranan)}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><span class="pt">Cadangan tindakan</span></div>
+      <div class="pb">
+        <p class="semak-cad">${esc(h.cadangan)}</p>
+        ${(h.rujukan || []).length ? `<div class="semak-ruj"><b>Rujukan Panduan:</b> ${h.rujukan.map(esc).join(' · ')}</div>` : ''}
+        <div class="semak-aksi" style="margin-top:14px">
+          <span class="semak-nota">${skl ? 'Keputusan AI ialah panduan awal. Semakan muktamad dibuat oleh Penyelaras SKPM Daerah.' : 'Keputusan AI ialah panduan awal. Pengesahan muktamad dibuat oleh Pentadbir Sekolah.'}</span>
+          ${h.keputusan !== 'tidak_layak' && h.dokumenSah ? butangEvidens(false) : ''}
+          ${h.keputusan !== 'tidak_layak' && h.dokumenSah && (!skl || h.sekolahSepadan === 'sepadan') ? `<button class="btn btn-primary" id="semak-guna">${IC.plus} ${skl ? 'Guna untuk Tambah Pencapaian Sekolah' : 'Guna untuk Tambah Pencapaian'}</button>` : ''}
+        </div>
+        <div class="mb-wrap">${kotakMaklumBalas(sk)}</div>
+      </div>
+    </div>` : ''}`}
+  </div>`;
+}
+
+function bindSemak() {
+  const bev = document.getElementById('btn-evidens-pdf');
+  if (bev) bev.addEventListener('click', muatTurunEvidens);
+  const csv = document.getElementById('mb-csv');
+  if (csv) csv.addEventListener('click', muatTurunCsvMaklumBalas);
+  const setuju = document.getElementById('semak-setuju');
+  if (setuju) setuju.addEventListener('change', () => { tetapSetujuAI(setuju.checked); render(); });
+  document.querySelectorAll('[data-semak-mod]').forEach(b => b.addEventListener('click', () => setState({ semakPukal: b.dataset.semakMod === 'pukal' })));
+  // Maklum balas keputusan AI
+  const mbBuka = document.getElementById('mb-buka');
+  if (mbBuka) mbBuka.addEventListener('click', () => { setState({ [SK_KUNCI()]: { ...SK(), mb: 'buka' } }); document.getElementById('mb-pilih-0')?.focus(); });
+  const mbBatal = document.getElementById('mb-batal');
+  if (mbBatal) mbBatal.addEventListener('click', () => setState({ [SK_KUNCI()]: { ...SK(), mb: null } }));
+  const mbHantar = document.getElementById('mb-hantar');
+  if (mbHantar) mbHantar.addEventListener('click', hantarMaklumBalas);
+  // Kamera telefon
+  const kam = document.getElementById('semak-kamera');
+  if (kam) kam.addEventListener('change', () => { semakTambahFail(kam.files); kam.value = ''; });
+  const kamP = document.getElementById('pukal-kamera');
+  if (kamP) kamP.addEventListener('change', () => { pukalTambah(kamP.files); kamP.value = ''; });
+  document.querySelectorAll('.semak-kamera').forEach(el =>
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } }));
+  // Semakan pukal
+  const pz = document.getElementById('pukal-zon');
+  if (pz) {
+    const pi = document.getElementById('pukal-fail');
+    pi.addEventListener('change', () => { pukalTambah(pi.files); pi.value = ''; });
+    pz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pi.click(); } });
+    pz.addEventListener('dragover', e => { e.preventDefault(); pz.classList.add('seret'); });
+    pz.addEventListener('dragleave', () => pz.classList.remove('seret'));
+    pz.addEventListener('drop', e => { e.preventDefault(); pz.classList.remove('seret'); pukalTambah(e.dataTransfer.files); });
+    document.getElementById('pukal-jalan')?.addEventListener('click', pukalJalankan);
+    document.getElementById('pukal-simpan-semua')?.addEventListener('click', pukalSimpanSemua);
+    document.querySelector('.pk-jadual')?.addEventListener('click', e => {
+      const t = e.target.closest('button'); if (!t) return;
+      if (t.dataset.pukalSimpan) pukalSimpan(t.dataset.pukalSimpan);
+      else if (t.dataset.pukalBorang) pukalKeSatu(t.dataset.pukalBorang, true);
+      else if (t.dataset.pukalButiran) pukalKeSatu(t.dataset.pukalButiran, false);
+      else if (t.dataset.pukalBuang) setState({ semakPukalItem: pukalItem().filter(x => x.id !== t.dataset.pukalBuang) });
+    });
+  }
+  const zon = document.getElementById('semak-zon');
+  if (!zon) return;
+  const inp = document.getElementById('semak-fail');
+  inp.addEventListener('change', () => { const f = inp.files; semakTambahFail(f); inp.value = ''; });
+  document.querySelectorAll('.semak-zon, .semak-tambah').forEach(el =>
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inp.click(); } }));
+  zon.addEventListener('dragover', e => { e.preventDefault(); zon.classList.add('seret'); });
+  zon.addEventListener('dragleave', () => zon.classList.remove('seret'));
+  zon.addEventListener('drop', e => { e.preventDefault(); zon.classList.remove('seret'); semakTambahFail(e.dataTransfer.files); });
+  zon.addEventListener('click', e => {
+    const b = e.target.closest('[data-semak-buang]'), u = e.target.closest('[data-semak-utama]');
+    if (b) semakBuangFail(b.dataset.semakBuang);
+    if (u) semakJadikanUtama(u.dataset.semakUtama);
+  });
+  const btn = document.getElementById('semak-btn');
+  if (btn) btn.addEventListener('click', semakJalankan);
+  const guna = document.getElementById('semak-guna');
+  if (guna) guna.addEventListener('click', semakGunaUntukBorang);
+}
+
 /* -- Form view ------------------------------------------------- */
 function viewForm() {
   const f = S.f;
@@ -1417,6 +2353,7 @@ function viewForm() {
         ${S.editingId ? '' : `<div class="draf-bar"><span id="draf-status">${S._drafMasa ? 'Draf dipulihkan dari ' + new Date(S._drafMasa).toLocaleString('ms-MY', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : 'Draf disimpan automatik semasa anda menaip'}</span>${S._drafMasa ? '<button type="button" class="draf-buang" id="btn-draf-buang">Mula semula</button>' : ''}</div>`}
       </div>
       ${stepBar}
+      ${notaIsiAI(f, ['program','tarikhmula','level','peranan','tahap','pengesahan'])}
 
       <div class="notice notice-gold" style="border-radius:10px">
         <span style="font-size:14px;font-weight:700;flex-shrink:0;color:var(--warn)">i</span>
@@ -1433,15 +2370,16 @@ function viewForm() {
         <div class="ph"><span class="pt">Maklumat Asas</span></div>
         <div class="pb" style="display:flex;flex-direction:column;gap:13px">
 
-          <div class="fg">
-            <label class="fl">Nama Program / Pertandingan <span class="req">*</span></label>
+          <div class="${fgAI('program')}">
+            <label class="fl">Nama Program / Pertandingan <span class="req">*</span>${labelAI('program')}</label>
             <input class="fi" id="f-program" placeholder="cth. Pertandingan Penulisan Esei Guru Kebangsaan 2024..." value="${esc(f.program)}">
           </div>
 
           <div class="frow">
-            <div class="fg">
-              <label class="fl">Tarikh Mula <span class="req">*</span></label>
+            <div class="${fgAI('tarikhmula')}">
+              <label class="fl">Tarikh Mula <span class="req">*</span>${labelAI('tarikhmula')}</label>
               <input class="fi" type="date" id="f-tmula" value="${f.tarikhmula}">
+              ${f._ai?.tahunSahaja && !f.tarikhmula ? `<div class="level-note">AI hanya mengesan tahun ${f._ai.tahunSahaja}. Sila isi tarikh penuh.</div>` : ''}
             </div>
             <div class="fg">
               <label class="fl">Tarikh Tamat</label>
@@ -1456,14 +2394,14 @@ function viewForm() {
         <div class="ph"><span class="pt">Peringkat &amp; Peranan</span></div>
         <div class="pb" style="display:flex;flex-direction:column;gap:13px">
 
-          <div class="fg">
-            <label class="fl">Peranan Guru <span class="req">*</span></label>
+          <div class="${fgAI('peranan')}">
+            <label class="fl">Peranan Guru <span class="req">*</span>${labelAI('peranan')}</label>
             ${cdd('peranan', PERANAN, f.peranan, '-- Pilih peranan --')}
             ${perObj?`<div class="level-note" style="${perObj.jurulatihRule?'color:var(--warn);font-weight:600':''}">${perObj.note}</div>`:''}
           </div>
 
-          <div class="fg">
-            <label class="fl">Peringkat <span class="req">*</span></label>
+          <div class="${fgAI('level')}">
+            <label class="fl">Peringkat <span class="req">*</span>${labelAI('level')}</label>
             ${cdd('level', [{val:'INT',label:'Antarabangsa'},{val:'NAT',label:'Kebangsaan'},{val:'NEG',label:'Negeri'},{val:'BAH',label:'Bahagian'},{val:'DAE',label:'Daerah'},{val:'SKL',label:'Sekolah'}], f.level, '-- Pilih peringkat --')}
             ${f.level==='BAH'?`<div class="level-note" style="color:var(--ok);font-weight:600">&#10003; Bahagian dikira setaraf Negeri — layak SKPM 5.4.1</div>`:''}
             ${f.level==='SKL'?`<div class="level-note" style="color:var(--danger);font-weight:600">! Peringkat Sekolah tidak layak SKPM 5.4.1 — rekod disimpan sebagai rujukan dalaman sahaja</div>`:''}
@@ -1473,15 +2411,15 @@ function viewForm() {
             </div>`:''}
           </div>
 
-          <div class="fg">
-            <label class="fl">Tahap Pencapaian <span class="req">*</span></label>
+          <div class="${fgAI('tahap')}">
+            <label class="fl">Tahap Pencapaian <span class="req">*</span>${labelAI('tahap')}</label>
             ${cdd('tahap', TAHAP, f.tahap, '-- Pilih tahap --')}
             <div class="level-note">Anugerah / Pengiktirafan / Pentauliahan = dikira sebagai Tempat Pertama secara automatik.</div>
           </div>
 
           <div class="frow">
-            <div class="fg">
-              <label class="fl">Jenis Pengesahan <span class="req">*</span></label>
+            <div class="${fgAI('pengesahan')}">
+              <label class="fl">Jenis Pengesahan <span class="req">*</span>${labelAI('pengesahan')}</label>
               <input class="fi" id="f-pengesahan" placeholder="cth. Sijil KPM, Surat JPN, Lesen AFC..." value="${esc(f.pengesahan)}">
               <div class="level-note">Dokumen rasmi yang mengesahkan pencapaian ini</div>
             </div>
@@ -1489,6 +2427,7 @@ function viewForm() {
               <label class="fl">Pautan Eviden (Google Drive)</label>
               <input class="fi" id="f-pautanEviden" placeholder="https://drive.google.com/..." value="${esc(f.pautanEviden)}">
               <div class="level-note">PDF format &middot; Tetapan: "Sesiapa yang ada pautan &mdash; Penonton"</div>
+              ${f._semak ? butangEvidens(true) : ''}
             </div>
           </div>
 
@@ -1571,13 +2510,13 @@ function viewForm() {
       <div class="pb" style="display:flex;flex-direction:column;gap:12px">
         <div class="upzone${S.f.hasSijil?' has-file':''}" id="upzone">
           ${S.f.hasSijil
-            ? `<div style="display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ok)">${IC.ccheck} <span style="font-weight:600;font-size:13px">sijil_pencapaian.jpg berjaya dimuat naik</span></div>`
+            ? `<div style="display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ok)">${IC.ccheck} <span style="font-weight:600;font-size:13px">${esc(S.f.namaSijil || 'sijil_pencapaian.jpg')} ${S.f._ai ? 'telah disemak oleh AI' : 'berjaya dimuat naik'}</span></div>`
             : `<div style="color:var(--t3)">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',32)}</div>
                <div style="font-size:13px;color:var(--t2);margin-top:8px">Klik atau seret sijil di sini</div>
                <div style="font-size:11px;color:var(--t3);margin-top:3px">JPG, PNG, PDF &middot; maks. 10MB</div>`
           }
         </div>
-        ${S.f.hasSijil ? `
+        ${S.f.hasSijil && !S.f._ai ? `
         <button class="btn btn-vio" id="btn-extract" style="width:100%;justify-content:center" ${S.extracting?'disabled':''}>
           ${S.extracting?`<span class="spin">${IC.spin}</span> Mengekstrak...`:`${IC.spark} Ekstrak Maklumat dari Sijil`}
         </button>
@@ -1690,6 +2629,7 @@ function sidebarAdmin() {
       { pv:'analysis',        label:'Analisis Daerah',   icon:IC.dash },
       { pv:'charts',          label:'Carta & Analitik',  icon:i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>') },
       { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
+      { pv:'maklum_balas_ai', label:'Maklum Balas AI',   icon:i('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>') },
     ];
     return `<aside class="sidebar">
       <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -1713,6 +2653,7 @@ function sidebarAdmin() {
     { sv:'analysis',           label:'Analisis Pencapaian',      icon:IC.dash },
     { sv:'school_achievements',label:'Pencapaian Sekolah',       icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
     { sv:'school_form',        label:'Tambah Pencapaian Sekolah',icon:IC.plus },
+    { sv:'school_semak',       label:'Semak Pencapaian Sekolah', icon:i('<rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="8 12 11 15 16 9"/>') },
     { sv:'users',              label:'Pengguna',                  icon:i('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>') },
     { sv:'school_profile',     label:'Profil Sekolah',            icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
   ];
@@ -2177,6 +3118,7 @@ function viewSchoolAchievements() {
       <div class="ach-row-body">
         <div class="ach-row-name">${esc(r.program)}</div>
         <div class="ach-row-meta">${fmtDate(r.tarikh)}${th?' &middot; '+th.short:''}</div>
+        ${barisSemakanAI(r)}
         ${!ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${ai.reasons[0]||''}</div>`
           :`<div class="ach-row-meta" style="color:var(--ok);font-size:11px;margin-top:2px">${ai.passes[0]||''}</div>`}
       </div>
@@ -2472,6 +3414,8 @@ function viewSchoolAchievementDetail() {
       </div>`;
     })()}
 
+    ${panelSemakanAI(r.semakanAI)}
+
     <!-- Record Details -->
     <div class="panel">
       <div class="ph"><span class="pt">Butiran Rekod</span></div>
@@ -2517,30 +3461,35 @@ function viewSchoolForm() {
     <div class="ph"><span class="pt">Maklumat Pencapaian</span></div>
     <div class="pb" style="display:flex;flex-direction:column;gap:14px">
 
-      <div class="fg">
-        <label class="fl">Nama Program / Pertandingan / Anugerah <span class="req">*</span></label>
-        <input class="fi" id="sf-program" placeholder="cth. Anugerah Sekolah Cemerlang Sukan PPD Dalat 2026" value="${sf.program}">
+      ${notaIsiAI(sf, ['program','level','tarikh','tahap','kategori'])}
+      ${sf._ai?.namaSekolah ? `<div class="semak-sekolah sp-ok" style="margin:0"><span>✓</span><div>Penerima pada dokumen: <b>${esc(sf._ai.namaSekolah)}</b></div></div>` : ''}
+
+      <div class="${fgAI('program', sf)}">
+        <label class="fl">Nama Program / Pertandingan / Anugerah <span class="req">*</span>${labelAI('program', sf)}</label>
+        <input class="fi" id="sf-program" placeholder="cth. Anugerah Sekolah Cemerlang Sukan PPD Dalat 2026" value="${esc(sf.program)}">
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg">
-          <label class="fl">Peringkat <span class="req">*</span></label>
+        <div class="${fgAI('level', sf)}">
+          <label class="fl">Peringkat <span class="req">*</span>${labelAI('level', sf)}</label>
           ${cdd('sf-level', LEVELS.map(l=>({val:l.key,label:l.label})), sf.level, '-- Pilih Peringkat --')}
         </div>
-        <div class="fg">
-          <label class="fl">Tarikh <span class="req">*</span></label>
+        <div class="${fgAI('tarikh', sf)}">
+          <label class="fl">Tarikh <span class="req">*</span>${labelAI('tarikh', sf)}</label>
           <input class="fi" type="date" id="sf-tarikh" value="${sf.tarikh}" min="${TAHUN_SEMASA}-01-01" max="${TAHUN_SEMASA}-12-31">
+          ${sf._ai?.tahunSahaja && !sf.tarikh ? `<div class="fn" style="margin-top:4px">AI hanya mengesan tahun ${sf._ai.tahunSahaja}. Sila isi tarikh penuh.</div>` : ''}
         </div>
       </div>
 
-      <div class="fg">
-        <label class="fl">Tahap Pencapaian <span class="req">*</span></label>
+      <div class="${fgAI('tahap', sf)}">
+        <label class="fl">Tahap Pencapaian <span class="req">*</span>${labelAI('tahap', sf)}</label>
         ${cdd('sf-tahap', TAHAP.map(t=>({val:t.val,label:t.label})), sf.tahap, '-- Pilih Tahap --')}
         <div class="fn" style="margin-top:4px">Anugerah/Pengiktirafan/Pentauliahan dikira sebagai Tempat Pertama/Anugerah/Pengiktirafan (T1).${SRC}</div>
+        ${sf.level && sf.tahap ? `<div style="margin-top:8px">${kotakSlot(sf.level, sf.tahap, S.sfEditingId)}</div>` : ''}
       </div>
 
-      <div class="fg">
-        <label class="fl">Kategori <span class="req">*</span></label>
+      <div class="${fgAI('kategori', sf)}">
+        <label class="fl">Kategori <span class="req">*</span>${labelAI('kategori', sf)}</label>
         ${cdd('sf-kategori', KATEGORI, sf.kategori, '-- Pilih Kategori --')}
       </div>
 
@@ -2548,6 +3497,7 @@ function viewSchoolForm() {
         <label class="fl">Pautan Evidens Google Drive (PDF) <span class="req">*</span></label>
         <input class="fi" id="sf-pautanEviden" placeholder="https://drive.google.com/..." value="${sf.pautanEviden}">
         <div class="fn" style="margin-top:4px">Simpan dalam Google Drive menggunakan ID DELIMa sekolah. Tetapkan kepada "anyone with the link" sebagai "viewer".${SRC}</div>
+        ${sf._semak ? butangEvidens(true) : ''}
       </div>
 
       <div class="fg">
@@ -2558,7 +3508,7 @@ function viewSchoolForm() {
 
       <div class="fg">
         <label class="fl">Catatan (Pilihan)</label>
-        <textarea class="fi" id="sf-catatan" rows="2" placeholder="Maklumat tambahan...">${sf.catatan}</textarea>
+        <textarea class="fi" id="sf-catatan" rows="2" placeholder="Maklumat tambahan...">${esc(sf.catatan)}</textarea>
       </div>
 
       ${previewAi ? `
@@ -2733,6 +3683,7 @@ function viewTeacherDetail() {
       <div class="ach-row-body">
         <div class="ach-row-name">${r.program}</div>
         <div class="ach-row-meta">${r.peranan} &middot; ${fmtDate(r.tarikh)}</div>
+        ${barisSemakanAI(r)}
         ${th?`<div class="ach-row-meta" style="color:var(--t2);margin-top:1px">${th.short}</div>`:''}
         ${!ai.layak?`<div class="ach-row-meta" style="color:var(--danger);font-size:11px;margin-top:2px">${ai.reasons[0]||''}</div>`:''}
       </div>
@@ -3582,6 +4533,7 @@ function buildContent() {
       : S.ppdView==='school_detail'     ? viewPPDSchoolDetail()
       : S.ppdView==='schools'           ? viewPPDSchools()
       : S.ppdView==='charts'            ? viewPPDCharts()
+      : S.ppdView==='maklum_balas_ai'   ? viewPPDMaklumBalasAI()
       : viewPPDAnalysis();
   }
   if (S.role === 'school_admin') {
@@ -3591,23 +4543,25 @@ function buildContent() {
       : S.saView==='school_achievement_detail'       ? viewSchoolAchievementDetail()
       : S.saView==='school_form'                     ? viewSchoolForm()
       : S.saView==='school_profile'                  ? viewSchoolProfile()
+      : S.saView==='school_semak'                    ? viewSemak()
       : viewSchoolAdmin();
   }
   return S.view==='dashboard'      ? viewDashboard()
     : S.view==='records'            ? viewRecords()
     : S.view==='record_detail'      ? viewRecordDetail()
     : S.view==='form'               ? viewForm()
+    : S.view==='semak'              ? viewSemak()
     : viewDetail();
 }
 
 function buildTopbarTitle() {
   if (S.role === 'ppd_admin') {
-    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian' }[S.ppdView] || 'SK@S';
+    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', maklum_balas_ai:'Maklum Balas AI' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
-    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
+    return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_semak:'Semak Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
   }
-  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian' }[S.view] || 'SK@S';
+  return { dashboard:'Papan Pemuka Guru', records:'Rekod Pencapaian Saya', form:'Tambah Pencapaian', semak:'Semak Pencapaian', detail:'Butiran Pencapaian', record_detail:'Detail Pencapaian' }[S.view] || 'SK@S';
 }
 
 function buildApp() {
@@ -3649,6 +4603,7 @@ function buildApp() {
 
 /* -- Event binding --------------------------------------------- */
 function bind() {
+  bindSemak();
   // role switcher
 
   // nav
@@ -3996,12 +4951,16 @@ function bind() {
 
   // school form save
   const bss=document.getElementById('btn-school-save');
-  if(bss)bss.addEventListener('click',()=>{
+  if(bss)bss.addEventListener('click',async ()=>{
+    if(!S.sf._semak && !(await sahkanPendua({program:S.sf.program,tarikh:S.sf.tarikh,level:S.sf.level},'sekolah',S.sfEditingId))) return;
+    const semakanAI = rekodSemakanAI(S.sf, MEDAN_AI_SEKOLAH);
+    const { _ai, _semak, ...data } = S.sf; // label semakan AI tidak disimpan; jejak semakan disimpan sebagai semakanAI
+    if (semakanAI) data.semakanAI = semakanAI;
     if(S.sfEditingId){
       const updatedId=S.sfEditingId;
-      setState({schoolRecords:S.schoolRecords.map(r=>r.id===updatedId?{...r,...S.sf}:r),saView:'school_achievement_detail',sfDetailId:updatedId,sfEditingId:null});
+      setState({schoolRecords:S.schoolRecords.map(r=>r.id===updatedId?{...r,...data}:r),saView:'school_achievement_detail',sfDetailId:updatedId,sfEditingId:null});
     } else {
-      const newRec={id:'sr'+Date.now(),...S.sf};
+      const newRec={id:'sr'+Date.now(),...data};
       setState({schoolRecords:[...S.schoolRecords,newRec],saView:'school_achievements'});
     }
   });
@@ -4011,7 +4970,7 @@ function bind() {
     e.stopPropagation();
     const r=S.schoolRecords.find(x=>x.id===btn.dataset.srid);
     if(!r)return;
-    setState({saView:'school_form',sfEditingId:r.id,sf:{program:r.program||'',tarikh:r.tarikh||'',level:r.level||'',tahap:r.tahap||'',kategori:r.kategori||'',pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',guruId:r.guruId||''}});
+    setState({saView:'school_form',sfEditingId:r.id,sf:{program:r.program||'',tarikh:r.tarikh||'',level:r.level||'',tahap:r.tahap||'',kategori:r.kategori||'',pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',guruId:r.guruId||'',_semak:r.semakanAI||null}});
   }));
 
   // school record delete buttons
@@ -4055,7 +5014,7 @@ function bind() {
   if(sfdetailEdit)sfdetailEdit.addEventListener('click',()=>{
     const r=S.schoolRecords.find(x=>x.id===S.sfDetailId);
     if(!r)return;
-    setState({saView:'school_form',sfEditingId:r.id,sf:{program:r.program||'',tarikh:r.tarikh||'',level:r.level||'',tahap:r.tahap||'',kategori:r.kategori||'',pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',guruId:r.guruId||''}});
+    setState({saView:'school_form',sfEditingId:r.id,sf:{program:r.program||'',tarikh:r.tarikh||'',level:r.level||'',tahap:r.tahap||'',kategori:r.kategori||'',pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',guruId:r.guruId||'',_semak:r.semakanAI||null}});
   });
 
   // school achievement detail: Delete modal
@@ -4087,6 +5046,7 @@ function bind() {
       S.sf[sfmap[id]]=el.value;
       checkCanSaveSf();
       if(['tarikh','pautanEviden'].includes(id))render();
+      else if(S.sf._ai?.[sfmap[id]]) el.closest('.fg')?.classList.toggle('perlu-isi', !el.value);
     };
     el.addEventListener('input',update);
   });
@@ -4120,7 +5080,7 @@ function bind() {
         list.remove();
         btn.classList.remove('open');
         checkCanSaveSf();
-        if(['sf-level','sf-tahap'].includes(id)) render();
+        if(['sf-level','sf-tahap'].includes(id) || S.sf._ai) render();
         else {
           btn.querySelector('span').textContent = o.label;
           btn.classList.remove('placeholder');
@@ -4158,7 +5118,8 @@ function bind() {
   Object.keys(fmap).forEach(id=>{
     const el=document.getElementById('f-'+id);
     if(!el)return;
-    el.addEventListener('input', ()=>{ S.f[fmap[id]]=el.value; checkCanNext(); simpanAutoSkas(true); });
+    el.addEventListener('input', ()=>{ S.f[fmap[id]]=el.value; checkCanNext(); simpanAutoSkas(true);
+      if (S.f._ai?.[fmap[id]]) el.closest('.fg')?.classList.toggle('perlu-isi', !el.value); });
   });
 
   document.querySelectorAll('[data-sah]').forEach(b => b.addEventListener('click', () => tetapStatusRekod(S.selectedTeacherId, b.dataset.sah, 'approved')));
@@ -4269,12 +5230,15 @@ function bind() {
 
   // submit
   const sb=document.getElementById('btn-submit');
-  if(sb)sb.addEventListener('click',()=>{
+  if(sb)sb.addEventListener('click',async ()=>{
     const ta=document.getElementById('ta-draft');
     const draft=ta?ta.value:S.draftText;
+    // Rekod dari Semak Pencapaian sudah disemak pendua semasa borang diisi
+    if(!S.f._semak && !(await sahkanPendua({program:S.f.program,tarikh:S.f.tarikhmula,level:S.f.level},'guru',S.editingId))) return;
+    const semakanAI=rekodSemakanAI(S.f,MEDAN_AI_GURU);
     if(S.editingId) {
       S.records=S.records.map(rec=>rec.id===S.editingId?{
-        ...rec,
+        ...rec,...(semakanAI?{semakanAI}:{}),
         program:S.f.program,level:S.f.level,peranan:S.f.peranan,
         tarikh:S.f.tarikhmula,tahap:S.f.tahap,pengesahan:S.f.pengesahan,
         pautanEviden:S.f.pautanEviden,draft:draft||rec.draft,
@@ -4290,6 +5254,7 @@ function bind() {
         tahap:S.f.tahap,pengesahan:S.f.pengesahan,
         pautanEviden:S.f.pautanEviden,
         status:'pending',draft:draft||null,
+        ...(semakanAI?{semakanAI}:{}),
         tags:[`#${LVL[S.f.level]?.label||S.f.level}`,`#5.4.1`],
       };
       S.records=[newRec,...S.records];
@@ -4305,7 +5270,7 @@ function bind() {
     if(!r)return;
     setState({
       view:'form',formStep:1,editingId:r.id,
-      f:{program:r.program,tarikhmula:r.tarikh,tarikhakhir:'',level:r.level,peranan:r.peranan,tahap:r.tahap,pengesahan:r.pengesahan,pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',hasSijil:false},
+      f:{program:r.program,tarikhmula:r.tarikh,tarikhakhir:'',level:r.level,peranan:r.peranan,tahap:r.tahap,pengesahan:r.pengesahan,pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',hasSijil:false,_semak:r.semakanAI||null},
       extracting:false,extracted:false,generating:false,draftText:r.draft||'',draftDone:!!r.draft
     });
   });
