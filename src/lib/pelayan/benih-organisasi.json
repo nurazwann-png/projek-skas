@@ -1,0 +1,182 @@
+[
+ {
+  "kod": "PPDDLT",
+  "nama": "PPD DALAT",
+  "lokasi": "Bandar",
+  "jenis": "Pejabat"
+ },
+ {
+  "kod": "YEE3501",
+  "nama": "SMK DALAT",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YRA3201",
+  "nama": "SMK AGAMA IGAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YEA3501",
+  "nama": "SMK OYA",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YEA3202",
+  "nama": "SMK BATANG IGAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCC3502",
+  "nama": "SJK(C) CHIN HUA",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCC3504",
+  "nama": "SJK(C) POI YUK",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCC3501",
+  "nama": "SJK(C) YAK TEE",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCC3503",
+  "nama": "SJK(C) SAN SAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3507",
+  "nama": "SK KAMPUNG BAKONG TERUS",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBA3202",
+  "nama": "SK KAMPUNG KEBUAW",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBA3203",
+  "nama": "SK KAMPUNG IGAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3212",
+  "nama": "SK SG RASAU",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3222",
+  "nama": "SK SG PINANG",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3224",
+  "nama": "SK KG BUNGAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3229",
+  "nama": "SK SG ILAS",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3501",
+  "nama": "SK KG TEH",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBB3503",
+  "nama": "SK BAOH ULU",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3501",
+  "nama": "SK DATU PENGIRAN MOHAMAD",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3502",
+  "nama": "SK KG TANAM",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCB3506",
+  "nama": "SK ST JOHN KG MEDONG",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3503",
+  "nama": "SK KG BALAN",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3504",
+  "nama": "SK SG UD",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3505",
+  "nama": "SK SUNGAI KUT TENGAH",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3506",
+  "nama": "SK KG SENAU",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YBE3507",
+  "nama": "SK KG KLID/PLAJAU",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCB3502",
+  "nama": "SK ST LUKE NG BAOH",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCB3504",
+  "nama": "SK ST JUDE",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCB3505",
+  "nama": "SK ST BERNARD",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ },
+ {
+  "kod": "YCB3507",
+  "nama": "SK ST KEVIN SG KUT",
+  "lokasi": "Luar Bandar",
+  "jenis": "Sekolah"
+ }
+]

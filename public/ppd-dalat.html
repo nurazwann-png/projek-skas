@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal PPD Dalat</title>
+<script src="assets/ppd-segerak.js"></script>
+<script src="assets/ppd-auth.js"></script>
+<script>PPDAuth.guard();</script>
+<script src="assets/ppd-data.js"></script>
+<script src="assets/ppd-ui.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="assets/ppd-scrolly.js" defer></script>
+<script src="assets/ppd-sungai.js"></script>
+<script src="assets/ppd-lokasi.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --bg:        #f3f5f8;
+  --surface:   #ffffff;
+  --surface-2: #f8fafc;
+  --border:    #dde3eb;
+  --t1:        #1a2433;
+  --t2:        #475467;
+  --t3:        #6b7686;
+  --navy:      #0b2a4a;
+  --navy-2:    #13406e;
+  --gold:      #c8962a;
+  --gold-l:    #fbf3e1;
+  --red:       #b42318;
+  --accent:    #13406e;
+  --accent-l:  #e6eef7;
+  --ok:        #067647;
+  --ok-l:      #e7f6ee;
+  --shadow:    0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg: 0 4px 8px rgba(16,24,40,.06), 0 12px 24px rgba(16,24,40,.08);
+  --gutter-l:  max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r:  max(16px, env(safe-area-inset-right, 0px));
+  font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 124px; }
+body { background: var(--bg); color: var(--t1); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+a { color: inherit; }
+img { max-width: 100%; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+}
+
+/* ── 1. Jalur identiti rasmi ─────────────────────────── */
+.gov-strip { background: #071c33; color: #c9d4e2; font-size: 12px; }
+.gov-strip .container { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 6px; flex-wrap: wrap; }
+.gov-strip-l { display: flex; align-items: center; gap: 8px; }
+.flag {
+  width: 20px; height: 10px; border-radius: 1px; flex-shrink: 0;
+  background: url('assets/jalur-gemilang.svg') center / 100% 100% no-repeat;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.15);
+}
+.gov-strip b { color: #fff; font-weight: 600; }
+.gov-date { color: #9fb0c5; }
+
+/* ── 2. Masthead ─────────────────────────────────────── */
+.masthead {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.masthead-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
+.brand img { height: 46px; width: auto; border-radius: 4px; transition: height .25s ease; }
+/* Kepala halaman mengecil selepas diskrol (kelas daripada assets/ppd-scrolly.js) */
+.masthead-top { transition: padding .25s ease; }
+.ppds-diskrol .masthead-top { padding-block: 5px; }
+.ppds-diskrol .brand img { height: 36px; }
+.ppds-diskrol .masthead { box-shadow: 0 4px 16px rgba(16,24,40,.10); }
+.brand-text { display: flex; flex-direction: column; min-width: 0; }
+.brand-org { font-size: 11px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .06em; }
+.brand-name { font-size: 16px; font-weight: 800; color: var(--t1); line-height: 1.2; }
+.brand-line { display: block; width: 32px; height: 3px; background: var(--gold); margin-top: 4px; border-radius: 2px; }
+
+.profile-chip {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 5px 12px 5px 5px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer; transition: border-color .15s, background .15s;
+  font: inherit; color: inherit; flex-shrink: 0;
+}
+.profile-chip:hover { border-color: var(--accent); background: var(--accent-l); }
+.profile-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
+.profile-info { line-height: 1.25; text-align: left; }
+.profile-name { font-size: 13px; font-weight: 700; color: var(--t1); }
+.profile-org  { font-size: 11px; color: var(--t3); }
+.profile-caret svg { width: 14px; height: 14px; stroke: var(--t3); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; display: block; }
+
+.nav { border-top: 1px solid var(--border); }
+.nav .container { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.nav .container::-webkit-scrollbar { display: none; }
+.nav a {
+  text-decoration: none; white-space: nowrap;
+  padding: 11px 14px; font-size: 13px; font-weight: 600; color: var(--t2);
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.nav a:hover { color: var(--accent); }
+.nav a.active { color: var(--accent); border-bottom-color: var(--gold); }
+
+/* ── 3. Hero ─────────────────────────────────────────── */
+.hero {
+  position: relative; color: #fff; overflow: hidden;
+  background: var(--navy);
+}
+/* Lapisan imej berasingan supaya boleh bergerak secara parallax (assets/ppd-scrolly.js); lebih tinggi daripada hero
+   supaya tiada ruang kosong semasa ia bergerak ke bawah */
+.hero-bg {
+  position: absolute; left: 0; right: 0; top: -12%; bottom: -24%; z-index: 0;
+  background: url('assets/ppd-bangunan.jpg') right center / cover no-repeat;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background:
+    radial-gradient(55% 90% at 88% -10%, rgba(229,192,102,.20), transparent 62%),
+    radial-gradient(40% 70% at 0% 100%, rgba(47,111,179,.28), transparent 65%),
+    linear-gradient(100deg, rgba(5,20,38,.97) 0%, rgba(11,42,74,.92) 42%, rgba(11,42,74,.62) 72%, rgba(11,42,74,.40) 100%);
+}
+/* Corak grid halus, pudar ke tepi */
+.hero-corak {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(70% 90% at 30% 20%, #000, transparent 75%);
+  mask-image: radial-gradient(70% 90% at 30% 20%, #000, transparent 75%);
+}
+.hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: 2; background: linear-gradient(90deg, var(--gold), #e5c066 60%, transparent); }
+.hero .container {
+  position: relative; z-index: 2; padding-block: 44px 112px;
+  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, .8fr); gap: 40px; align-items: center;
+}
+.hero-l { min-width: 0; }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: #dbe5f1;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.hero-chip i { width: 7px; height: 7px; border-radius: 50%; background: #e5c066; box-shadow: 0 0 0 3px rgba(229,192,102,.25); }
+.hero h1 { font-size: clamp(28px, 4.2vw, 46px); font-weight: 800; letter-spacing: -.022em; line-height: 1.08; margin-top: 16px; text-wrap: balance; }
+.hero h1 .greet { display: block; font-size: .5em; font-weight: 600; letter-spacing: 0; color: #c3d0df; margin-bottom: 6px; }
+.hero h1 .nama { background: linear-gradient(92deg, #fff 30%, #f3d68a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: #c3d0df; font-size: 15.5px; max-width: 52ch; margin-top: 12px; line-height: 1.6; }
+.hero p b { color: #fff; font-weight: 700; }
+.user-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 22px; }
+
+/* Kad "Fokus semasa" (kaca) */
+.fokus {
+  border-radius: 16px; padding: 18px; min-width: 0;
+  background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+  border: 1px solid rgba(255,255,255,.2);
+  box-shadow: 0 24px 60px rgba(2,12,27,.45), inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+.fokus-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #e5c066; }
+.fokus-h span:last-child { color: #9fb4cc; letter-spacing: .02em; text-transform: none; font-weight: 600; }
+.fokus-utama { display: flex; align-items: center; gap: 16px; margin-top: 14px; text-decoration: none; color: #fff; }
+.cincin { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+.cincin svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.cincin circle { fill: none; stroke-width: 8; }
+.cincin .trek { stroke: rgba(255,255,255,.14); }
+.cincin .isi { stroke: url(#cincin-g); stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1); }
+.cincin b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fokus-t { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.fokus-d { font-size: 12.5px; color: #c3d0df; margin-top: 2px; }
+.fokus-due { display: inline-block; margin-top: 8px; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; color: #0b2a4a; background: #e5c066; }
+.fokus-due.merah { background: #ffd5cf; color: #8a1c12; }
+.fokus-rows { display: grid; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); }
+.fokus-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; text-decoration: none; color: #fff; font-size: 13px; transition: background .15s; }
+.fokus-row:hover, .fokus-utama:hover .fokus-t { background: rgba(255,255,255,.1); }
+.fokus-utama:hover .fokus-t { background: none; text-decoration: underline; text-underline-offset: 3px; }
+.fokus-row:focus-visible, .fokus-utama:focus-visible { outline: 2px solid #e5c066; outline-offset: 2px; }
+.fokus-row .ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.fokus-row svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.fokus-row span.l { flex: 1; min-width: 0; color: #dbe5f1; }
+.fokus-row b { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fokus-row .go { opacity: .5; }
+.ub-lbl { font-size: 12px; color: #9fb4cc; margin-right: 2px; }
+.ub-role-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); color: #fff;
+}
+
+/* ── 4. KPI ──────────────────────────────────────────── */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-top: -60px; position: relative; z-index: 2; }
+.kpi {
+  position: relative; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px 20px; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 16px; min-width: 0;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.kpi::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--k); transform: scaleX(0); transform-origin: 0 50%; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.kpi:hover { transform: translateY(-3px); box-shadow: 0 8px 14px rgba(16,24,40,.06), 0 22px 40px rgba(16,24,40,.12); border-color: color-mix(in srgb, var(--k) 35%, var(--border)); }
+.kpi:hover::after { transform: scaleX(1); }
+.kpi-ic { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; color: var(--k); background: color-mix(in srgb, var(--k) 13%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--k) 18%, transparent); }
+.kpi-ic svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.kpi-num { font-size: 28px; font-weight: 800; color: var(--t1); line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.kpi-lbl { font-size: 12.5px; color: var(--t3); font-weight: 500; margin-top: 2px; }
+
+/* ── Tugasan saya ────────────────────────────────────── */
+.tg-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background .15s; }
+.tg-item:last-child { border-bottom: 0; }
+.tg-item:hover { background: var(--surface-2); }
+.tg-item:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+.tg-ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; color: var(--c); background: color-mix(in srgb, var(--c) 13%, var(--surface)); }
+.tg-ic svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tg-body { flex: 1; min-width: 0; }
+.tg-app { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+.tg-t { font-size: 14px; font-weight: 700; color: var(--t1); line-height: 1.35; }
+.tg-d { font-size: 12.5px; color: var(--t2); margin-top: 1px; overflow-wrap: anywhere; }
+.tg-due { flex-shrink: 0; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+  color: var(--tc); background: color-mix(in srgb, var(--tc) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tc) 30%, var(--border)); }
+.tg-go { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: var(--t3); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.tg-kosong { padding: 22px 16px; display: flex; align-items: center; gap: 12px; color: var(--t2); font-size: 13.5px; }
+.tg-kosong svg { width: 22px; height: 22px; fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.app-badge.perlu { color: var(--bc); }
+.app-badge.perlu::before { box-shadow: 0 0 0 3px color-mix(in srgb, var(--bc) 18%, transparent); }
+@media (max-width: 560px) {
+  .tg-item { flex-wrap: wrap; gap: 10px 12px; }
+  .tg-body { flex-basis: calc(100% - 56px); }
+  .tg-due { margin-left: 52px; }
+  .tg-go { display: none; }
+}
+
+/* ── 5. Main layout ──────────────────────────────────── */
+.main { display: flex; flex-direction: column; gap: 44px; margin-top: 44px; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.sec-eyebrow { display: block; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.sec-title { font-size: 24px; font-weight: 800; letter-spacing: -.018em; color: var(--t1); line-height: 1.15; }
+.sec-meta { font-size: 12.5px; color: var(--t3); text-align: right; }
+
+.app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+.app-card {
+  --c: var(--accent);
+  position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 7%, var(--surface)) 0%, var(--surface) 46%);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px 22px 20px; display: flex; flex-direction: column; gap: 16px;
+  cursor: pointer; box-shadow: var(--shadow);
+  transition: transform .22s cubic-bezier(.2,.7,.2,1), box-shadow .22s, border-color .22s;
+}
+.app-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--c); }
+/* Sorotan lembut yang mengikut kursor (--mx/--my ditetapkan oleh skrip) */
+.app-card::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--c) 16%, transparent), transparent 65%);
+}
+.app-card:hover { transform: translateY(-5px); box-shadow: 0 10px 18px rgba(16,24,40,.06), 0 28px 48px color-mix(in srgb, var(--c) 18%, rgba(16,24,40,.10)); border-color: color-mix(in srgb, var(--c) 45%, var(--border)); }
+.app-card:hover::after { opacity: 1; }
+.app-card:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+#skpm-card      { --c: #0f9e94; }
+#efasiliti-card { --c: #1d6fa5; }
+#spm-card       { --c: #b7791f; }
+#skpm-card::before { background: linear-gradient(90deg, #00c2b8, #f2d64b); }
+
+.app-head { display: flex; align-items: center; gap: 14px; }
+.app-icon {
+  width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0; color: #fff;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--c) 82%, #fff), color-mix(in srgb, var(--c) 86%, #000));
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--c) 34%, transparent), inset 0 1px 0 rgba(255,255,255,.35);
+  transition: transform .25s cubic-bezier(.2,.7,.2,1);
+}
+.app-card:hover .app-icon { transform: scale(1.06) rotate(-3deg); }
+.app-icon svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.app-icon.skas { background: linear-gradient(135deg, #e3faf6, #fdf8dc); box-shadow: 0 8px 18px rgba(15,158,148,.2), inset 0 0 0 1px #c9eee8; }
+.app-icon.skas img { height: 46px; width: auto; mix-blend-mode: multiply; }
+.app-name { font-size: 20px; font-weight: 800; letter-spacing: -.015em; color: var(--t1); line-height: 1.15; }
+.app-full-name { font-size: 12.5px; font-weight: 600; color: var(--c); margin-top: 1px; }
+.app-desc { font-size: 13.5px; color: var(--t2); line-height: 1.6; flex: 1; }
+
+.app-role-strip { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 10px; }
+.app-role-av { width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.app-role-label { font-size: 12px; font-weight: 700; color: var(--t1); }
+.app-role-sub   { font-size: 11px; color: var(--t3); }
+.app-role-multi { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+.app-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+.app-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--ok); }
+.app-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px var(--ok-l); }
+.app-open {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--c);
+  padding: 7px 10px 7px 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--c) 35%, var(--border));
+  transition: background .2s, color .2s, border-color .2s;
+}
+.app-open svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+.app-card:hover .app-open { background: var(--c); border-color: var(--c); color: #fff; }
+.app-card:hover .app-open svg { transform: translateX(3px); }
+
+/* ── Panel bento: pengumuman, pautan, bantuan ────────── */
+.side { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.side > #pengumuman { grid-row: span 2; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.panel-h { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 800; letter-spacing: -.01em; color: var(--t1); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.panel-h > span { display: inline-flex; align-items: center; gap: 10px; }
+.panel-h small { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-l); padding: 2px 8px; border-radius: 999px; }
+.panel-ic { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--gold-l); color: #9a6f12; flex-shrink: 0; }
+.panel-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-umum { display: inline-flex; align-items: center; gap: 6px; background: var(--navy); color: #fff; border: 0; border-radius: 999px; padding: 7px 14px 7px 11px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, transform .15s; }
+.btn-umum:hover { background: var(--navy-2); transform: translateY(-1px); }
+.btn-umum svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+
+.notice { --n: #9a6f12; position: relative; display: flex; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: background .15s; }
+.notice:last-child { border-bottom: 0; }
+.notice:hover { background: var(--surface-2); }
+.notice::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0; background: var(--n); opacity: 0; transition: opacity .15s; }
+.notice:hover::before { opacity: 1; }
+.notice[data-tag="SK@S"] { --n: #0b7f77; }
+.notice[data-tag="e-Fasiliti"] { --n: #1d6fa5; }
+.notice[data-tag="Peringatan"] { --n: #b42318; }
+.notice[data-tag="Makluman"], .notice[data-tag="Am"] { --n: #475467; }
+.notice-date { flex-shrink: 0; width: 52px; text-align: center; border-radius: 12px; overflow: hidden; align-self: start; background: var(--surface); box-shadow: 0 0 0 1px var(--border), 0 4px 10px rgba(16,24,40,.06); }
+.notice-date span { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; background: linear-gradient(135deg, var(--navy), var(--navy-2)); color: #fff; padding: 3px 0; letter-spacing: .08em; }
+.notice-date b { display: block; font-size: 21px; font-weight: 800; color: var(--t1); padding: 3px 0 5px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.notice-tag { display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--n); background: color-mix(in srgb, var(--n) 11%, var(--surface)); padding: 2px 8px; border-radius: 999px; margin-bottom: 5px; }
+.notice-t { font-size: 14px; font-weight: 600; color: var(--t1); line-height: 1.5; }
+
+.qgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+.qlink { --c: var(--accent); display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); text-decoration: none; min-width: 0; transition: transform .18s, border-color .18s, box-shadow .18s, background .18s; }
+.qlink:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--c) 45%, var(--border)); background: color-mix(in srgb, var(--c) 5%, var(--surface)); box-shadow: 0 10px 20px color-mix(in srgb, var(--c) 14%, transparent); }
+.qlink:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.qlink-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+.qlink-ic svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.qlink b { display: block; font-size: 13.5px; font-weight: 700; color: var(--t1); line-height: 1.25; }
+.qlink small { display: block; font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+
+.panel.bantu { position: relative; color: #dbe5f1; border: 0; background: radial-gradient(90% 120% at 100% 0%, rgba(229,192,102,.22), transparent 60%), linear-gradient(150deg, #0b2a4a, #071c33); box-shadow: 0 16px 32px rgba(7,28,51,.22); }
+.panel.bantu .panel-h { color: #fff; border-bottom-color: rgba(255,255,255,.12); }
+.panel.bantu .panel-ic { background: rgba(229,192,102,.18); color: #f3d68a; }
+.help { padding: 16px 20px 20px; font-size: 13.5px; display: grid; gap: 12px; }
+.help-row { display: flex; gap: 12px; align-items: flex-start; line-height: 1.5; }
+.help-row svg { width: 17px; height: 17px; margin-top: 2px; fill: none; stroke: #e5c066; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ── Carian pantas (Ctrl+K) ──────────────────────────── */
+.mast-r { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.cari-btn { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--t3); font: inherit; font-size: 13px; cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+.cari-btn:hover { border-color: var(--accent); background: var(--surface); color: var(--t1); }
+.cari-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cari-btn kbd, .palet kbd { font: 600 11px/1 ui-monospace, Consolas, monospace; padding: 4px 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); color: var(--t3); }
+.palet-ov { position: fixed; inset: 0; z-index: 9998; background: rgba(7,28,51,.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: flex-start; padding: min(14vh, 120px) 16px 16px; }
+.palet { width: 100%; max-width: 580px; background: var(--surface); border-radius: 16px; box-shadow: 0 32px 80px rgba(2,12,27,.45); overflow: hidden; animation: palet-masuk .18s cubic-bezier(.2,.7,.2,1); }
+@keyframes palet-masuk { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
+.palet-in { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.palet-in svg { width: 18px; height: 18px; fill: none; stroke: var(--t3); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.palet-in input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 16px; color: var(--t1); background: none; }
+.palet-list { max-height: min(52vh, 420px); overflow-y: auto; padding: 8px; }
+.palet-kump { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); padding: 10px 10px 4px; }
+.palet-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border: 0; border-radius: 10px; background: none; font: inherit; text-align: left; color: var(--t1); cursor: pointer; }
+.palet-item[aria-selected="true"] { background: var(--accent-l); }
+.palet-item .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; color: var(--c, var(--accent)); background: color-mix(in srgb, var(--c, var(--accent)) 12%, var(--surface)); overflow: hidden; }
+.palet-item .ic svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.palet-item .ic img { width: 100%; height: 100%; object-fit: contain; }
+.palet-item b { display: block; font-size: 13.5px; font-weight: 600; }
+.palet-item small { display: block; font-size: 11.5px; color: var(--t3); }
+.palet-item .t { flex: 1; min-width: 0; }
+.palet-kosong { padding: 28px 16px; text-align: center; color: var(--t3); font-size: 13.5px; }
+.palet-kaki { display: flex; gap: 14px; padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: 11.5px; color: var(--t3); }
+@media (prefers-reduced-motion: reduce) {
+  .palet { animation: none; }
+  .kpi, .app-card, .app-icon, .qlink, .btn-umum { transition: none; }
+  .kpi:hover, .app-card:hover, .qlink:hover, .btn-umum:hover, .app-card:hover .app-icon { transform: none; }
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+.footer { margin-top: 48px; background: #071c33; color: #a9b8ca; font-size: 13px; }
+.footer::before { content: ''; display: block; height: 4px; background: linear-gradient(90deg, #cc0001 0 25%, #fff 25% 50%, #010066 50% 75%, #ffcc00 75%); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 32px; padding-block: 32px; }
+.footer h4 { color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.footer ul { list-style: none; display: grid; gap: 6px; }
+.footer a { text-decoration: none; }
+.footer a:hover { color: #fff; text-decoration: underline; }
+.footer-brand { display: flex; gap: 12px; align-items: flex-start; }
+.footer-brand img { height: 44px; width: auto; border-radius: 4px; background: #fff; padding: 2px; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.1); }
+.footer-bottom .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-block: 14px; font-size: 12px; color: #8597ad; }
+
+/* ── Modal ───────────────────────────────────────────── */
+[hidden] { display: none !important; }
+.modal-ov { position: fixed; inset: 0; background: rgba(7,28,51,.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--gold); border-radius: 10px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,.3); }
+.role-opt { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: all .15s; margin-bottom: 8px; }
+.role-opt:hover, .role-opt.active { border-color: var(--accent); background: var(--accent-l); }
+.role-opt-av { width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.role-opt-name { font-size: 14px; font-weight: 700; color: var(--t1); }
+.role-opt-sub  { font-size: 11px; color: var(--t3); margin-top: 1px; }
+.role-opt-check { margin-left: auto; flex-shrink: 0; }
+.role-opt-check svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.btn-ghost { margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--t1); font: inherit; font-weight: 600; cursor: pointer; }
+.btn-ghost:hover { background: var(--surface-2); }
+
+/* ── Pil peranan (hero) ──────────────────────────────── */
+.lv-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.lv-pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px 6px 10px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: #fff;
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, box-shadow .15s, color .15s;
+}
+.lv-pill:hover { background: rgba(255,255,255,.16); }
+.lv-pill:focus-visible { outline: 2px solid #e5c066; outline-offset: 2px; }
+.lv-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lv); box-shadow: 0 0 0 2px rgba(255,255,255,.55); flex-shrink: 0; }
+.lv-pill small { font-size: 11px; font-weight: 500; opacity: .75; }
+.lv-pill.on { background: #fff; color: #0b2a4a; border-color: #fff; box-shadow: 0 0 0 3px rgba(229,192,102,.5); cursor: default; }
+.ub-admin {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid #e5c066; background: rgba(229,192,102,.14); color: #f3d68a;
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.ub-admin:hover { background: rgba(229,192,102,.26); }
+.ub-admin svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Menu profil ─────────────────────────────────────── */
+.masthead-top { position: relative; }
+.pmenu {
+  position: absolute; right: var(--gutter-r); top: calc(100% - 2px); z-index: 60;
+  width: 310px; max-width: calc(100vw - 32px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.pmenu-h { padding: 14px 16px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid var(--border); }
+.pmenu-roles { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--border); }
+.pmenu-roles .lbl { width: 100%; font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .05em; }
+.rchip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; color: var(--lv); background: color-mix(in srgb, var(--lv) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--lv) 28%, transparent); }
+.pmenu button.mi { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 16px; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--t1); cursor: pointer; text-align: left; }
+.pmenu button.mi:hover { background: var(--surface-2); }
+.pmenu button.mi svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pmenu button.mi.out { color: var(--red); border-top: 1px solid var(--border); }
+
+/* ── Urus pengguna ───────────────────────────────────── */
+.upg-add { display: grid; grid-template-columns: 1.2fr 1.3fr 1fr auto; gap: 8px; align-items: end; }
+.upg-add label { font-size: 11px; font-weight: 600; color: var(--t2); display: block; margin-bottom: 4px; }
+.inp { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 13px; background: var(--surface); color: var(--t1); }
+.inp-besar { text-transform: uppercase; }
+.inp-besar::placeholder { text-transform: none; }
+.inp:focus { outline: 2px solid var(--gold); outline-offset: 0; border-color: var(--gold); }
+.btn-navy { background: var(--navy); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-navy:hover { background: var(--navy-2); }
+.upg-row { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; }
+.upg-row + .upg-row { margin-top: 10px; }
+.upg-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.upg-av { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.upg-n { font-size: 14px; font-weight: 700; color: var(--t1); }
+.upg-e { font-size: 12px; color: var(--t3); overflow-wrap: anywhere; }
+.upg-del { margin-left: auto; flex-shrink: 0; background: var(--danger-l, #fdecea); color: var(--red); border: 0; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.upg-grp { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.upg-grp > span { width: 132px; font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .04em; }
+.tg {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--t2); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.tg::before { content: ''; width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--t3); }
+.tg[aria-pressed="true"] { border-color: var(--lv); color: var(--lv); background: color-mix(in srgb, var(--lv) 10%, var(--surface)); }
+.tg[aria-pressed="true"]::before { border-color: var(--lv); background: var(--lv) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 9px no-repeat; }
+.tg:disabled { opacity: .55; cursor: not-allowed; }
+.toast {
+  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 10000;
+  background: #0b2a4a; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0,0,0,.25); border-left: 4px solid var(--gold); max-width: calc(100vw - 32px);
+}
+@media (max-width: 720px) {
+  .upg-add { grid-template-columns: 1fr; }
+  .upg-grp > span { width: 100%; }
+}
+
+/* ── Log audit ───────────────────────────────────────── */
+.upg-orgnama { font-size: 11.5px; color: var(--t3); margin-top: 4px; min-height: 16px; }
+.upg-orgnama.ada { color: var(--t1); font-weight: 700; }
+.sk-form { display: grid; grid-template-columns: 1fr 1.6fr 1fr 1fr auto; gap: 8px; align-items: end; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+.sk-form label, .upg-add label { display: block; font-size: 11px; font-weight: 600; color: var(--t2); margin-bottom: 4px; }
+.sk-btns { display: flex; gap: 6px; }
+.btn-ghost-sm { border: 1px solid var(--border); background: var(--surface); color: var(--t2); border-radius: 8px; padding: 0 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.sk-tw { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.sk-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sk-tbl th, .sk-tbl td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+.sk-tbl th { background: var(--surface-2); font-size: 11.5px; color: var(--t2); }
+.sk-tbl tr:last-child td { border-bottom: 0; }
+.sk-tbl td.kod { font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
+.sk-act { display: flex; gap: 6px; justify-content: flex-end; }
+.sk-act button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--t2); }
+.sk-act button.del { color: var(--red); }
+.sk-jenis { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); }
+@media (max-width: 760px) { .sk-form { grid-template-columns: 1fr 1fr; } .sk-form > div:nth-child(3) { grid-column: 1 / -1; } }
+.upg-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.upg-tab { border: 0; background: none; padding: 10px 14px; font: inherit; font-size: 13px; font-weight: 700; color: var(--t3); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.upg-tab.on { color: var(--t1); border-bottom-color: var(--gold); }
+.aud-list { display: flex; flex-direction: column; }
+.aud-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.aud-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; background: var(--accent); }
+.aud-beri .aud-dot { background: var(--ok); } .aud-tarik .aud-dot, .aud-padam .aud-dot { background: var(--red); }
+.aud-t { font-size: 13px; color: var(--t1); line-height: 1.45; }
+.aud-m { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+.aud-kosong { padding: 18px 0; text-align: center; color: var(--t3); font-size: 13px; }
+
+/* ── Saiz sentuhan (skrin sentuh sahaja) ─────────────── */
+@media (pointer: coarse) {
+  .lv-pill, .ub-admin, .btn-navy, .btn-ghost, .tg, .upg-del, .mi, .profile-chip { min-height: 44px; }
+  .nav a { min-height: 44px; display: inline-flex; align-items: center; }
+  .cari-btn, .btn-umum, .palet-item { min-height: 44px; }
+  .inp, select, textarea { min-height: 44px; font-size: 16px; }
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 980px) {
+  .side { grid-template-columns: 1fr; }
+  .side > #pengumuman { grid-row: auto; }
+  .hero .container { grid-template-columns: 1fr; gap: 28px; padding-block: 32px 100px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .gov-date { display: none; }
+  .brand img { height: 38px; }
+  .brand-name { font-size: 14px; }
+  .profile-info, .profile-caret { display: none; }
+  .profile-chip { padding: 4px; }
+  .kpi { padding: 12px; gap: 10px; }
+  .kpi-ic { width: 36px; height: 36px; }
+  .kpi-num { font-size: 20px; }
+  .cari-btn { width: 40px; padding: 0; justify-content: center; }
+  .cari-btn span, .cari-btn kbd { display: none; }
+  .sec-title { font-size: 20px; }
+  .sec-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .sec-meta { text-align: left; }
+  .main { gap: 32px; margin-top: 32px; }
+  .palet-kaki { display: none; }
+  .footer-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Jalur identiti rasmi -->
+<div class="gov-strip">
+  <div class="container">
+    <div class="gov-strip-l"><span class="flag" aria-hidden="true"></span><span>Portal rasmi <b>Kementerian Pendidikan</b> · PPD Dalat, Sarawak</span></div>
+    <div class="gov-date" id="gov-date"></div>
+  </div>
+</div>
+
+<!-- Masthead -->
+<header class="masthead">
+  <div class="container masthead-top">
+    <a class="brand" href="#utama">
+      <img src="assets/logo-kpm.jpg" alt="Jata Negara — Kementerian Pendidikan">
+      <span class="brand-text">
+        <span class="brand-org">Kementerian Pendidikan</span>
+        <span class="brand-name">Pejabat Pendidikan Daerah Dalat</span>
+        <span class="brand-line"></span>
+      </span>
+    </a>
+    <div class="mast-r">
+      <button class="cari-btn" id="cari-btn" type="button" aria-label="Carian pantas (Ctrl+K)" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Cari aplikasi atau sekolah</span><kbd>Ctrl K</kbd>
+      </button>
+      <button class="profile-chip" id="profile-chip" type="button" aria-label="Menu profil" aria-haspopup="menu" aria-expanded="false">
+        <span class="profile-av" id="profile-av">?</span>
+        <span class="profile-info">
+          <span class="profile-name" id="profile-name" style="display:block">—</span>
+          <span class="profile-org" id="profile-org" style="display:block">—</span>
+        </span>
+        <span class="profile-caret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </button>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Navigasi utama">
+    <div class="container">
+      <a href="#utama" class="active">Utama</a>
+      <a href="#aplikasi">Aplikasi Sistem</a>
+      <a href="#pengumuman">Pengumuman</a>
+      <a href="#pautan">Pautan Pantas</a>
+      <a href="#lokasi">Lokasi Sekolah</a>
+      <a href="#hubungi">Hubungi Kami</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero" id="utama">
+  <div class="hero-bg" data-parallax="0.35" aria-hidden="true"></div>
+  <div class="hero-corak" aria-hidden="true"></div>
+  <div class="container" data-parallax-pudar>
+    <div class="hero-l">
+      <span class="hero-chip"><i></i><span id="hero-tarikh">Portal Pengurusan Digital</span></span>
+      <h1><span class="greet" id="greet">Selamat datang,</span><span class="nama" id="greet-nama">PPD Dalat</span></h1>
+      <p><b>Portal Pengurusan Digital PPD Dalat.</b> Satu pintu masuk untuk pemantauan kualiti sekolah, analitik peperiksaan dan pengurusan fasiliti daerah.</p>
+      <div class="user-banner" id="user-banner"></div>
+    </div>
+    <div class="fokus" id="fokus" aria-label="Fokus semasa"></div>
+  </div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="cincin-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d68a"/><stop offset="1" stop-color="#c8962a"/></linearGradient></defs></svg>
+</section>
+
+<main class="container">
+  <!-- KPI (diisi ikut peranan aktif) -->
+  <div class="kpis" id="kpis" data-muncul-anak="70"></div>
+
+  <div class="main">
+    <!-- Tugasan saya (Pengguna Biasa) -->
+    <section id="tugasan" hidden>
+      <div class="sec-head" data-muncul>
+        <h2 class="sec-title"><span class="sec-eyebrow">Perlu tindakan</span>Tugasan Saya</h2>
+        <span class="sec-meta" id="tugasan-meta"></span>
+      </div>
+      <div class="panel" id="tugasan-list" data-muncul></div>
+    </section>
+
+    <!-- Aplikasi -->
+    <section id="aplikasi">
+      <div class="sec-head" data-muncul>
+        <h2 class="sec-title"><span class="sec-eyebrow">Ruang kerja</span>Aplikasi Sistem</h2>
+        <span class="sec-meta">Tiga sistem, satu log masuk</span>
+      </div>
+      <div class="app-grid" data-muncul-anak="110">
+
+        <div class="app-card" id="skpm-card" tabindex="0" role="link">
+          <div class="app-head">
+            <div class="app-icon skas"><img src="assets/logo-skas.png" alt=""></div>
+            <div>
+              <div class="app-name">SK@S</div>
+              <div class="app-full-name">SKPM Kualiti@Sekolah</div>
+            </div>
+          </div>
+          <div class="app-desc">Pemantauan pencapaian guru dan sekolah berdasarkan Standard Kualiti Pendidikan Malaysia (SKPM 5.4).</div>
+          <div id="skpm-role-strip"></div>
+          <div class="app-footer">
+            <span class="app-badge">Aktif</span>
+            <span class="app-open">Buka <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+
+        <div class="app-card" id="efasiliti-card" tabindex="0" role="link">
+          <div class="app-head">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+            <div>
+              <div class="app-name">e-Fasiliti</div>
+              <div class="app-full-name">Pengurusan Fasiliti</div>
+            </div>
+          </div>
+          <div class="app-desc">Sistem aduan dan pemantauan kerosakan infrastruktur sekolah — dari laporan hingga kelulusan bajet.</div>
+          <div id="efasiliti-role-strip"></div>
+          <div class="app-footer">
+            <span class="app-badge">Aktif</span>
+            <span class="app-open">Buka <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+
+        <div class="app-card" id="spm-card" tabindex="0" role="link">
+          <div class="app-head">
+            <div class="app-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
+            <div>
+              <div class="app-name">SPM</div>
+              <div class="app-full-name">Analitik Sijil Pelajaran Malaysia</div>
+            </div>
+          </div>
+          <div class="app-desc">Analitik pencapaian SPM daerah — trend GPS, jurang SES/jantina/lokasi, dan pemantauan pelajar berisiko.</div>
+          <div id="spm-role-strip"></div>
+          <div class="app-footer">
+            <span class="app-badge">Aktif</span>
+            <span class="app-open">Buka <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Panel sisi -->
+    <aside class="side" data-muncul-anak="120">
+      <div class="panel" id="pengumuman">
+        <div class="panel-h">
+          <span><span class="panel-ic"><svg viewBox="0 0 24 24"><path d="M3 11l18-8v18l-18-8z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>Pengumuman <small id="notice-bil">Terkini</small></span>
+          <button id="btn-pengumuman-admin" class="btn-umum" type="button" hidden onclick="openPengumumanModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Urus
+          </button>
+        </div>
+        <div id="notice-list"></div>
+      </div>
+
+      <div class="panel" id="pautan">
+        <div class="panel-h"><span><span class="panel-ic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span>Pautan Pantas</span></div>
+        <div class="qgrid">
+          <a class="qlink" style="--c:#0b7f77" href="skas-preview.html"><span class="qlink-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/></svg></span><span><b>SK@S</b><small>Kualiti@Sekolah</small></span></a>
+          <a class="qlink" style="--c:#9a6f12" href="/spm"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span><span><b>Analitik SPM</b><small>GPS &amp; trend</small></span></a>
+          <a class="qlink" style="--c:#1d6fa5" href="/e-fasiliti"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>e-Fasiliti</b><small>Aduan kerosakan</small></span></a>
+          <a class="qlink" style="--c:#13406e" href="https://www.moe.gov.my" target="_blank" rel="noopener"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span><span><b>Laman Web KPM</b><small>moe.gov.my</small></span></a>
+          <a class="qlink" id="q-laporan" style="--c:#6941c6;grid-column:1 / -1;flex-direction:row;align-items:center" href="/laporan" hidden><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span><span><b>Laporan</b><small>SKPM 5.4, SPM dan ketepatan AI · cetak atau Excel</small></span></a>
+        </div>
+      </div>
+
+      <div class="panel bantu" id="hubungi">
+        <div class="panel-h"><span><span class="panel-ic"><svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></span>Bantuan Teknikal</span></div>
+        <div class="help">
+          <div class="help-row"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/></svg><span>Unit ICT, Pejabat Pendidikan Daerah Dalat, Sarawak</span></div>
+          <div class="help-row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Isnin – Jumaat, 8:00 pagi – 5:00 petang</span></div>
+          <div class="help-row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>Portal ini adalah sistem dalaman. Akses terhad kepada warga PPD Dalat dan sekolah seliaan.</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Lokasi sekolah seliaan -->
+    <section id="lokasi">
+      <div class="sec-head" data-muncul>
+        <h2 class="sec-title"><span class="sec-eyebrow">Peta daerah</span>Lokasi Sekolah</h2>
+        <span class="sec-meta">29 sekolah seliaan &amp; PPD Dalat · klik penanda atau nama sekolah</span>
+      </div>
+      <div class="panel" id="lokasi-hos" data-muncul></div>
+    </section>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <img src="assets/logo-kpm.jpg" alt="">
+      <div>
+        <h4 style="margin-bottom:4px">Pejabat Pendidikan Daerah Dalat</h4>
+        <div>Kementerian Pendidikan<br>Dalat, Sarawak</div>
+      </div>
+    </div>
+    <div>
+      <h4>Aplikasi</h4>
+      <ul>
+        <li><a href="skas-preview.html">SK@S</a></li>
+        <li><a href="/spm">Analitik SPM</a></li>
+        <li><a href="/e-fasiliti">e-Fasiliti</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Maklumat</h4>
+      <ul>
+        <li><a href="#hubungi">Hubungi Kami</a></li>
+        <li><a href="#pengumuman">Pengumuman</a></li>
+        <li><a href="https://www.moe.gov.my" target="_blank" rel="noopener">Laman Web KPM</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <span>© 2026 Pejabat Pendidikan Daerah Dalat. Hak cipta terpelihara.</span>
+      <span>Versi 1.1 · Paparan terbaik: Chrome / Edge terkini</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal Urus Pengguna (Superadmin) -->
+<div id="modal-pengguna" class="modal-ov" hidden style="align-items:flex-start;padding-top:40px">
+  <div class="modal-box" style="max-width:860px;max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengguna &amp; Peranan</div>
+        <div style="font-size:12px;color:var(--t3)">Superadmin menetapkan Admin dan Pentadbir Sekolah bagi semua aplikasi. Admin setiap aplikasi boleh menetapkan Pentadbir Sekolah aplikasinya sendiri melalui butang Urus Peranan dalam aplikasi. Semua pengguna mempunyai akses Pengguna Biasa.</div>
+      </div>
+      <button onclick="closeUrusPengguna()" aria-label="Tutup" style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form id="upg-form" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px" novalidate>
+      <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Daftar Pengguna Baharu</div>
+      <div class="upg-add">
+        <div><label for="upg-nama">Nama penuh</label><input class="inp inp-besar" id="upg-nama" placeholder="SITI BINTI RAHMAN" autocomplete="off"></div>
+        <div><label for="upg-emel">Emel rasmi</label><input class="inp" id="upg-emel" type="email" placeholder="nama@moe-dl.edu.my"></div>
+        <div><label for="upg-org">Kod sekolah</label><select class="inp" id="upg-org"></select><div class="upg-orgnama" id="upg-orgnama">Pilih kod untuk papar nama sekolah</div></div>
+        <button class="btn-navy" type="submit">Daftar</button>
+      </div>
+      <div id="upg-err" style="font-size:12px;color:var(--red);margin-top:8px" hidden></div>
+    </form>
+
+    <div class="upg-tabs" role="tablist">
+      <button type="button" class="upg-tab on" data-upgtab="pengguna" role="tab" aria-selected="true">Pengguna &amp; Peranan</button>
+      <button type="button" class="upg-tab" data-upgtab="sekolah" role="tab" aria-selected="false">Senarai Sekolah</button>
+      <button type="button" class="upg-tab" data-upgtab="audit" role="tab" aria-selected="false">Log Audit</button>
+    </div>
+    <div id="upg-pane-pengguna">
+      <input class="inp" id="upg-cari" type="search" placeholder="Cari nama, emel atau organisasi" style="margin-bottom:12px">
+      <div id="upg-list"></div>
+    </div>
+    <div id="upg-pane-sekolah" hidden>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Senarai ini digunakan semasa pendaftaran: pengguna memilih <b>kod sekolah</b> dan nama sekolah dipaparkan secara automatik. Kod sekolah menentukan sekolah pengguna dalam semua aplikasi.</div>
+      <form id="sk-form" class="sk-form" novalidate>
+        <input type="hidden" id="sk-asal">
+        <div><label for="sk-kod">Kod sekolah</label><input class="inp inp-besar" id="sk-kod" placeholder="YEA6105" maxlength="10" autocomplete="off"></div>
+        <div><label for="sk-nama">Nama sekolah</label><input class="inp inp-besar" id="sk-nama" placeholder="SMK KUT" autocomplete="off"></div>
+        <div><label for="sk-lokasi">Lokasi</label><select class="inp" id="sk-lokasi"></select></div>
+        <div><label for="sk-jenis">Jenis</label><select class="inp" id="sk-jenis"></select></div>
+        <div class="sk-btns"><button class="btn-navy" type="submit" id="sk-simpan">Tambah</button><button class="btn-ghost-sm" type="button" id="sk-batal" hidden>Batal</button></div>
+      </form>
+      <div id="sk-err" style="font-size:12px;color:var(--red);margin:-4px 0 10px" hidden></div>
+      <div class="sk-tw"><table class="sk-tbl"><thead><tr><th>Kod</th><th>Nama</th><th>Lokasi</th><th>Jenis</th><th style="text-align:right">Pengguna</th><th></th></tr></thead><tbody id="sk-list"></tbody></table></div>
+    </div>
+    <div id="upg-pane-audit" hidden>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Semua perubahan peranan dan akaun, termasuk yang dibuat oleh Admin aplikasi melalui Urus Peranan.</div>
+      <div id="upg-audit" class="aud-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Urus Pengumuman -->
+<div id="modal-pengumuman" class="modal-ov" hidden style="align-items:flex-start;padding-top:60px">
+  <div class="modal-box" style="max-width:520px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengumuman</div>
+        <div style="font-size:12px;color:var(--t3)">Hanya Admin PPD boleh mengurus pengumuman</div>
+      </div>
+      <button onclick="closePengumumanModal()"
+        style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Form tambah -->
+    <div style="background:var(--surface-2,#f8fafc);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px">
+      <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px">Tambah Pengumuman Baharu</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Kategori</label>
+          <select id="pengumuman-tag" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit">
+            <option value="Makluman">Makluman</option>
+            <option value="SPM">SPM</option>
+            <option value="SK@S">SK@S</option>
+            <option value="e-Fasiliti">e-Fasiliti</option>
+            <option value="Peringatan">Peringatan</option>
+            <option value="Am">Am</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh Pengumuman</label>
+          <input type="date" id="pengumuman-tarikh" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Tarikh Akhir Paparan</label>
+        <input type="date" id="pengumuman-tamat" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;box-sizing:border-box">
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">Pengumuman akan disimpan sebagai arkib selepas tarikh ini. Kosongkan jika tiada tarikh akhir.</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:var(--t2);display:block;margin-bottom:4px">Kandungan Pengumuman</label>
+        <textarea id="pengumuman-teks" rows="3" placeholder="Tulis kandungan pengumuman di sini..."
+          style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--surface);color:var(--t1);font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <button onclick="tambahPengumuman()"
+        style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+        Simpan Pengumuman
+      </button>
+    </div>
+
+    <!-- Senarai pengumuman -->
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:10px">Pengumuman Semasa</div>
+    <div id="modal-notice-list"></div>
+  </div>
+</div>
+
+<script>
+const A = PPDAuth;
+const PENGUMUMAN_KEY = 'ppd_pengumuman';
+const BULAN_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+const DEFAULT_PENGUMUMAN = [
+  { id:'p1', hari:'28', bulan:'Okt', tag:'SPM', teks:'Pengisian markah Percubaan SPM 2026 dibuka kepada semua guru mata pelajaran.', tarikhAkhir:'2026-11-30' },
+  { id:'p2', hari:'20', bulan:'Okt', tag:'SK@S', teks:'Pemantauan SKPM Kualiti@Sekolah Fasa 2 bermula minggu hadapan.', tarikhAkhir:'2026-11-15' },
+  { id:'p3', hari:'15', bulan:'Okt', tag:'Makluman', teks:'Semua aduan kerosakan fasiliti sekolah kini dibuat melalui e-Fasiliti.', tarikhAkhir:'' },
+];
+
+function loadPengumuman() {
+  try {
+    const raw = localStorage.getItem(PENGUMUMAN_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return DEFAULT_PENGUMUMAN;
+}
+function savePengumuman(arr) {
+  try { localStorage.setItem(PENGUMUMAN_KEY, JSON.stringify(arr)); } catch {}
+}
+function isPpdAdmin() {
+  const lv = activeLevel();
+  return lv === 'admin' || lv === 'superadmin';
+}
+function isAktif(n) {
+  if (!n.tarikhAkhir) return true;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return new Date(n.tarikhAkhir) >= today;
+}
+function noticeHtml(n) {
+  return `<div class="notice" data-tag="${escHtml(n.tag)}">
+    <div class="notice-date"><span>${escHtml(n.bulan)}</span><b>${escHtml(n.hari)}</b></div>
+    <div><div class="notice-tag">${escHtml(n.tag)}</div><div class="notice-t">${escHtml(n.teks)}</div></div>
+  </div>`;
+}
+function renderPengumuman() {
+  const list = loadPengumuman();
+  const el = document.getElementById('notice-list');
+  if (!el) return;
+  const aktif = list.filter(isAktif);
+  const arkib = list.filter(n => !isAktif(n));
+  const bil = document.getElementById('notice-bil');
+  if (bil) bil.textContent = aktif.length ? `${aktif.length} aktif` : 'Tiada aktif';
+  if (aktif.length === 0 && arkib.length === 0) {
+    el.innerHTML = '<div style="padding:20px 16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengumuman</div>';
+    return;
+  }
+  let html = aktif.length ? aktif.map(noticeHtml).join('') : '<div style="padding:14px 16px;color:var(--t3);font-size:13px">Tiada pengumuman aktif</div>';
+  if (arkib.length) {
+    html += `<div id="notice-arkib-wrap" hidden style="border-top:1px dashed var(--border)">
+      <div style="padding:6px 16px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Arkib (${arkib.length})</div>
+      ${arkib.map(noticeHtml).join('')}
+    </div>
+    <button id="btn-lihat-lebih" onclick="toggleArkib(this)"
+      style="width:100%;padding:10px;background:none;border:none;border-top:1px solid var(--border);font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+      <svg id="arkib-chevron" viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+      Lihat ${arkib.length} pengumuman lalu
+    </button>`;
+  }
+  el.innerHTML = html;
+}
+function toggleArkib(btn) {
+  const wrap = document.getElementById('notice-arkib-wrap');
+  const chevron = document.getElementById('arkib-chevron');
+  const terbuka = !wrap.hidden;
+  wrap.hidden = terbuka;
+  chevron.style.transform = terbuka ? '' : 'rotate(180deg)';
+  btn.querySelector('span') || (btn.childNodes[btn.childNodes.length-1].textContent =
+    terbuka ? ` Lihat ${wrap.querySelectorAll('.notice').length} pengumuman lalu` : ' Sembunyikan');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function closePengumumanModal() {
+  const modal = document.getElementById('modal-pengumuman');
+  modal.hidden = true;
+}
+function openPengumumanModal() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('pengumuman-tarikh').value = today;
+  document.getElementById('pengumuman-tamat').value = '';
+  document.getElementById('pengumuman-teks').value = '';
+  renderModalNoticeList();
+  const modal = document.getElementById('modal-pengumuman');
+  modal.hidden = false;
+}
+function renderModalNoticeList() {
+  const list = loadPengumuman();
+  const el = document.getElementById('modal-notice-list');
+  if (!el) return;
+  if (list.length === 0) {
+    el.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:8px 0">Tiada pengumuman</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => {
+    const aktif = isAktif(n);
+    const tamatLabel = n.tarikhAkhir
+      ? `Tamat: ${new Date(n.tarikhAkhir).toLocaleDateString('ms-MY',{day:'numeric',month:'short',year:'numeric'})}`
+      : 'Tiada tarikh akhir';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);opacity:${aktif?'1':'.6'}">
+      <div style="flex-shrink:0;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:38px">
+        <b style="display:block;font-size:14px;font-weight:800;color:var(--t1);padding-top:2px">${escHtml(n.hari)}</b>
+        <span style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;background:var(--navy);color:#fff;padding:1px 0">${escHtml(n.bulan)}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)">${escHtml(n.tag)}</span>
+          <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;${aktif?'background:#e7f6ee;color:#067647':'background:#f3f4f6;color:#6b7280'}">${aktif?'Aktif':'Tamat'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--t1);line-height:1.4">${escHtml(n.teks)}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:3px">${tamatLabel}</div>
+      </div>
+      <button onclick="padamPengumuman('${escHtml(n.id)}')"
+        style="flex-shrink:0;background:var(--danger-l,#fdecea);border:none;color:var(--danger,#b42318);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;font-weight:700">
+        Padam
+      </button>
+    </div>`;
+  }).join('');
+}
+function tambahPengumuman() {
+  const teks = document.getElementById('pengumuman-teks').value.trim();
+  const tag = document.getElementById('pengumuman-tag').value;
+  const tarikhVal = document.getElementById('pengumuman-tarikh').value;
+  const tamatVal = document.getElementById('pengumuman-tamat').value;
+  if (!teks) { PPDUI.alert('Kandungan diperlukan', 'Sila isi kandungan pengumuman sebelum menyimpan.'); return; }
+  const d = tarikhVal ? new Date(tarikhVal) : new Date();
+  const newItem = {
+    id: 'p' + Date.now(),
+    hari: String(d.getDate()),
+    bulan: BULAN_MS[d.getMonth()],
+    tag, teks,
+    tarikhAkhir: tamatVal || ''
+  };
+  const list = [newItem, ...loadPengumuman()];
+  savePengumuman(list);
+  renderPengumuman();
+  renderModalNoticeList();
+  document.getElementById('pengumuman-teks').value = '';
+  document.getElementById('pengumuman-tamat').value = '';
+}
+async function padamPengumuman(id) {
+  if (!(await PPDUI.confirm('Padam pengumuman ini?', 'Pengumuman akan dibuang daripada portal untuk semua pengguna.'))) return;
+  const list = loadPengumuman().filter(n => n.id !== id);
+  savePengumuman(list);
+  renderPengumuman();
+  renderModalNoticeList();
+}
+const APP_CARDS = [
+  ['skpm-card',      'skas',      'skpm-role-strip'],
+  ['spm-card',       'spm',       'spm-role-strip'],
+  ['efasiliti-card', 'efasiliti', 'efasiliti-role-strip'],
+];
+const ICON_USERS = '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+
+function getUser() { return A.currentUser(); }
+function activeLevel() { const s = A.session(); return s ? s.level : 'pengguna'; }
+
+function roleView(u, lv, app) {
+  const role = A.appRoleFor(u, lv, app);
+  const appLbl = A.APPS[app].label;
+  if (role === 'ppd_admin')    return { label: lv === 'superadmin' ? 'Superadmin' : 'Admin ' + appLbl, color: A.LEVELS[lv].color };
+  if (role === 'school_admin') return { label: 'Pentadbir Sekolah ' + appLbl, color: A.LEVELS.sekolah.color };
+  return { label: 'Pengguna Biasa', color: A.LEVELS.pengguna.color };
+}
+
+function buildRoleStrip(app, stripId) {
+  const u = getUser(), lv = activeLevel();
+  const el = document.getElementById(stripId);
+  if (!el || !u) return;
+  const v = roleView(u, lv, app);
+  const lain = A.levelsFor(u).filter(l => l !== lv && A.appRoleFor(u, l, app) !== 'teacher' && A.appRoleFor(u, lv, app) === 'teacher');
+  el.innerHTML = `<div class="app-role-strip">
+    <div class="app-role-av" style="background:${v.color}">${A.esc(A.initials(u.nama))}</div>
+    <div style="flex:1;min-width:0">
+      <div class="app-role-label">${v.label}</div>
+      <div class="app-role-sub">${A.esc(u.org)}</div>
+    </div>
+    ${lain.length ? `<div class="app-role-multi">${A.LEVELS[lain[lain.length - 1]].label} tersedia</div>` : ''}
+  </div>`;
+}
+
+function renderLevelPills() {
+  const u = getUser(), lv = activeLevel(), lvs = A.levelsFor(u);
+  const pills = lvs.map(l => {
+    const apps = A.rolesAtLevel(u, l).map(r => A.ROLES[r].app).filter(Boolean).map(a => A.APPS[a].label);
+    const on = l === lv;
+    return `<button type="button" class="lv-pill${on ? ' on' : ''}" role="radio" aria-checked="${on}" data-lv="${l}" style="--lv:${A.LEVELS[l].color}">
+      <span class="dot"></span>${A.LEVELS[l].label}${apps.length ? ` <small>· ${apps.join(', ')}</small>` : ''}</button>`;
+  }).join('');
+  const el = document.getElementById('user-banner');
+  el.innerHTML = `<span class="ub-lbl">${lvs.length > 1 ? 'Guna peranan:' : 'Peranan:'}</span>
+    <div class="lv-pills" role="radiogroup" aria-label="Pilih peranan aktif">${pills}</div>
+    ${lv === 'superadmin' ? `<button type="button" class="ub-admin" onclick="openUrusPengguna()">${ICON_USERS}Urus Pengguna</button>` : ''}`;
+  el.querySelectorAll('.lv-pill').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.lv === activeLevel()) return;
+    A.setLevel(b.dataset.lv);
+    updateUI();
+    toast(`Kini menggunakan peranan ${A.LEVELS[b.dataset.lv].label}`);
+  }));
+}
+
+let _toastT;
+function toast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(_toastT); _toastT = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+function salam() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Selamat pagi';
+  if (h < 14) return 'Selamat tengah hari';
+  if (h < 19) return 'Selamat petang';
+  return 'Selamat malam';
+}
+
+/* ── KPI, tugasan & lencana ikut peranan aktif ─ */
+const KPI_IC = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  school: '<path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  award: '<circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+};
+// Nombor bulat (bukan tahun) dikira naik daripada 0 apabila kad dipaparkan
+const kpiHTML = (ic, warna, num, lbl) => `<div class="kpi" style="--k:${warna}"><div class="kpi-ic"><svg viewBox="0 0 24 24">${KPI_IC[ic]}</svg></div><div><div class="kpi-num"${typeof num === 'number' && num > 0 && num < 1900 ? ` data-kira="${num}"` : ''}>${num}</div><div class="kpi-lbl">${lbl}</div></div></div>`;
+const KURANG_GERAK = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function kiraNaik(akar) {
+  if (KURANG_GERAK) return;
+  akar.querySelectorAll('[data-kira]').forEach(el => {
+    const sasaran = +el.dataset.kira, mula = performance.now(), tempoh = 900;
+    el.removeAttribute('data-kira');
+    el.textContent = '0';
+    const langkah = t => {
+      const p = Math.min(1, (t - mula) / tempoh);
+      el.textContent = Math.round(sasaran * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(langkah);
+    };
+    requestAnimationFrame(langkah);
+  });
+}
+
+/* ── Kad "Fokus semasa" dalam hero: angka sebenar daripada stor, mengikut skop peranan aktif ─ */
+function skopData(u, lv) {
+  const D = PPDData;
+  if (lv === 'pengguna') return { label: 'kelas saya', kelas: D.spm.kelasGuru(u.id), tiket: D.efasiliti.tiket().filter(t => t.pelaporId === u.id), rekod: D.skas.rekod(u.id), lblRekod: 'Rekod SK@S saya menunggu pengesahan', lblTiket: 'Aduan aktif saya' };
+  if (lv === 'sekolah') {
+    const sk = D.sekolahUser(u);
+    const ahli = new Set(A.users().filter(x => sk && x.kodSekolah === sk.kod).map(x => x.id));
+    const semua = D.skas.all();
+    return { label: sk ? sk.nama : 'sekolah', kelas: sk ? D.spm.kelasSekolah(sk.nama) : [], tiket: D.efasiliti.tiket().filter(t => sk && t.kodSekolah === sk.kod),
+      rekod: Object.keys(semua).filter(id => ahli.has(id)).flatMap(id => semua[id]), lblRekod: 'Rekod SK@S menunggu pengesahan', lblTiket: 'Aduan aktif sekolah' };
+  }
+  return { label: 'seluruh daerah', kelas: D.spm.kelas(), tiket: D.efasiliti.tiket(), rekod: Object.values(D.skas.all()).flat(), lblRekod: 'Rekod SK@S menunggu pengesahan', lblTiket: 'Aduan fasiliti aktif' };
+}
+function renderFokus(u, lv) {
+  const el = document.getElementById('fokus');
+  const D = PPDData, pe = D.PEPERIKSAAN_SEMASA, s = skopData(u, lv), marks = D.spm.marks();
+  const jumlah = s.kelas.reduce((a, k) => a + (k.pelajar || []).length, 0);
+  const belum = s.kelas.reduce((a, k) => a + D.spm.belumIsi(k, pe.key, marks), 0);
+  const pct = jumlah ? Math.round((jumlah - belum) / jumlah * 100) : null;
+  const baki = -D.hari(pe.tarikhAkhir);
+  const akhir = new Date(pe.tarikhAkhir).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' });
+  const L = 2 * Math.PI * 34;
+  const menunggu = s.rekod.filter(r => r.status === 'pending').length;
+  const aduan = s.tiket.filter(D.efasiliti.aktif).length;
+  const go = '<svg class="go" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  el.innerHTML = `
+    <div class="fokus-h"><span>Fokus semasa</span><span>${A.esc(s.label)}</span></div>
+    <a class="fokus-utama" href="${A.APPS.spm.url}">
+      <span class="cincin" role="img" aria-label="${pct === null ? 'Tiada kelas' : `Pengisian markah ${pct} peratus`}">
+        <svg viewBox="0 0 84 84"><circle class="trek" cx="42" cy="42" r="34"/><circle class="isi" cx="42" cy="42" r="34" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${L.toFixed(1)}" data-akhir="${(L * (1 - (pct || 0) / 100)).toFixed(1)}"/></svg>
+        <b>${pct === null ? '–' : pct + '%'}</b>
+      </span>
+      <span style="min-width:0">
+        <span class="fokus-t" style="display:block">Pengisian markah ${A.esc(pe.label)}</span>
+        <span class="fokus-d" style="display:block">${pct === null ? 'Tiada kelas direkodkan dalam skop ini' : belum ? `${belum} daripada ${jumlah} markah belum diisi` : 'Semua markah telah diisi'}</span>
+        <span class="fokus-due${baki <= 3 ? ' merah' : ''}">Tarikh akhir ${akhir} · ${bakiTeks(baki)}</span>
+      </span>
+    </a>
+    <div class="fokus-rows">
+      <a class="fokus-row" href="${A.APPS.skas.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.award}</svg></span><span class="l">${s.lblRekod}</span><b>${menunggu}</b>${go}</a>
+      <a class="fokus-row" href="${A.APPS.efasiliti.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.wrench}</svg></span><span class="l">${s.lblTiket}</span><b>${aduan}</b>${go}</a>
+    </div>`;
+  // Cincin terisi selepas lukisan pertama supaya peralihan kelihatan
+  const isi = el.querySelector('.isi');
+  requestAnimationFrame(() => requestAnimationFrame(() => { isi.style.strokeDashoffset = isi.dataset.akhir; }));
+}
+
+function renderKPI(u, lv) {
+  const el = document.getElementById('kpis');
+  if (lv === 'pengguna') {
+    const kelas = PPDData.spm.kelasGuru(u.id);
+    const marks = PPDData.spm.marks();
+    const belum = kelas.reduce((a, k) => a + PPDData.spm.belumIsi(k, PPDData.PEPERIKSAAN_SEMASA.key, marks), 0);
+    const rekod = PPDData.skas.rekod(u.id);
+    const aduan = PPDData.efasiliti.tiket().filter(t => t.pelaporId === u.id && PPDData.efasiliti.aktif(t)).length;
+    el.innerHTML = kpiHTML('book', '#2f6fb3', kelas.length, 'Kelas Saya')
+      + kpiHTML('pen', belum ? '#b54708' : '#17935a', belum, 'Markah Percubaan Belum Diisi')
+      + kpiHTML('award', '#0f9e94', rekod.filter(r => r.status === 'approved').length + '/' + rekod.length, 'Rekod SK@S Disahkan')
+      + kpiHTML('wrench', '#1d6fa5', aduan, 'Aduan Aktif Saya');
+  } else {
+    el.innerHTML = kpiHTML('grid', '#2f6fb3', 3, 'Aplikasi Aktif')
+      + kpiHTML('school', '#c8962a', PPDLokasi.senarai.filter(l => l.jenis !== 'PPD').length, 'Sekolah Seliaan')
+      + kpiHTML('users', '#17935a', A.users().length, 'Pengguna Berdaftar')
+      + kpiHTML('cal', '#c4321f', 2026, 'Sesi Persekolahan');
+  }
+  kiraNaik(el);
+}
+
+const APP_GAYA = { spm: ['Analitik SPM', '#b7791f', 'chart'], skas: ['SK@S', '#0f9e94', 'award'], efasiliti: ['e-Fasiliti', '#1d6fa5', 'wrench'] };
+const TAHAP_WARNA = { merah: '#b42318', kuning: '#b54708', biru: '#13406e', abu: '#475467' };
+function bakiTeks(baki) { return baki > 1 ? `${baki} hari lagi` : baki === 1 ? 'Esok' : baki === 0 ? 'Hari ini' : `Lewat ${-baki} hari`; }
+
+function renderTugasan(u, lv) {
+  const sec = document.getElementById('tugasan');
+  sec.hidden = lv !== 'pengguna';
+  if (sec.hidden) return;
+  const list = PPDData.tugasan(u);
+  document.getElementById('tugasan-meta').textContent = list.length ? `${list.length} perkara perlu perhatian` : '';
+  document.getElementById('tugasan-list').innerHTML = list.length ? list.map(t => {
+    const [lbl, c, ic] = APP_GAYA[t.app];
+    const due = t.tarikh ? `<span class="tg-due" style="--tc:${TAHAP_WARNA[t.tahap]}">${bakiTeks(t.baki)}</span>` : '';
+    return `<a class="tg-item" href="${A.esc(t.url)}" style="--c:${c}">
+      <span class="tg-ic"><svg viewBox="0 0 24 24">${KPI_IC[ic]}</svg></span>
+      <span class="tg-body"><span class="tg-app">${lbl}</span><span class="tg-t" style="display:block">${A.esc(t.tajuk)}</span><span class="tg-d" style="display:block">${A.esc(t.butiran)}</span></span>
+      ${due}<svg class="tg-go" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>`;
+  }).join('') : `<div class="tg-kosong"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Tiada tugasan tertunggak. Semua markah, rekod dan aduan anda terkini.</div>`;
+}
+
+function renderLencana(u, lv) {
+  const lc = lv === 'pengguna' ? PPDData.lencana(u) : {};
+  APP_CARDS.forEach(([cardId, app]) => {
+    const b = document.querySelector(`#${cardId} .app-badge`);
+    const x = lc[app];
+    b.classList.toggle('perlu', !!x);
+    b.style.setProperty('--bc', x ? TAHAP_WARNA[x.tahap] : '');
+    b.textContent = x ? x.teks : 'Aktif';
+  });
+}
+
+function updateUI() {
+  const u = getUser();
+  if (!u) { A.logout(); return; }
+  const lv = activeLevel();
+  renderKPI(u, lv);
+  renderTugasan(u, lv);
+  renderLencana(u, lv);
+  const av = document.getElementById('profile-av');
+  av.textContent = A.initials(u.nama);
+  av.style.background = A.LEVELS[lv].color;
+  document.getElementById('profile-name').textContent = u.nama;
+  document.getElementById('profile-org').textContent = `${u.org} · ${A.LEVELS[lv].label}`;
+  document.getElementById('greet').textContent = `${salam()},`;
+  document.getElementById('greet-nama').textContent = u.nama;
+  renderFokus(u, lv);
+  document.getElementById('q-laporan').hidden = lv === 'pengguna';
+  APP_CARDS.forEach(([, app, strip]) => buildRoleStrip(app, strip));
+  renderLevelPills();
+  if (lv !== 'superadmin') closeUrusPengguna();
+  const btnAdmin = document.getElementById('btn-pengumuman-admin');
+  if (btnAdmin) {
+    const isAdmin = isPpdAdmin();
+    btnAdmin.hidden = !isAdmin;
+    btnAdmin.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+  renderPengumuman();
+}
+
+function handleAppCardClick(app) {
+  const u = getUser();
+  if (!u) return;
+  window.location.href = A.APPS[app].url;
+}
+
+/* ── Menu profil ─────────────────────────────── */
+function closeProfileMenu() {
+  const m = document.getElementById('pmenu');
+  if (m) m.remove();
+  document.getElementById('profile-chip').setAttribute('aria-expanded', 'false');
+}
+function toggleProfileMenu() {
+  if (document.getElementById('pmenu')) { closeProfileMenu(); return; }
+  const u = getUser(), lv = activeLevel();
+  const chips = (u.roles || []).map(r => `<span class="rchip" style="--lv:${A.LEVELS[A.ROLES[r].level].color}">${A.ROLES[r].label}</span>`).join('')
+    + `<span class="rchip" style="--lv:${A.LEVELS.pengguna.color}">Pengguna Biasa</span>`;
+  const m = document.createElement('div');
+  m.id = 'pmenu'; m.className = 'pmenu'; m.setAttribute('role', 'menu');
+  m.innerHTML = `
+    <div class="pmenu-h">
+      <span class="profile-av" style="background:${A.LEVELS[lv].color};width:40px;height:40px">${A.esc(A.initials(u.nama))}</span>
+      <div style="min-width:0">
+        <div style="font-weight:700;font-size:14px">${A.esc(u.nama)}</div>
+        <div style="font-size:12px;color:var(--t3);overflow-wrap:anywhere">${A.esc(u.emel)}</div>
+      </div>
+    </div>
+    <div class="pmenu-roles"><span class="lbl">Peranan diberi</span>${chips}</div>
+    ${lv === 'superadmin' ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}Urus Pengguna &amp; Peranan</button>` : ''}
+    <button class="mi out" role="menuitem" onclick="A.logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log keluar</button>`;
+  document.querySelector('.masthead-top').appendChild(m);
+  document.getElementById('profile-chip').setAttribute('aria-expanded', 'true');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#pmenu') && !e.target.closest('#profile-chip')) closeProfileMenu();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeProfileMenu(); closeUrusPengguna(); } });
+
+/* ── Urus pengguna (Superadmin) ──────────────── */
+const ROLE_GROUPS = [
+  ['Admin',             ['admin_skas', 'admin_spm', 'admin_efasiliti']],
+  ['Pentadbir Sekolah', ['sekolah_skas', 'sekolah_spm', 'sekolah_efasiliti']],
+  ['Superadmin',        ['superadmin']],
+];
+function isiPilihanOrg() {
+  const sel = document.getElementById('upg-org');
+  sel.innerHTML = '<option value="">Pilih kod</option>' + A.organisasi().map(o => `<option value="${A.esc(o.kod)}">${A.esc(o.kod)}</option>`).join('');
+  paparNamaOrg();
+}
+function paparNamaOrg() {
+  const o = A.orgByKod(document.getElementById('upg-org').value);
+  const el = document.getElementById('upg-orgnama');
+  el.textContent = o ? `${o.nama} · ${o.lokasi}` : 'Pilih kod untuk papar nama sekolah';
+  el.classList.toggle('ada', !!o);
+}
+document.getElementById('upg-org').addEventListener('change', paparNamaOrg);
+function openUrusPengguna() {
+  if (activeLevel() !== 'superadmin') return;
+  isiPilihanOrg();
+  document.getElementById('upg-err').hidden = true;
+  renderUrusPengguna();
+  document.getElementById('modal-pengguna').hidden = false;
+}
+function closeUrusPengguna() {
+  const m = document.getElementById('modal-pengguna');
+  if (m) m.hidden = true;
+}
+function renderUrusPengguna() {
+  const me = getUser();
+  const q = A.normEmail(document.getElementById('upg-cari').value);
+  const list = A.users().filter(u => !q || [u.nama, u.emel, u.org].some(s => String(s).toLowerCase().includes(q)));
+  const superCount = A.users().filter(u => u.roles.includes('superadmin')).length;
+  document.getElementById('upg-list').innerHTML = list.length ? list.map(u => {
+    const lvs = A.levelsFor(u), top = lvs[lvs.length - 1];
+    const isMe = u.id === me.id;
+    const groups = ROLE_GROUPS.map(([nama, keys]) => `<div class="upg-grp"><span>${nama}</span>${keys.map(k => {
+      const on = u.roles.includes(k);
+      const lock = k === 'superadmin' && on && (isMe || superCount <= 1);
+      const takLayak = !on && !A.layakPeranan(u, k);
+      const lbl = A.ROLES[k].app ? A.APPS[A.ROLES[k].app].label : 'Superadmin';
+      return `<button type="button" class="tg" aria-pressed="${on}" data-uid="${A.esc(u.id)}" data-role="${k}" style="--lv:${A.LEVELS[A.ROLES[k].level].color}"${lock ? ' disabled title="Sekurang-kurangnya satu Superadmin diperlukan dan anda tidak boleh membuang peranan sendiri"' : ''}${takLayak ? ' disabled title="Peranan Admin dan Superadmin hanya untuk emel @moe.gov.my"' : ''}>${lbl}</button>`;
+    }).join('')}</div>`).join('');
+    return `<div class="upg-row">
+      <div class="upg-top">
+        <span class="upg-av" style="background:${A.LEVELS[top].color}">${A.esc(A.initials(u.nama))}</span>
+        <div style="min-width:0"><div class="upg-n">${A.esc(u.nama)}${isMe ? ' <span class="rchip" style="--lv:var(--gold)">Anda</span>' : ''}</div><div class="upg-e">${A.esc(u.emel)} · ${u.kodSekolah ? `<b>${A.esc(u.kodSekolah)}</b> ` : ''}${A.esc(u.org || '—')}</div></div>
+        ${isMe ? '' : `<button type="button" class="upg-del" data-del="${A.esc(u.id)}">Padam</button>`}
+      </div>
+      ${groups}
+    </div>`;
+  }).join('') : '<div style="padding:16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengguna sepadan</div>';
+  document.getElementById('upg-audit').innerHTML = A.auditHTML(A.auditLog());
+}
+document.querySelectorAll('[data-upgtab]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-upgtab]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+  document.getElementById('upg-pane-pengguna').hidden = b.dataset.upgtab !== 'pengguna';
+  document.getElementById('upg-pane-audit').hidden = b.dataset.upgtab !== 'audit';
+  document.getElementById('upg-pane-sekolah').hidden = b.dataset.upgtab !== 'sekolah';
+  if (b.dataset.upgtab === 'sekolah') renderSenaraiSekolah();
+}));
+document.getElementById('upg-list').addEventListener('click', async e => {
+  const tg = e.target.closest('.tg');
+  const del = e.target.closest('[data-del]');
+  const users = A.users();
+  if (tg && !tg.disabled) {
+    const r = tg.dataset.role;
+    const res = A.toggleRole(tg.dataset.uid, r);
+    if (!res.ok) return toast('Anda tiada kebenaran untuk menukar peranan ini.');
+    renderUrusPengguna();
+    updateUI();
+    toast(`${A.ROLES[r].label} ${res.on ? 'diberikan kepada' : 'ditarik daripada'} ${res.user.nama}`);
+  } else if (del) {
+    const u = users.find(x => x.id === del.dataset.del);
+    if (!(await PPDUI.confirm(`Padam ${u.nama}?`, `${u.emel}\nPengguna ini tidak lagi boleh log masuk dan semua peranannya akan ditarik.`))) return;
+    A.saveUsers(A.users().filter(x => x.id !== u.id));
+    A.logAudit({ tindakan: 'padam', sasaranId: u.id, sasaranNama: u.nama });
+    renderUrusPengguna();
+    toast(`${u.nama} telah dipadam`);
+  }
+});
+/* ── Senarai sekolah induk (Superadmin) ──────── */
+function renderSenaraiSekolah() {
+  document.getElementById('sk-lokasi').innerHTML = A.LOKASI.map(l => `<option>${l}</option>`).join('');
+  document.getElementById('sk-jenis').innerHTML = A.JENIS_ORG.map(j => `<option>${j}</option>`).join('');
+  const kiraPengguna = kod => A.users().filter(u => u.kodSekolah === kod).length;
+  document.getElementById('sk-list').innerHTML = A.organisasi().map(o => `<tr>
+    <td class="kod">${A.esc(o.kod)}</td>
+    <td>${A.esc(o.nama)}</td>
+    <td>${A.esc(o.lokasi)}</td>
+    <td><span class="sk-jenis">${A.esc(o.jenis)}</span></td>
+    <td style="text-align:right">${kiraPengguna(o.kod)}</td>
+    <td><div class="sk-act"><button type="button" data-sk-ubah="${A.esc(o.kod)}">Edit</button><button type="button" class="del" data-sk-padam="${A.esc(o.kod)}">Padam</button></div></td>
+  </tr>`).join('');
+  resetBorangSekolah();
+}
+function resetBorangSekolah() {
+  document.getElementById('sk-form').reset();
+  document.getElementById('sk-asal').value = '';
+  document.getElementById('sk-kod').readOnly = false;
+  document.getElementById('sk-simpan').textContent = 'Tambah';
+  document.getElementById('sk-batal').hidden = true;
+  document.getElementById('sk-err').hidden = true;
+}
+document.getElementById('sk-batal').addEventListener('click', resetBorangSekolah);
+document.getElementById('sk-list').addEventListener('click', async e => {
+  const ubah = e.target.closest('[data-sk-ubah]'), padam = e.target.closest('[data-sk-padam]');
+  if (ubah) {
+    const o = A.orgByKod(ubah.dataset.skUbah);
+    document.getElementById('sk-asal').value = o.kod;
+    document.getElementById('sk-kod').value = o.kod;
+    document.getElementById('sk-kod').readOnly = true;
+    document.getElementById('sk-nama').value = o.nama;
+    document.getElementById('sk-lokasi').value = o.lokasi;
+    document.getElementById('sk-jenis').value = o.jenis;
+    document.getElementById('sk-simpan').textContent = 'Simpan';
+    document.getElementById('sk-batal').hidden = false;
+    document.getElementById('sk-nama').focus();
+  } else if (padam) {
+    const o = A.orgByKod(padam.dataset.skPadam);
+    const n = A.users().filter(u => u.kodSekolah === o.kod).length;
+    if (n) return PPDUI.alert('Tidak boleh dipadam', `${n} pengguna berdaftar di ${o.nama}. Pindahkan pengguna ke sekolah lain dahulu.`);
+    if (!(await PPDUI.confirm(`Padam ${o.nama}?`, `Kod ${o.kod} tidak lagi boleh dipilih semasa pendaftaran.`))) return;
+    A.saveOrganisasi(A.organisasi().filter(x => x.kod !== o.kod));
+    A.logAudit({ tindakan: 'sekolah-padam', sasaranId: o.kod, sasaranNama: `${o.kod} ${o.nama}` });
+    renderSenaraiSekolah();
+    toast(`${o.nama} dipadam daripada senarai`);
+  }
+});
+document.getElementById('sk-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const asal = document.getElementById('sk-asal').value;
+  const kod = document.getElementById('sk-kod').value.replace(/\s+/g, '').toUpperCase();
+  const nama = A.besar(document.getElementById('sk-nama').value);
+  const lokasi = document.getElementById('sk-lokasi').value, jenis = document.getElementById('sk-jenis').value;
+  const err = document.getElementById('sk-err');
+  const fail = m => { err.textContent = m; err.hidden = false; };
+  if (!/^[A-Z0-9]{4,10}$/.test(kod)) return fail('Kod sekolah mestilah 4–10 huruf/angka, contohnya YEA6105.');
+  if (nama.length < 3) return fail('Masukkan nama sekolah.');
+  const list = A.organisasi();
+  if (!asal && list.some(o => o.kod === kod)) return fail(`Kod ${kod} sudah wujud dalam senarai.`);
+  if (list.some(o => o.nama === nama && o.kod !== (asal || kod))) return fail(`Nama ${nama} sudah digunakan oleh kod lain.`);
+  const item = { kod, nama, lokasi, jenis };
+  A.saveOrganisasi(asal ? list.map(o => o.kod === asal ? item : o) : [...list, item]);
+  A.logAudit({ tindakan: asal ? 'sekolah-ubah' : 'sekolah-tambah', sasaranId: kod, sasaranNama: `${kod} ${nama}` });
+  renderSenaraiSekolah();
+  isiPilihanOrg();
+  renderUrusPengguna();
+  updateUI();
+  toast(asal ? `${nama} dikemas kini` : `${nama} ditambah ke senarai sekolah`);
+});
+
+document.getElementById('upg-cari').addEventListener('input', renderUrusPengguna);
+document.getElementById('upg-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const nama = A.besar(document.getElementById('upg-nama').value);
+  const emel = A.normEmail(document.getElementById('upg-emel').value);
+  const kodSekolah = document.getElementById('upg-org').value;
+  const err = document.getElementById('upg-err');
+  const fail = m => { err.textContent = m; err.hidden = false; };
+  if (!nama) return fail('Masukkan nama penuh pengguna.');
+  if (!kodSekolah) return fail('Pilih kod sekolah pengguna.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel)) return fail('Masukkan emel yang sah, contohnya nama@moe-dl.edu.my.');
+  if (A.findByEmail(emel)) return fail('Emel ini sudah didaftarkan.');
+  err.hidden = true;
+  const uid = 'u_' + Date.now().toString(36);
+  A.saveUsers([...A.users(), { id: uid, nama, emel, kodSekolah, roles: [] }]);
+  A.logAudit({ tindakan: 'daftar', sasaranId: uid, sasaranNama: nama });
+  e.target.reset();
+  paparNamaOrg();
+  document.getElementById('upg-cari').value = '';
+  renderUrusPengguna();
+  toast(`${nama} didaftarkan sebagai Pengguna Biasa. Tetapkan peranan di bawah.`);
+});
+document.getElementById('modal-pengguna').addEventListener('click', function (e) {
+  if (e.target === this) closeUrusPengguna();
+});
+
+// Navigasi aktif mengikut seksyen
+PPDLokasi.pasang('#lokasi-hos');
+
+const navLinks = [...document.querySelectorAll('.nav a')];
+const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => io.observe(s));
+</script>
+<script>
+document.getElementById('gov-date').textContent =
+  new Date().toLocaleDateString('ms-MY', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+updateUI();
+document.getElementById('profile-chip').addEventListener('click', toggleProfileMenu);
+document.getElementById('modal-pengumuman').addEventListener('click', function(e) {
+  if (e.target === this) closePengumumanModal();
+});
+APP_CARDS.forEach(([id, app]) => {
+  const el = document.getElementById(id);
+  el.addEventListener('click', () => handleAppCardClick(app));
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAppCardClick(app); } });
+  // Sorotan mengikut kursor
+  el.addEventListener('pointermove', e => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+document.getElementById('hero-tarikh').textContent =
+  new Date().toLocaleDateString('ms-MY', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · Sesi 2026';
+
+/* ── Carian pantas (Ctrl+K): aplikasi, bahagian halaman dan sekolah ── */
+(function () {
+  const IC = {
+    bahagian: '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+    keluar: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  };
+  const svg = p => `<svg viewBox="0 0 24 24">${p}</svg>`;
+  const keBahagian = id => () => document.getElementById(id).scrollIntoView({ behavior: KURANG_GERAK ? 'auto' : 'smooth' });
+  function bukaSekolah(l) {
+    document.getElementById('lokasi').scrollIntoView({ behavior: KURANG_GERAK ? 'auto' : 'smooth' });
+    const cari = document.getElementById('lk-cari');
+    if (cari && cari.value) { cari.value = ''; cari.dispatchEvent(new Event('input')); }
+    setTimeout(() => { const b = document.querySelector(`#lokasi-hos [data-lk="${CSS.escape(l.id)}"]`); if (b) b.click(); }, 500);
+  }
+  function semuaItem() {
+    const out = [
+      { k: 'Aplikasi', t: 'SK@S', d: 'SKPM Kualiti@Sekolah', c: '#0b7f77', ic: svg(KPI_IC.award), f: () => handleAppCardClick('skas') },
+      { k: 'Aplikasi', t: 'Analitik SPM', d: 'GPS, trend dan murid berisiko', c: '#9a6f12', ic: svg(KPI_IC.chart), f: () => handleAppCardClick('spm') },
+      { k: 'Aplikasi', t: 'e-Fasiliti', d: 'Aduan dan pemantauan kerosakan', c: '#1d6fa5', ic: svg(KPI_IC.wrench), f: () => handleAppCardClick('efasiliti') },
+      { k: 'Bahagian', t: 'Pengumuman', d: 'Makluman terkini PPD', ic: svg(IC.bahagian), f: keBahagian('pengumuman') },
+      { k: 'Bahagian', t: 'Pautan Pantas', d: '', ic: svg(IC.bahagian), f: keBahagian('pautan') },
+      { k: 'Bahagian', t: 'Lokasi Sekolah', d: 'Peta 29 sekolah seliaan', ic: svg(IC.bahagian), f: keBahagian('lokasi') },
+      { k: 'Bahagian', t: 'Bantuan Teknikal', d: 'Unit ICT PPD Dalat', ic: svg(IC.bahagian), f: keBahagian('hubungi') },
+    ];
+    if (activeLevel() !== 'pengguna') out.splice(3, 0,
+      { k: 'Aplikasi', t: 'Laporan', d: 'SKPM 5.4 dan SPM, sedia cetak dan Excel', ic: svg(KPI_IC.book), f: () => { location.href = '/laporan'; } },
+      { k: 'Aplikasi', t: 'Ketepatan Semakan AI', d: 'Sepadan atau tidak dengan keputusan pentadbir', ic: svg(KPI_IC.pen), f: () => { location.href = '/laporan#ai'; } });
+    if (activeLevel() === 'superadmin') out.push({ k: 'Tindakan', t: 'Urus Pengguna & Peranan', d: 'Superadmin', ic: ICON_USERS, f: openUrusPengguna });
+    out.push({ k: 'Tindakan', t: 'Log keluar', d: '', c: '#b42318', ic: svg(IC.keluar), f: () => A.logout() });
+    PPDLokasi.senarai.forEach(l => out.push({ k: 'Sekolah', t: l.nama, d: `${l.kod} · lihat pada peta`, ic: `<img src="${A.esc(l.logo)}" alt="" loading="lazy">`, f: () => bukaSekolah(l) }));
+    return out;
+  }
+  let ov = null, hasil = [], pilih = 0, asal = null;
+  function tutup() { if (!ov) return; ov.remove(); ov = null; if (asal) asal.focus(); }
+  function lukis(q) {
+    q = q.trim().toLowerCase();
+    const semua = semuaItem();
+    // Tanpa carian: aplikasi, bahagian dan tindakan sahaja (29 sekolah muncul apabila ditaip)
+    hasil = q ? semua.filter(x => (x.t + ' ' + x.d).toLowerCase().includes(q)).slice(0, 30) : semua.filter(x => x.k !== 'Sekolah');
+    pilih = Math.min(pilih, Math.max(0, hasil.length - 1));
+    const list = ov.querySelector('.palet-list');
+    if (!hasil.length) { list.innerHTML = '<div class="palet-kosong">Tiada padanan. Cuba nama aplikasi, nama sekolah atau kod sekolah.</div>'; return; }
+    let kump = '';
+    list.innerHTML = hasil.map((x, i) => `${x.k !== kump ? `<div class="palet-kump">${kump = x.k}</div>` : ''}
+      <button type="button" class="palet-item" role="option" id="palet-${i}" data-i="${i}" aria-selected="${i === pilih}"${x.c ? ` style="--c:${x.c}"` : ''}>
+        <span class="ic">${x.ic}</span><span class="t"><b>${A.esc(x.t)}</b>${x.d ? `<small>${A.esc(x.d)}</small>` : ''}</span></button>`).join('');
+    ov.querySelector('input').setAttribute('aria-activedescendant', 'palet-' + pilih);
+  }
+  function tanda() {
+    ov.querySelectorAll('.palet-item').forEach(b => b.setAttribute('aria-selected', +b.dataset.i === pilih));
+    const b = ov.querySelector(`#palet-${pilih}`);
+    if (b) b.scrollIntoView({ block: 'nearest' });
+    ov.querySelector('input').setAttribute('aria-activedescendant', 'palet-' + pilih);
+  }
+  function jalan(i) { const x = hasil[i]; if (!x) return; asal = null; tutup(); x.f(); }
+  function buka() {
+    if (ov) return;
+    asal = document.activeElement; pilih = 0;
+    ov = document.createElement('div');
+    ov.className = 'palet-ov';
+    ov.innerHTML = `<div class="palet" role="dialog" aria-modal="true" aria-label="Carian pantas">
+      <div class="palet-in"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Cari aplikasi, bahagian atau sekolah…" aria-label="Carian pantas" role="combobox" aria-expanded="true" aria-controls="palet-list" autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>
+      <div class="palet-list" id="palet-list" role="listbox"></div>
+      <div class="palet-kaki"><span><kbd>↑</kbd> <kbd>↓</kbd> pilih</span><span><kbd>Enter</kbd> buka</span><span><kbd>Esc</kbd> tutup</span></div>
+    </div>`;
+    document.body.appendChild(ov);
+    const inp = ov.querySelector('input');
+    lukis('');
+    inp.focus();
+    inp.addEventListener('input', () => { pilih = 0; lukis(inp.value); });
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('.palet-item');
+      if (b) jalan(+b.dataset.i); else if (e.target === ov) tutup();
+    });
+    ov.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); pilih = (pilih + 1) % Math.max(1, hasil.length); tanda(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); pilih = (pilih - 1 + hasil.length) % Math.max(1, hasil.length); tanda(); }
+      else if (e.key === 'Enter') { e.preventDefault(); jalan(pilih); }
+      else if (e.key === 'Escape') { e.stopPropagation(); tutup(); }
+      else if (e.key === 'Tab') { e.preventDefault(); } // fokus kekal dalam dialog
+    });
+  }
+  document.getElementById('cari-btn').addEventListener('click', buka);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); ov ? tutup() : buka(); }
+  });
+})();
+</script>
+<script src="assets/ppd-pembantu.js" defer></script>
+
+</body>
+</html>
