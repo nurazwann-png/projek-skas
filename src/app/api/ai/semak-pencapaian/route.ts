@@ -1,13 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { penggunaSemasa } from "@/lib/pelayan/sesi";
+import { aiSedia, klienAIDenganSandaran, MODEL_AI } from "@/lib/pelayan/ai";
 
 // Semak sama ada sijil/evidens (gambar atau PDF) layak sebagai Pencapaian Guru (SKPM 5.4.1)
 // atau Pencapaian Sekolah (SKPM 5.4.2) berdasarkan Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026.
 
 export const maxDuration = 120;
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const JENIS_IMEJ = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 type JenisImej = (typeof JENIS_IMEJ)[number];
@@ -224,6 +223,44 @@ function skema(sekolah: boolean) {
 const SKEMA_GURU = skema(false);
 const SKEMA_SEKOLAH = skema(true);
 
+// Polisi organisasi KPM menyekat structured outputs di Vertex, jadi skema dihantar dalam prompt dan disahkan di sini.
+const arahanJson = (s: object) =>
+  `\n\nFORMAT JAWAPAN: Balas dengan SATU objek JSON sahaja, tanpa teks lain dan tanpa blok kod Markdown. Objek itu mesti mematuhi JSON Schema berikut dengan tepat (semua medan "required" wajib ada; gunakan null jika tiada maklumat):\n${JSON.stringify(s)}`;
+const SISTEM_GURU = PANDUAN_GURU + arahanJson(SKEMA_GURU);
+const SISTEM_SEKOLAH = PANDUAN_SEKOLAH + arahanJson(SKEMA_SEKOLAH);
+
+type Skema = { type?: string | string[]; enum?: unknown[]; required?: string[]; properties?: Record<string, Skema>; items?: Skema };
+
+function sahkan(nilai: unknown, s: Skema, laluan: string, ralat: string[]): void {
+  if (ralat.length >= 10) return;
+  const jenis = s.type === undefined ? [] : Array.isArray(s.type) ? s.type : [s.type];
+  const sebenar = nilai === null ? "null" : Array.isArray(nilai) ? "array" : typeof nilai;
+  if (jenis.length && !jenis.includes(sebenar)) {
+    ralat.push(`${laluan}: jenis ${sebenar}, sepatutnya ${jenis.join(" atau ")}`);
+    return;
+  }
+  if (s.enum && !s.enum.includes(nilai)) {
+    ralat.push(`${laluan}: nilai ${JSON.stringify(nilai)} tidak dalam senarai dibenarkan`);
+    return;
+  }
+  if (sebenar === "object" && s.properties) {
+    const obj = nilai as Record<string, unknown>;
+    for (const k of s.required ?? []) if (!(k in obj)) ralat.push(`${laluan}.${k}: tiada`);
+    for (const k of Object.keys(obj)) {
+      if (s.properties[k]) sahkan(obj[k], s.properties[k], `${laluan}.${k}`, ralat);
+      else delete obj[k];
+    }
+  }
+  if (sebenar === "array" && s.items) (nilai as unknown[]).forEach((x, i) => sahkan(x, s.items!, `${laluan}[${i}]`, ralat));
+}
+
+function bacaJson(teks: string): unknown {
+  const mula = teks.indexOf("{");
+  const akhir = teks.lastIndexOf("}");
+  if (mula < 0 || akhir < mula) throw new SyntaxError("Tiada objek JSON");
+  return JSON.parse(teks.slice(mula, akhir + 1));
+}
+
 const MAKS_DOKUMEN = 5;
 type Dokumen = { fail?: string; mimeType?: string; namaFail?: string };
 type Badan = { dokumen?: Dokumen[]; namaGuru?: string; jenis?: "guru" | "sekolah"; namaSekolah?: string; kodSekolah?: string };
@@ -264,8 +301,8 @@ export async function POST(req: NextRequest) {
   if (bersih.reduce((a, d) => a + (d.data.length * 3) / 4, 0) > SAIZ_MAKS) {
     return Response.json({ ralat: "Jumlah saiz fail melebihi 10MB. Kecilkan gambar atau mampatkan PDF." }, { status: 413 });
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ ralat: "Perkhidmatan AI belum dikonfigurasi di pelayan (ANTHROPIC_API_KEY). Hubungi Unit ICT PPD Dalat." }, { status: 503 });
+  if (!aiSedia()) {
+    return Response.json({ ralat: "Perkhidmatan AI belum dikonfigurasi di pelayan. Hubungi Unit ICT PPD Dalat." }, { status: 503 });
   }
 
   // Setiap dokumen dilabel sebelum kandungannya supaya AI tahu mana sijil utama dan mana sokongan
@@ -278,39 +315,60 @@ export async function POST(req: NextRequest) {
 
   const skop = bersih.length > 1 ? `${bersih.length} dokumen di atas (1 sijil utama, ${bersih.length - 1} dokumen sokongan) sebagai SATU pencapaian` : "sijil di atas";
 
-  try {
-    const res = await client.beta.messages.create({
-      model: "claude-opus-5-5",
-      max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      system: [{ type: "text", text: sekolah ? PANDUAN_SEKOLAH : PANDUAN_GURU, cache_control: { type: "ephemeral" } }],
-      output_config: { effort: "medium", format: { type: "json_schema", schema: sekolah ? SKEMA_SEKOLAH : SKEMA_GURU } },
-      messages: [
+  const mesej: Anthropic.Beta.Messages.BetaMessageParam[] = [
+    {
+      role: "user",
+      content: [
+        ...kandungan,
         {
-          role: "user",
-          content: [
-            ...kandungan,
-            {
-              type: "text",
-              text: sekolah
-                ? `Semak ${skop}. Sekolah pengguna: ${namaSekolah}${kodSekolah ? ` (kod ${kodSekolah})` : ""}. Tentukan sama ada ia Pencapaian Sekolah 5.4.2 bagi tahun penilaian 2026 dengan sekolah ini sebagai penerima, tandakan sumber setiap maklumat, dan terangkan kepada Pentadbir Sekolah.`
-                : `Semak ${skop}. Guru yang memuat naik: ${namaGuru || "tidak dinyatakan"}. Tentukan sama ada ia Pencapaian Guru 5.4.1 bagi tahun penilaian 2026, tandakan sumber setiap maklumat, dan terangkan kepada guru.`,
-            },
-          ],
+          type: "text",
+          text: sekolah
+            ? `Semak ${skop}. Sekolah pengguna: ${namaSekolah}${kodSekolah ? ` (kod ${kodSekolah})` : ""}. Tentukan sama ada ia Pencapaian Sekolah 5.4.2 bagi tahun penilaian 2026 dengan sekolah ini sebagai penerima, tandakan sumber setiap maklumat, dan terangkan kepada Pentadbir Sekolah.`
+            : `Semak ${skop}. Guru yang memuat naik: ${namaGuru || "tidak dinyatakan"}. Tentukan sama ada ia Pencapaian Guru 5.4.1 bagi tahun penilaian 2026, tandakan sumber setiap maklumat, dan terangkan kepada guru.`,
         },
       ],
-    });
+    },
+  ];
 
-    if (res.stop_reason === "refusal") {
-      return Response.json({ ralat: "AI tidak dapat menyemak dokumen ini. Cuba muat naik semula atau semak secara manual." }, { status: 422 });
+  try {
+    // Satu cubaan pembetulan jika JSON tidak mematuhi skema
+    for (let cubaan = 0; cubaan < 2; cubaan++) {
+      const res = await klienAIDenganSandaran().beta.messages.create({
+        model: MODEL_AI,
+        max_tokens: 16000,
+        system: [{ type: "text", text: sekolah ? SISTEM_SEKOLAH : SISTEM_GURU }],
+        messages: mesej,
+      });
+
+      if (res.stop_reason === "refusal") {
+        return Response.json({ ralat: "AI tidak dapat menyemak dokumen ini. Cuba muat naik semula atau semak secara manual." }, { status: 422 });
+      }
+      const teks = res.content
+        .filter((b) => b.type === "text")
+        .map((b) => (b.type === "text" ? b.text : ""))
+        .join("");
+      if (!teks.trim()) return Response.json({ ralat: "Tiada keputusan diterima daripada AI." }, { status: 502 });
+
+      const ralat: string[] = [];
+      let hasil: unknown;
+      try {
+        hasil = bacaJson(teks);
+        sahkan(hasil, (sekolah ? SKEMA_SEKOLAH : SKEMA_GURU) as Skema, "$", ralat);
+      } catch {
+        ralat.push("jawapan bukan JSON yang sah");
+      }
+      if (!ralat.length) return Response.json({ hasil, model: res.model });
+
+      console.error("semak-pencapaian: JSON tidak sah", ralat.join("; "));
+      mesej.push({ role: "assistant", content: res.content });
+      mesej.push({
+        role: "user",
+        content: `JSON anda tidak mematuhi skema: ${ralat.join("; ")}. Hantar semula SATU objek JSON lengkap yang betul sahaja, tanpa teks lain.`,
+      });
     }
-    const teks = res.content.find((b) => b.type === "text");
-    if (!teks || teks.type !== "text") {
-      return Response.json({ ralat: "Tiada keputusan diterima daripada AI." }, { status: 502 });
-    }
-    return Response.json({ hasil: JSON.parse(teks.text), model: res.model });
+    return Response.json({ ralat: "Keputusan AI tidak dapat dibaca. Cuba lagi." }, { status: 502 });
   } catch (err) {
+    if (err instanceof Anthropic.APIError) console.error("semak-pencapaian: ralat AI", err.status, err.message);
     if (err instanceof Anthropic.RateLimitError) {
       return Response.json({ ralat: "Terlalu banyak semakan serentak. Cuba lagi sebentar." }, { status: 429 });
     }

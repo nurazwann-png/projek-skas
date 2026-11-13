@@ -193,6 +193,13 @@
 .lk-legenda div{display:flex;align-items:center;gap:7px}
 .lk-legenda i{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid currentColor;box-sizing:border-box}
 .lk-legenda .cincin{width:14px;height:0;border:0;border-top:2px dashed #c8962a;border-radius:0;background:none}
+.lk-leg summary{cursor:pointer;list-style:none;font-weight:700;color:#0b2a4a;display:flex;align-items:center;gap:6px;min-height:20px}
+.lk-leg summary::-webkit-details-marker{display:none}
+.lk-leg summary::after{content:'';width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg);margin-top:3px;transition:transform .15s}
+.lk-leg[open] summary::after{transform:rotate(45deg);margin-top:-3px}
+.lk-legenda .lk-leg-isi{flex-direction:column;align-items:stretch;gap:5px;margin-top:6px}
+.lk-sentuh{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:800;padding:7px 12px;border-radius:999px;background:rgba(11,42,74,.88);color:#fff;font:600 12px/1.3 inherit;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.lk-sentuh[hidden]{display:none}
 .lk-butang{background:#fff;border:0;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:#0b2a4a}
 .lk-butang:hover{background:#f3f5f8}
 .lk-butang svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
@@ -200,7 +207,7 @@
 .leaflet-bar{border:0!important;box-shadow:0 2px 10px rgba(7,28,51,.18)!important;border-radius:10px!important;overflow:hidden}
 /* Popup */
 .lk-popup .leaflet-popup-content-wrapper{padding:0;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(7,28,51,.28)}
-.lk-popup .leaflet-popup-content{margin:0;width:290px!important}
+.lk-popup .leaflet-popup-content{margin:0;width:min(290px,calc(100vw - 80px))!important}
 .lk-popup .leaflet-popup-tip{background:#fff}
 .lk-popup a.leaflet-popup-close-button{color:#fff;top:6px;right:6px;font-size:20px}
 .lk-pop-kepala{position:relative;height:42px;background:linear-gradient(135deg,var(--lk-c),color-mix(in srgb,var(--lk-c) 55%,#000))}
@@ -232,11 +239,31 @@
 /* Panel arah dalam peta */
 .lk-arah{position:absolute;top:12px;left:12px;z-index:900;width:310px;max-width:calc(100% - 76px);max-height:calc(100% - 24px);display:flex;flex-direction:column;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(7,28,51,.28);overflow:hidden;font-family:inherit}
 .lk-arah[hidden]{display:none}
-.lk-ada-arah .lk-legenda{display:none}
+.lk-ada-arah .lk-legenda,.lk-ada-arah .lk-atas-kiri{display:none}
+/* Butang seret-ke-sekolah dan cip laluan aktif (penjuru kiri atas) */
+.lk-atas-kiri{position:absolute;top:12px;left:12px;z-index:850;display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:calc(100% - 76px)}
+.lk-seret{display:flex;align-items:center;gap:7px;height:38px;padding:0 14px 0 6px;border:0;border-radius:999px;background:#0b2a4a;color:#fff;font:700 12px/1 inherit;box-shadow:0 2px 10px rgba(7,28,51,.3);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.lk-seret:active{cursor:grabbing}
+.lk-seret i{width:28px;height:28px;border-radius:50%;background:#c8962a;display:grid;place-items:center}
+.lk-seret svg,.lk-hantu svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lk-seret small{display:block;font-size:10px;font-weight:600;opacity:.75;margin-top:2px}
+.lk-hantu{position:fixed;z-index:10000;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:#c8962a;color:#fff;display:grid;place-items:center;pointer-events:none;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 6px 16px rgba(0,0,0,.35)}
+.lk-pin.sasar{transform:scale(1.3);box-shadow:0 0 0 5px rgba(200,150,42,.65),0 6px 14px rgba(7,28,51,.35)}
+.lk-peta.lk-sasar-peta{box-shadow:inset 0 0 0 3px #c8962a}
+.lk-arah-cip{display:flex;align-items:center;gap:4px;max-width:100%;padding:4px 4px 4px 12px;border-radius:999px;background:#fff;box-shadow:0 2px 10px rgba(7,28,51,.22);font:600 12px/1.2 inherit;color:#475467}
+.lk-arah-cip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-arah-cip b{color:#0b2a4a}
+.lk-arah-cip button{flex-shrink:0;height:30px;padding:0 10px;border:0;border-radius:999px;font:700 11.5px inherit;cursor:pointer;background:#e6eef7;color:#0b2a4a}
+.lk-arah-cip button.padam{background:#fef3f2;color:#b42318}
+.lk-arah-cip[hidden]{display:none}
+.lk-arah-padam{margin-left:auto;flex-shrink:0;height:30px;padding:0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font:700 11.5px inherit;cursor:pointer}
+.lk-arah-padam:hover{background:rgba(255,255,255,.3)}
+.lk-arah-padam + .lk-arah-x{margin-left:4px}
+.lk-senarai button[draggable=true]{cursor:grab}
 /* Google Maps: penanda, label, tetingkap maklumat dan kawalan */
 .lk-g-ikon{padding-bottom:10px}
 .lk-g-lbl span{transform:translateY(50%)}
-.lk-gpop{width:290px}
+.lk-gpop{width:min(290px,calc(100vw - 96px))}
 .gm-style .gm-style-iw-c{padding:0!important;border-radius:14px!important;box-shadow:0 10px 30px rgba(7,28,51,.28)!important}
 .gm-style .gm-style-iw-d{overflow:auto!important;padding:0!important}
 .lk-pop-x{position:absolute;top:7px;right:8px;z-index:2;width:28px;height:28px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:18px;line-height:1;cursor:pointer}
@@ -286,7 +313,10 @@
 .lk-arah-angka.sungai strong{color:#0e7490}
 .lk-arah-langkah li i.s{background:#e0f4f7;color:#0e7490}
 .lk-arah-paksa.sungai{border-color:#0e7490;color:#0e7490;margin-right:4px}
-@media (max-width:600px){.lk-arah{max-width:calc(100% - 24px);max-height:55%}}
+@media (max-width:600px){
+  .lk-arah{top:auto;bottom:10px;left:10px;right:10px;width:auto;max-width:none;max-height:65%}
+  .lk-ada-arah .leaflet-bottom.leaflet-right,.lk-ada-arah .gm-bundled-control,.lk-ada-arah .lk-g-kawalan,.lk-ada-arah .lk-sentuh{display:none!important}
+}
 /* Panel sisi */
 .lk-sisi{display:flex;flex-direction:column;border-left:1px solid var(--border,#dde3eb);min-width:0;max-height:580px}
 .lk-ringkas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 12px 4px}
@@ -332,7 +362,24 @@
   .lk-senarai{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));max-height:420px;align-content:start}
   .lk-ringkas{grid-template-columns:repeat(3,minmax(0,160px))}
 }
-@media (max-width:600px){.lk-peta{height:400px}.lk-ringkas{grid-template-columns:repeat(3,1fr)}.lk-senarai{grid-template-columns:1fr}}`;
+@media (max-width:600px){
+  .lk-peta{height:clamp(360px,62vh,480px)}
+  .lk-ringkas{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 10px 4px}
+  .lk-ringkas div{padding:7px 8px}
+  .lk-ringkas b{font-size:17px}
+  .lk-senarai{grid-template-columns:1fr;max-height:60vh}
+  .lk-senarai button{padding:10px 12px}
+  .lk-cari{height:42px;font-size:16px}
+  .lk-tapis{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .lk-tapis::-webkit-scrollbar{display:none}
+  .lk-tapis button{height:36px;flex-shrink:0}
+  .lk-tapis2 select{height:38px;min-width:0}
+  .lk-legenda{padding:6px 9px;font-size:10.5px}
+  .lk-butang,.lk-g-kawalan .lk-butang{width:40px;height:40px}
+  .leaflet-touch .leaflet-bar a{width:40px;height:40px;line-height:40px;font-size:20px}
+  .leaflet-control-attribution{font-size:9px;max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lk-pop-aksi a,.lk-pop-aksi button{height:40px}
+}`;
 
   function pasangCss() {
     if (document.getElementById('lk-css')) return;
@@ -341,8 +388,12 @@
 
   const htmlPin = l => `<div class="lk-pin${l.jenis === 'PPD' ? ' ppd' : ''}" style="--lk-c:${JENIS[l.jenis].warna}" data-lkp="${l.id}"><img src="${esc(l.logo)}" alt="" loading="lazy"></div>`;
   const htmlKelompok = ls => `<div class="lk-klus"><div class="lk-klus-logo">${ls.slice(0, 3).map(l => `<img src="${esc(l.logo)}" alt="">`).join('')}</div><b>${ls.length}</b></div>`;
-  const htmlLegenda = () => ['SMK', 'SJKC', 'SK', 'PPD'].map(t => `<div style="color:${JENIS[t].warna}"><i></i><span style="color:#475467">${JENIS[t].pendek === 'PPD' ? 'PPD Dalat' : JENIS[t].pendek}</span></div>`).join('')
-    + '<div><i class="cincin"></i><span>Jarak dari PPD</span></div>';
+  // Telefon/tablet: skrol halaman tidak boleh "tersangkut" pada peta, dan petunjuk dilipat supaya tidak menutup peta
+  const SENTUH = matchMedia('(pointer: coarse)').matches;
+  const SEMPIT = () => matchMedia('(max-width: 600px)').matches;
+  const htmlLegenda = () => `<details class="lk-leg"${SEMPIT() ? '' : ' open'}><summary>Petunjuk</summary><div class="lk-leg-isi">`
+    + ['SMK', 'SJKC', 'SK', 'PPD'].map(t => `<div style="color:${JENIS[t].warna}"><i></i><span style="color:#475467">${JENIS[t].pendek === 'PPD' ? 'PPD Dalat' : JENIS[t].pendek}</span></div>`).join('')
+    + '<div><i class="cincin"></i><span>Jarak dari PPD</span></div></div></details>';
   const BUTANG_SEMULA = '<button type="button" class="lk-butang" title="Papar seluruh daerah" aria-label="Papar seluruh daerah"><svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg></button>';
 
   function popup(l, butangTutup) {
@@ -384,7 +435,16 @@
 
   function enjinLeaflet(petaEl, h) {
     // Roda tetikus terus zum peta apabila kursor di atas peta; wheelPxPerZoomLevel lebih tinggi = zum lebih licin
-    const peta = L.map(petaEl, { scrollWheelZoom: true, wheelPxPerZoomLevel: 90, wheelDebounceTime: 30, zoomControl: false, zoomSnap: .25, zoomDelta: .5 });
+    const peta = L.map(petaEl, { scrollWheelZoom: true, wheelPxPerZoomLevel: 90, wheelDebounceTime: 30, zoomControl: false, zoomSnap: .25, zoomDelta: .5, dragging: !SENTUH });
+    // Skrin sentuh: peta dikunci supaya satu jari menatal halaman; ketik peta untuk menggerakkannya,
+    // dan ia dikunci semula apabila peta ditatal keluar dari skrin
+    if (SENTUH) {
+      const nota = L.DomUtil.create('div', 'lk-sentuh', petaEl);
+      nota.textContent = 'Ketik peta untuk menggerakkannya';
+      const kunci = ya => { ya ? peta.dragging.disable() : peta.dragging.enable(); nota.hidden = !ya; };
+      peta.on('click', () => kunci(false));
+      new IntersectionObserver(([e]) => { if (!e.isIntersecting) kunci(true); }, { threshold: 0.4 }).observe(petaEl);
+    }
     const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
     const topo = L.tileLayer(ESRI + 'World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19, attribution: 'Peta &copy; Esri, HERE, Garmin, &copy; penyumbang OpenStreetMap',
@@ -497,10 +557,12 @@
     window.gm_authFailure = () => h.gagal('Kunci Google Maps ditolak');
     const peta = new g.Map(petaEl, {
       mapId: konfig.mapId, center: { lat: PPD.lat, lng: PPD.lng }, zoom: 11,
-      gestureHandling: 'greedy', clickableIcons: false, fullscreenControl: false,
+      // Skrin sentuh: satu jari menatal halaman, dua jari menggerakkan peta (Google memaparkan petunjuknya sendiri)
+      gestureHandling: SENTUH ? 'cooperative' : 'greedy', clickableIcons: false,
+      fullscreenControl: SENTUH, fullscreenControlOptions: { position: P.RIGHT_TOP },
       mapTypeControl: true, mapTypeControlOptions: { position: P.TOP_RIGHT, style: g.MapTypeControlStyle.DROPDOWN_MENU },
       zoomControl: true, zoomControlOptions: { position: P.RIGHT_BOTTOM },
-      streetViewControl: true, streetViewControlOptions: { position: P.RIGHT_BOTTOM },
+      streetViewControl: !SEMPIT(), streetViewControlOptions: { position: P.RIGHT_BOTTOM },
     });
     const kawalan = (html, kelas, posisi, ikat) => { const d = document.createElement('div'); d.className = kelas; d.innerHTML = html; ikat?.(d); peta.controls[posisi].push(d); };
     kawalan(BUTANG_SEMULA, 'lk-g-kawalan', P.RIGHT_BOTTOM, d => d.firstChild.addEventListener('click', () => h.semula()));
@@ -648,13 +710,111 @@
     arahEl.addEventListener('click', e => {
       const t = e.target.closest('button'); if (!t) return;
       const tuju = cariL(laluanId);
-      if (t.matches('[data-arah-tutup]')) tutupArah();
+      if (t.matches('[data-arah-tutup]')) kecilkanArah();
+      else if (t.matches('[data-arah-padam]')) tutupArah();
       else if (t.dataset.arahMod) tunjukArah(tuju, { mod: t.dataset.arahMod });
       else if (t.matches('[data-arah-paksa]')) tunjukArah(tuju, { mod: 'jalan', paksa: true });
       else if (t.matches('[data-arah-tukar]')) { const lama = asalId; asalId = laluanId; tunjukArah(cariL(lama)); }
     });
     arahEl.addEventListener('change', e => {
       if (e.target.id === 'lk-arah-asal') { asalId = e.target.value; tunjukArah(cariL(laluanId)); }
+    });
+
+    // Penjuru kiri atas: butang "seret ke sekolah" dan cip laluan aktif (selepas panel arah ditutup)
+    const IKON_ARAH = '<svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>';
+    const atasKiriEl = document.createElement('div');
+    atasKiriEl.className = 'lk-atas-kiri';
+    atasKiriEl.innerHTML = `<button type="button" class="lk-seret" title="Seret ke penanda sekolah untuk mendapatkan arah"><i>${IKON_ARAH}</i><span>Seret ke sekolah<small></small></span></button><div class="lk-arah-cip" role="status" hidden></div>`;
+    const seretEl = atasKiriEl.querySelector('.lk-seret'), seretNota = seretEl.querySelector('small'), cipEl = atasKiriEl.querySelector('.lk-arah-cip');
+    // Jangan biarkan peta (Leaflet) menganggap sentuhan pada kawalan ini sebagai seretan peta
+    ['mousedown', 'touchstart', 'pointerdown', 'dblclick', 'wheel'].forEach(n => atasKiriEl.addEventListener(n, e => e.stopPropagation()));
+    cipEl.addEventListener('click', e => {
+      if (e.target.closest('[data-cip-buka]')) bukaSemulaArah();
+      else if (e.target.closest('[data-cip-padam]')) tutupArah();
+    });
+    const kemasSeret = () => { seretNota.textContent = 'dari ' + pendek(cariL(asalId)); };
+    let notaMasa = null;
+    function notaSeret(teks) {
+      seretNota.textContent = teks; clearTimeout(notaMasa);
+      notaMasa = setTimeout(kemasSeret, 2800);
+    }
+    // Penanda (atau kelompok) terdekat dengan titik skrin, dalam jarak 34px
+    function sasaranDi(x, y) {
+      const pr = petaEl.getBoundingClientRect();
+      if (x < pr.left || x > pr.right || y < pr.top || y > pr.bottom) return null;
+      let terbaik = null, dMin = 34;
+      petaEl.querySelectorAll('[data-lkp], .lk-klus').forEach(p => {
+        const r = p.getBoundingClientRect(); if (!r.width) return;
+        const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+        if (d < dMin) { dMin = d; terbaik = p; }
+      });
+      return terbaik;
+    }
+    let sasarEl = null;
+    function tandaSasaran(s) {
+      if (s === sasarEl) return;
+      sasarEl?.classList.remove('sasar'); sasarEl = s; s?.classList.add('sasar');
+    }
+    // Lepas pada penanda: arah dari `dariId` (lalai: asal semasa) ke sekolah itu
+    function lepasPada(s, dariId) {
+      tandaSasaran(null);
+      if (!s) return false;
+      if (s.classList.contains('lk-klus')) { notaSeret('Zum masuk, kemudian lepas pada satu sekolah'); return true; }
+      const B = cariL(s.dataset.lkp);
+      if (!B) return false;
+      if (dariId) { if (dariId === B.id) return true; asalId = dariId; }
+      else if (B.id === asalId) { notaSeret('Itu titik asal; pilih sekolah lain'); return true; }
+      tunjukArah(B);
+      return true;
+    }
+    // Seret butang dengan tetikus atau jari (Pointer Events)
+    let hantu = null, mula = null;
+    seretEl.addEventListener('pointerdown', e => {
+      if (!E) return;
+      e.preventDefault();
+      try { seretEl.setPointerCapture(e.pointerId); } catch {}
+      mula = [e.clientX, e.clientY];
+      hantu = document.createElement('div'); hantu.className = 'lk-hantu'; hantu.innerHTML = IKON_ARAH;
+      hantu.style.left = e.clientX + 'px'; hantu.style.top = e.clientY + 'px';
+      document.body.appendChild(hantu);
+    });
+    seretEl.addEventListener('pointermove', e => {
+      if (!hantu) return;
+      hantu.style.left = e.clientX + 'px'; hantu.style.top = e.clientY + 'px';
+      tandaSasaran(sasaranDi(e.clientX, e.clientY));
+    });
+    const tamatSeret = (e, batal) => {
+      if (!hantu) return;
+      hantu.remove(); hantu = null;
+      const s = sasarEl;
+      if (batal) return tandaSasaran(null);
+      if (Math.hypot(e.clientX - mula[0], e.clientY - mula[1]) < 8) { tandaSasaran(null); return notaSeret('Seret butang ini ke penanda sekolah'); }
+      if (!lepasPada(s)) notaSeret('Lepas tepat pada penanda sekolah');
+    };
+    seretEl.addEventListener('pointerup', e => tamatSeret(e, false));
+    seretEl.addEventListener('pointercancel', e => tamatSeret(e, true));
+
+    // Desktop: seret baris sekolah dari senarai ke peta. Lepas pada sekolah lain = arah antara kedua-duanya;
+    // lepas di tempat lain dalam peta = arah ke sekolah yang diseret.
+    const JENIS_SERET = 'text/x-lk-sekolah';
+    senaraiEl.addEventListener('dragstart', e => {
+      const b = e.target.closest('[data-lk]'); if (!b) return;
+      e.dataTransfer.setData(JENIS_SERET, b.dataset.lk); e.dataTransfer.effectAllowed = 'copy';
+    });
+    petaEl.addEventListener('dragover', e => {
+      if (!E || !e.dataTransfer.types.includes(JENIS_SERET)) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+      petaEl.classList.add('lk-sasar-peta');
+      tandaSasaran(sasaranDi(e.clientX, e.clientY));
+    });
+    petaEl.addEventListener('dragleave', e => { if (!petaEl.contains(e.relatedTarget)) { petaEl.classList.remove('lk-sasar-peta'); tandaSasaran(null); } });
+    petaEl.addEventListener('drop', e => {
+      const id = e.dataTransfer.getData(JENIS_SERET);
+      if (!id) return;
+      e.preventDefault(); petaEl.classList.remove('lk-sasar-peta');
+      const s = sasarEl;
+      if (s && !s.classList.contains('lk-klus') && s.dataset.lkp !== id) lepasPada(s, id);
+      else { tandaSasaran(null); tunjukArah(cariL(id)); }
     });
 
     const h = {
@@ -677,6 +837,7 @@
 
     function siapkan() {
       E.overlay(arahEl);
+      E.overlay(atasKiriEl); kemasSeret();
       lukis();
       paparDaerah();
       E.onZum(z => petaEl.classList.toggle('lk-jauh', z < 12));
@@ -778,7 +939,15 @@
     }
 
     function buangLaluan() { if (laluan) { laluan.forEach(x => x.buang()); laluan = null; } }
-    function tutupArah() { buangLaluan(); laluanId = null; arahEl.hidden = true; arahEl.innerHTML = ''; petaEl.classList.remove('lk-ada-arah'); }
+    // Padam: buang laluan dan panel. Kecilkan: tutup panel sahaja, laluan kekal dengan cip untuk buka semula/padam.
+    function tutupArah() { buangLaluan(); laluanId = null; arahEl.hidden = true; arahEl.innerHTML = ''; petaEl.classList.remove('lk-ada-arah'); cipEl.hidden = true; }
+    function kecilkanArah() {
+      const B = cariL(laluanId); if (!B) return tutupArah();
+      arahEl.hidden = true; petaEl.classList.remove('lk-ada-arah');
+      cipEl.innerHTML = `<span>Arah ke <b>${esc(pendek(B))}</b></span><button type="button" data-cip-buka>Buka</button><button type="button" class="padam" data-cip-padam aria-label="Padam laluan">Padam</button>`;
+      cipEl.hidden = false;
+    }
+    function bukaSemulaArah() { if (!laluanId) return; cipEl.hidden = true; arahEl.hidden = false; petaEl.classList.add('lk-ada-arah'); }
     function lukisGaris(titik, warna, putus) {
       laluan = [
         E.garis(titik, { warna: '#fff', tebal: 9, legap: .95, z: 20 }),
@@ -798,9 +967,10 @@
       if (!E || !B) return;
       if (asalId === B.id) asalId = B.id === PPD.id ? sekolah[0].id : PPD.id;
       const A = cariL(asalId);
+      kemasSeret();
       E.tutupPopup();
-      buangLaluan(); laluanId = B.id; arahEl.hidden = false; petaEl.classList.add('lk-ada-arah');
-      const kepala = `<div class="lk-arah-k" style="--lk-c:${JENIS[B.jenis].warna}"><img src="${esc(B.logo)}" alt=""><div><small>Arah ke</small><b>${esc(B.nama)}</b></div><button type="button" class="lk-arah-x" data-arah-tutup aria-label="Tutup arah">×</button></div>
+      buangLaluan(); laluanId = B.id; arahEl.hidden = false; petaEl.classList.add('lk-ada-arah'); cipEl.hidden = true;
+      const kepala = `<div class="lk-arah-k" style="--lk-c:${JENIS[B.jenis].warna}"><img src="${esc(B.logo)}" alt=""><div><small>Arah ke</small><b>${esc(B.nama)}</b></div><button type="button" class="lk-arah-padam" data-arah-padam title="Padam laluan dari peta">Padam</button><button type="button" class="lk-arah-x" data-arah-tutup title="Tutup panel (laluan kekal di peta)" aria-label="Tutup panel arah">×</button></div>
         <div class="lk-arah-dari"><label for="lk-arah-asal">Dari</label><select id="lk-arah-asal">${LOKASI.filter(l => l.id !== B.id).map(l => `<option value="${l.id}"${l.id === A.id ? ' selected' : ''}>${esc(pendek(l))}</option>`).join('')}</select>
           <button type="button" class="lk-arah-tukar" data-arah-tukar title="Tukar arah: dari ${esc(pendek(B))}" aria-label="Tukar asal dan destinasi">⇅</button></div>`;
       arahEl.innerHTML = kepala + '<div class="lk-arah-b"><div class="lk-arah-muat"><span class="lk-pusing"></span>Mengira laluan…</div></div>';
@@ -877,7 +1047,8 @@
 
     // Garis putus-putus dari PPD ke sekolah dipilih, dengan label jarak di tengah
     function pilih(id, buka) {
-      if (id && laluanId && id !== laluanId) tutupArah();
+      // Memilih sekolah lain hanya mengecilkan panel; laluan sedia ada kekal sehingga dipadam atau diganti
+      if (id && laluanId && id !== laluanId && !arahEl.hidden) kecilkanArah();
       pilihId = id;
       if (garis) { garis.forEach(g => g.buang()); garis = null; }
       el.querySelectorAll('.lk-pin.pilih').forEach(p => p.classList.remove('pilih'));
@@ -908,7 +1079,7 @@
       const papar = sekolah.filter(padan).sort((a, b) => a.laluan.km - b.laluan.km);
       E?.setPapar(papar);
       const ppdPadan = (!q || PPD.nama.includes(q) || PPD.kod.includes(q)) && !kw && !asrama;
-      const baris = l => `<li><button type="button" data-lk="${l.id}" class="${pilihId === l.id ? 'pilih' : ''}" style="--lk-c:${JENIS[l.jenis].warna}">
+      const baris = l => `<li><button type="button" data-lk="${l.id}"${SENTUH ? '' : ' draggable="true" title="Klik untuk papar, atau seret ke peta untuk arah"'} class="${pilihId === l.id ? 'pilih' : ''}" style="--lk-c:${JENIS[l.jenis].warna}">
           <span class="lg"><img src="${esc(l.logo)}" alt="" loading="lazy"></span>
           <span class="tx"><b>${esc(l.nama)}</b>
             ${l.jenis === 'PPD' ? '<small>Pejabat Pendidikan Daerah · 96300 Dalat</small>'

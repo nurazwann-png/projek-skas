@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { NextRequest } from "next/server";
 import { penggunaSemasa } from "@/lib/pelayan/sesi";
+import { aiSedia, klienAI, MODEL_AI } from "@/lib/pelayan/ai";
 import { aduanFasiliti, kelasBolehDiingatkan, muatData, prestasiSpm, rekodSkas, statusPengisian, type Data } from "@/lib/pelayan/ringkasan";
 
 // Pembantu AI portal (agentik): Claude memilih sendiri alat baca untuk menjawab soalan tentang data portal,
@@ -8,7 +9,6 @@ import { aduanFasiliti, kelasBolehDiingatkan, muatData, prestasiSpm, rekodSkas, 
 // mengesahkannya di skrin (api/ai/pembantu/laksana). AI tidak menulis apa-apa sendiri.
 
 export const maxDuration = 120;
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MAKS_PUSINGAN = 8;
 
 const ALAT: Anthropic.Tool[] = [
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   if (!aktor) return Response.json({ ralat: "Sila log masuk." }, { status: 401 });
   const asal = req.headers.get("origin");
   if (asal && new URL(asal).host !== req.headers.get("host")) return Response.json({ ralat: "Permintaan tidak dibenarkan." }, { status: 403 });
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!aiSedia()) {
     return Response.json({ ralat: "Perkhidmatan AI belum dikonfigurasi di pelayan. Hubungi Unit ICT PPD Dalat." }, { status: 503 });
   }
 
@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
   const mesej = [...perbualan];
   try {
     for (let i = 0; i < MAKS_PUSINGAN; i++) {
-      const res = await client.messages.create({
-        model: "claude-opus-5-5",
+      const res = await klienAI().messages.create({
+        model: MODEL_AI,
         max_tokens: 8000,
         thinking: { type: "adaptive" },
         system: [{ type: "text", text: sistem }],
@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
     }
     return Response.json({ jawapan: "Permintaan ini memerlukan terlalu banyak langkah. Cuba soalan yang lebih khusus.", cadangan });
   } catch (err) {
+    if (err instanceof Anthropic.APIError) console.error("pembantu: ralat AI", err.status, err.message);
     if (err instanceof Anthropic.RateLimitError) return Response.json({ ralat: "Pembantu sedang sibuk. Cuba lagi sebentar." }, { status: 429 });
     if (err instanceof Anthropic.APIError) return Response.json({ ralat: "Pembantu tidak dapat dihubungi buat masa ini." }, { status: 502 });
     throw err;

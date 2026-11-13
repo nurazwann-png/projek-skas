@@ -209,7 +209,7 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 
 /* --- Upload zone ---------------------------------------------- */
 .upzone{border:2px dashed var(--border-2);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface)}
-.upzone:hover{border-color:var(--accent);background:#e6eef7}
+.upzone:hover,.upzone.seret,.upzone:focus-visible{border-color:var(--accent);background:#e6eef7;outline:none}
 .upzone.has-file{border-color:var(--ok);background:var(--ok-l)}
 
 /* --- AI panel ------------------------------------------------- */
@@ -1680,7 +1680,102 @@ async function semakGunaUntukBorang() {
   };
   if (!(await sahkanPendua({ program: f.program, tarikh: f.tarikhmula || m.tarikh || '', level: f.level }, 'guru'))) return;
   f._semak = jejakSemakan(h, f, MEDAN_AI_GURU);
-  setState({ view: 'form', formStep: 1, editingId: null, f, extracting: false, extracted: false, generating: false, draftText: '', draftDone: false });
+  setState({ view: 'form', formStep: 1, editingId: null, f, extracting: false, extracted: false, fSijil: null, fSemak: null, generating: false, draftText: '', draftDone: false });
+}
+
+/* -- Sijil dalam borang Tambah Pencapaian (langkah 2): fail sebenar + semakan AI sebenar -- */
+const KEP_SIJIL = { layak: 'Layak', tidak_layak: 'Tidak layak', perlu_semakan: 'Perlu semakan' };
+const MEDAN_SIJIL = {
+  program: ['Program', v => v, 'program'], tarikhmula: ['Tarikh', v => fmtDate(v), 'tarikh'],
+  level: ['Peringkat', v => LVL[v]?.label || v, 'peringkat'], tahap: ['Tahap', v => TAHAP_MAP[v]?.short || v, 'tahap'],
+  peranan: ['Peranan', v => v, 'peranan'],
+};
+// Medan yang dikesan AI pada sijil tetapi berbeza daripada (atau tiada dalam) borang
+function bezaSijilBorang(h, f) {
+  const m = h.maklumat || {};
+  const ai = {
+    program: m.program || '', tarikhmula: /^\d{4}-\d{2}-\d{2}$/.test(m.tarikh || '') ? m.tarikh : '',
+    level: PERINGKAT_KE_KEY[m.peringkat] || '', tahap: TAHAP_KE_KEY[m.tahap] || '', peranan: PERANAN_KE_VAL[m.peranan] || '',
+  };
+  return Object.entries(ai).filter(([k, v]) => v && v !== f[k]);
+}
+
+async function pilihSijilBorang(senarai) {
+  const file = [...(senarai || [])][0];
+  if (!file) return;
+  if (!SEMAK_JENIS.includes(file.type)) { PPDUI.alert('Jenis fail tidak disokong', 'Muat naik gambar (JPG, PNG, WebP) atau fail PDF sahaja.'); return; }
+  let x;
+  try { x = await bacaFail(file); } catch { PPDUI.alert('Fail tidak dapat dibaca', 'Cuba pilih fail sekali lagi.'); return; }
+  if (saizHantar(x) > SEMAK_MAKS) { PPDUI.alert('Fail terlalu besar', `Saiz ${saizTeks(saizHantar(x))} melebihi had 10 MB.`); return; }
+  setState({ fSijil: x, fSemak: null, f: { ...S.f, hasSijil: true, namaSijil: file.name } });
+}
+
+function buangSijilBorang() {
+  setState({ fSijil: null, fSemak: null, f: { ...S.f, hasSijil: false, namaSijil: '' } });
+}
+
+async function semakSijilBorang() {
+  const x = S.fSijil;
+  if (!x || !(await sahkanKualiti([x]))) return;
+  setState({ fSemak: { status: 'memuat' } });
+  try {
+    const hasil = await hantarSemakan([x]);
+    if (S.fSijil === x) setState({ fSemak: { status: 'siap', hasil } });
+  } catch (e) {
+    if (S.fSijil === x) setState({ fSemak: { status: 'ralat', ralat: e.message } });
+  }
+}
+
+function gunaSijilBorang() {
+  const h = S.fSemak?.hasil;
+  if (!h) return;
+  const beza = bezaSijilBorang(h, S.f), a = h.asal || {};
+  const _ai = { ...(S.f._ai || {}), ...Object.fromEntries(beza.map(([k]) => [k, a[MEDAN_SIJIL[k][2]] || 'sijil'])) };
+  setState({ f: { ...S.f, ...Object.fromEntries(beza), _ai }, formStep: 1 });
+}
+
+function htmlSijilBorang() {
+  const x = S.fSijil, sm = S.fSemak;
+  if (!x) {
+    if (S.f._ai && S.f.hasSijil) {
+      return `<div class="upzone has-file"><div style="display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ok)">${IC.ccheck} <span style="font-weight:600;font-size:13px">${esc(S.f.namaSijil || 'Sijil')} telah disemak oleh AI</span></div></div>`;
+    }
+    return `<div class="upzone" id="upzone" role="button" tabindex="0" aria-label="Pilih fail sijil">
+        <div style="color:var(--t3)">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',32)}</div>
+        <div style="font-size:13px;color:var(--t2);margin-top:8px">Klik atau seret sijil di sini</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">JPG, PNG, WebP, PDF &middot; maks. 10MB</div>
+      </div>
+      <input type="file" id="f-sijil-input" accept="${SEMAK_JENIS.join(',')}" hidden>`;
+  }
+  const kad = `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px">
+      ${x.jenis === 'application/pdf'
+        ? `<div style="width:56px;height:42px;border-radius:6px;background:var(--chip);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--t2)">PDF</div>`
+        : `<img src="${x.dataUrl}" alt="" style="width:56px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`}
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.nama)}</div>
+        <div style="font-size:11.5px;color:var(--t3)">${x.jenis === 'application/pdf' ? 'PDF' : 'Gambar'} &middot; ${saizTeks(saizHantar(x))}</div></div>
+      <button class="btn btn-ghost" id="f-sijil-buang" style="font-size:12px;padding:5px 10px" ${sm?.status === 'memuat' ? 'disabled' : ''}>Buang</button>
+    </div>`;
+  if (!sm || sm.status === 'ralat') {
+    return kad + (sm?.ralat ? `<div class="notice" style="background:var(--err-l,#fef2f2);color:var(--err,#b91c1c)">${esc(sm.ralat)}</div>` : '')
+      + kotakSetuju()
+      + `<button class="btn btn-vio" id="f-sijil-semak" style="width:100%;justify-content:center" ${setujuAI() ? '' : 'disabled'}>${IC.spark} Semak sijil dengan AI</button>`;
+  }
+  if (sm.status === 'memuat') {
+    return kad + `<div class="notice"><span class="spin">${IC.spin}</span> AI sedang membaca sijil dan membandingkannya dengan borang. Biasanya 10–40 saat.</div>`;
+  }
+  const h = sm.hasil || {}, beza = bezaSijilBorang(h, S.f);
+  const baris = beza.map(([k, v]) => {
+    const [label, fmt] = MEDAN_SIJIL[k];
+    return `<li><b>${label}:</b> sijil "${esc(fmt(v))}"${S.f[k] ? `, borang "${esc(fmt(S.f[k]))}"` : ', borang kosong'}</li>`;
+  }).join('');
+  return kad + `<div class="notice ${h.keputusan === 'layak' ? 'notice-ok' : ''}" style="display:block">
+      <div><b>Semakan AI: ${esc(KEP_SIJIL[h.keputusan] || h.keputusan || '')}</b>${h.kategori ? ` &middot; ${esc(h.kategori)}` : ''}</div>
+      ${h.ringkasan ? `<div style="margin-top:4px">${esc(h.ringkasan)}</div>` : ''}
+      ${beza.length
+        ? `<div style="margin-top:8px">Maklumat pada sijil berbeza daripada borang:</div><ul style="margin:4px 0 0 18px;padding:0">${baris}</ul>`
+        : `<div style="margin-top:8px">Maklumat borang sepadan dengan sijil.</div>`}
+    </div>
+    ${beza.length ? `<button class="btn btn-vio" id="f-sijil-guna" style="width:100%;justify-content:center">${IC.spark} Guna maklumat sijil dalam borang</button>` : ''}`;
 }
 
 function borangSekolahDariHasil(h) {
@@ -2400,6 +2495,7 @@ function viewForm() {
             <label class="fl">Tahap Pencapaian <span class="req">*</span>${labelAI('tahap')}</label>
             ${cdd('tahap', TAHAP, f.tahap, '-- Pilih tahap --')}
             <div class="level-note">Anugerah / Pengiktirafan / Pentauliahan = dikira sebagai Tempat Pertama secara automatik.</div>
+            <div class="level-note">Sijil pingat sahaja (tiada kedudukan): <b>Emas</b> = Tempat Pertama; <b>Perak</b> dan <b>Gangsa</b> = Saguhati. Jika sijil menyatakan kedudukan (Johan, Naib Johan, Tempat Ketiga), pilih kedudukan itu.</div>
           </div>
 
           <div class="frow">
@@ -2493,20 +2589,7 @@ function viewForm() {
     <div class="panel">
       <div class="ph"><span class="pt">Muat Naik Sijil</span><span class="chip" style="font-size:11px">Pilihan</span></div>
       <div class="pb" style="display:flex;flex-direction:column;gap:12px">
-        <div class="upzone${S.f.hasSijil?' has-file':''}" id="upzone">
-          ${S.f.hasSijil
-            ? `<div style="display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ok)">${IC.ccheck} <span style="font-weight:600;font-size:13px">${esc(S.f.namaSijil || 'sijil_pencapaian.jpg')} ${S.f._ai ? 'telah disemak oleh AI' : 'berjaya dimuat naik'}</span></div>`
-            : `<div style="color:var(--t3)">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',32)}</div>
-               <div style="font-size:13px;color:var(--t2);margin-top:8px">Klik atau seret sijil di sini</div>
-               <div style="font-size:11px;color:var(--t3);margin-top:3px">JPG, PNG, PDF &middot; maks. 10MB</div>`
-          }
-        </div>
-        ${S.f.hasSijil && !S.f._ai ? `
-        <button class="btn btn-vio" id="btn-extract" style="width:100%;justify-content:center" ${S.extracting?'disabled':''}>
-          ${S.extracting?`<span class="spin">${IC.spin}</span> Mengekstrak...`:`${IC.spark} Ekstrak Maklumat dari Sijil`}
-        </button>
-        ${S.extracted?`<div class="notice notice-ok">${IC.check} Keyakinan AI: <b>96%</b> -- Semua maklumat berjaya disahkan daripada sijil.</div>`:''}
-        ` : ''}
+        ${htmlSijilBorang()}
       </div>
     </div>
 
@@ -3470,6 +3553,7 @@ function viewSchoolForm() {
         <label class="fl">Tahap Pencapaian <span class="req">*</span>${labelAI('tahap', sf)}</label>
         ${cdd('sf-tahap', TAHAP.map(t=>({val:t.val,label:t.label})), sf.tahap, '-- Pilih Tahap --')}
         <div class="fn" style="margin-top:4px">Anugerah/Pengiktirafan/Pentauliahan dikira sebagai Tempat Pertama/Anugerah/Pengiktirafan (T1).${SRC}</div>
+        <div class="fn" style="margin-top:4px">Sijil pingat sahaja (tiada kedudukan): <b>Emas</b> = Tempat Pertama; <b>Perak</b> dan <b>Gangsa</b> = Saguhati. Jika sijil menyatakan kedudukan, pilih kedudukan itu.</div>
         ${sf.level && sf.tahap ? `<div style="margin-top:8px">${kotakSlot(sf.level, sf.tahap, S.sfEditingId)}</div>` : ''}
       </div>
 
@@ -4593,7 +4677,7 @@ function bind() {
 
   // nav
   document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{
-    if(b.dataset.view==='form') setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,generating:false,draftText:'',draftDone:false});
+    if(b.dataset.view==='form') setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,fSijil:null,fSemak:null,generating:false,draftText:'',draftDone:false});
     else setState({view:b.dataset.view});
   }));
 
@@ -4647,7 +4731,7 @@ function bind() {
 
   // new btn
   const nb=document.getElementById('btn-new');
-  if(nb)nb.addEventListener('click',()=>setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,generating:false,draftText:'',draftDone:false}));
+  if(nb)nb.addEventListener('click',()=>setState({view:'form',formStep:1,editingId:null,f:drafAtauKosong(),extracting:false,extracted:false,fSijil:null,fSemak:null,generating:false,draftText:'',draftDone:false}));
 
   // back btn
   const bk=document.getElementById('btn-back');
@@ -5179,18 +5263,21 @@ function bind() {
   const cc=document.getElementById('btn-cancel');
   if(cc)cc.addEventListener('click',()=>setState({view:'dashboard'}));
 
-  // upload zone
-  const uz=document.getElementById('upzone');
-  if(uz&&!S.f.hasSijil)uz.addEventListener('click',()=>{
-    setState({f:{...S.f,hasSijil:true}});
-  });
-
-  // extract
-  const ex=document.getElementById('btn-extract');
-  if(ex)ex.addEventListener('click',()=>{
-    setState({extracting:true});
-    setTimeout(()=>setState({extracting:false,extracted:true}),1800);
-  });
+  // Sijil dalam borang: pilih/seret, buang, semak AI, guna maklumat
+  const uz=document.getElementById('upzone'), uzIn=document.getElementById('f-sijil-input');
+  if(uz&&uzIn){
+    uz.addEventListener('click',()=>uzIn.click());
+    uz.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); uzIn.click(); } });
+    uz.addEventListener('dragover',e=>{ e.preventDefault(); uz.classList.add('seret'); });
+    uz.addEventListener('dragleave',()=>uz.classList.remove('seret'));
+    uz.addEventListener('drop',e=>{ e.preventDefault(); uz.classList.remove('seret'); pilihSijilBorang(e.dataTransfer.files); });
+    uzIn.addEventListener('change',()=>pilihSijilBorang(uzIn.files));
+  }
+  document.getElementById('f-sijil-buang')?.addEventListener('click',buangSijilBorang);
+  document.getElementById('f-sijil-semak')?.addEventListener('click',semakSijilBorang);
+  const fSetuju=document.getElementById('semak-setuju');
+  if(fSetuju&&S.view==='form')fSetuju.addEventListener('change',()=>{ tetapSetujuAI(fSetuju.checked); render(); });
+  document.getElementById('f-sijil-guna')?.addEventListener('click',gunaSijilBorang);
 
   // draft
   const dr=document.getElementById('btn-draft');
@@ -5256,7 +5343,7 @@ function bind() {
     setState({
       view:'form',formStep:1,editingId:r.id,
       f:{program:r.program,tarikhmula:r.tarikh,tarikhakhir:'',level:r.level,peranan:r.peranan,tahap:r.tahap,pengesahan:r.pengesahan,pautanEviden:r.pautanEviden||'',catatan:r.catatan||'',hasSijil:false,_semak:r.semakanAI||null},
-      extracting:false,extracted:false,generating:false,draftText:r.draft||'',draftDone:!!r.draft
+      extracting:false,extracted:false,fSijil:null,fSemak:null,generating:false,draftText:r.draft||'',draftDone:!!r.draft
     });
   });
 

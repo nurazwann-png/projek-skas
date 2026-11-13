@@ -1,6 +1,8 @@
 /* Pekerja servis Portal PPD Dalat: rangkaian dahulu, salinan simpanan jika tiada talian.
    Panggilan /api tidak disentuh (data disegerakkan oleh assets/ppd-segerak.js). */
-const NAMA = 'ppd-dalat-v1';
+const NAMA = 'ppd-dalat-v2';
+// Selain fail portal sendiri, hanya CDN ini disimpan untuk luar talian. Permintaan lain (Google Maps, Esri dsb.) tidak disentuh.
+const CDN = ['cdnjs.cloudflare.com', 'unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== NAMA).map(k => caches.delete(k)))).then(() => self.clients.claim()));
@@ -9,9 +11,9 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin === location.origin && url.pathname.startsWith('/api/')) return;
-  if (url.hostname.endsWith('googleapis.com') && url.pathname.startsWith('/maps')) return; // peta Google memerlukan talian
-  if (url.hostname === 'accounts.google.com') return;
+  const sendiri = url.origin === location.origin;
+  if (sendiri && url.pathname.startsWith('/api/')) return;
+  if (!sendiri && !CDN.includes(url.hostname)) return;
   e.respondWith((async () => {
     const cache = await caches.open(NAMA);
     try {
