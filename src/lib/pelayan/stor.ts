@@ -4,6 +4,7 @@
 // mengubah item berlainan (cth. markah murid berlainan) tidak saling menimpa.
 import { db, type Pertanyaan } from "./db";
 import benihOrganisasi from "./benih-organisasi.json";
+import { janaDataUjian } from "./benih-ujian";
 import { bersihNama } from "./nama";
 
 export type JenisKoleksi = "senarai" | "peta" | "nilai";
@@ -118,6 +119,11 @@ function pastikanBenih() {
   if (!benihSiap) {
     benihSiap = (async () => {
       const p = await db();
+      // Mod demo dengan pangkalan data kosong: terus muat data ujian penuh (29 sekolah EMIS)
+      if (modDemo()) {
+        const ada = await p.query<{ n: number }>(`SELECT count(*)::int AS n FROM stor_item WHERE koleksi IN ('ppd_organisasi','ppd_users')`);
+        if (!ada.rows[0]?.n) return gantiKoleksi(janaDataUjian(), null);
+      }
       await p.transaksi(async (q) => {
         const ada = await q.query<{ koleksi: string }>(`SELECT DISTINCT koleksi FROM stor_item WHERE koleksi IN ('ppd_organisasi','ppd_users')`);
         const set = new Set(ada.rows.map((r) => r.koleksi));

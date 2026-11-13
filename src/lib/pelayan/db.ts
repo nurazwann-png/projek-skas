@@ -30,7 +30,10 @@ async function buka(): Promise<Pangkalan> {
   const url = process.env.DATABASE_URL || "";
   if (/^postgres(ql)?:\/\//.test(url) && !url.includes("placeholder")) {
     const { Pool: PgPool } = await import("pg");
-    const pool: Pool = new PgPool({ connectionString: url, max: 5 });
+    // DATABASE_NAME (pilihan): guna pangkalan data lain pada pelayan yang sama, contohnya servis demo
+    const nama = process.env.DATABASE_NAME;
+    const sambung = nama ? Object.assign(new URL(url), { pathname: "/" + encodeURIComponent(nama) }).toString() : url;
+    const pool: Pool = new PgPool({ connectionString: sambung, max: 5 });
     await pool.query(SKEMA);
     return {
       jenis: "pg",
