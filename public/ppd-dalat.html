@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Portal PPD Dalat</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b2a4a">
+<link rel="icon" href="/icons/ikon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PPD Dalat">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="assets/ppd-segerak.js"></script>
 <script src="assets/ppd-auth.js"></script>
 <script>PPDAuth.guard();</script>
@@ -1314,6 +1322,12 @@ function handleAppCardClick(app) {
   window.location.href = A.APPS[app].url;
 }
 
+/* ── Pasang sebagai aplikasi (PWA) ───────────── */
+async function pasangAplikasi() {
+  if (PPDPwa.bolehPasang()) { if (await PPDPwa.pasang()) toast('Portal PPD Dalat dipasang pada peranti anda.'); return; }
+  if (PPDPwa.ios()) await PPDUI.alert('Pasang di iPhone atau iPad', 'Tekan butang Kongsi di Safari, kemudian pilih "Tambah ke Skrin Utama" (Add to Home Screen).', { tone: 'info' });
+}
+
 /* ── Menu profil ─────────────────────────────── */
 function closeProfileMenu() {
   const m = document.getElementById('pmenu');
@@ -1338,6 +1352,7 @@ function toggleProfileMenu() {
     <div class="pmenu-roles"><span class="lbl">Peranan diberi</span>${chips}</div>
     ${bolehUrusPengguna(lv) ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}${lv === 'superadmin' ? 'Urus Pengguna &amp; Peranan' : 'Urus Peranan Pentadbir Sekolah'}</button>` : ''}
     <button class="mi" role="menuitem" onclick="closeProfileMenu();mulaLawatanPortal(true)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Tunjukkan panduan</button>
+    ${window.PPDPwa && !PPDPwa.dipasang() && (PPDPwa.bolehPasang() || PPDPwa.ios()) ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();pasangAplikasi()"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="7" x2="12" y2="14"/><polyline points="9 11 12 14 15 11"/></svg>Pasang aplikasi</button>` : ''}
     <button class="mi out" role="menuitem" onclick="A.logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log keluar</button>`;
   document.querySelector('.masthead-top').appendChild(m);
   document.getElementById('profile-chip').setAttribute('aria-expanded', 'true');

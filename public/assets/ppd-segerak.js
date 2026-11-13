@@ -258,9 +258,27 @@
   const pertama = muat();
 
   // Pekerja servis: halaman dan aset disimpan supaya portal boleh dibuka tanpa talian
-  if ('serviceWorker' in navigator && (location.protocol === 'https:' || baca('ppd_sw_uji'))) {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || baca('ppd_sw_uji'))) {
     addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
   }
+  // PWA: simpan gesaan pemasangan supaya portal boleh memaparkan butang "Pasang aplikasi" sendiri
+  let gesaPasang = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); gesaPasang = e; dispatchEvent(new Event('ppd-boleh-pasang')); });
+  addEventListener('appinstalled', () => { gesaPasang = null; dispatchEvent(new Event('ppd-boleh-pasang')); });
+  window.PPDPwa = {
+    dipasang: () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
+    bolehPasang: () => !!gesaPasang,
+    // iPhone/iPad tiada gesaan automatik: pengguna guna Kongsi > Tambah ke Skrin Utama
+    ios: () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream,
+    async pasang() {
+      if (!gesaPasang) return false;
+      const g = gesaPasang; gesaPasang = null;
+      await g.prompt();
+      const r = await g.userChoice.catch(() => null);
+      dispatchEvent(new Event('ppd-boleh-pasang'));
+      return r && r.outcome === 'accepted';
+    },
+  };
 
   window.PPDSegerak = {
     get demo() { return keadaan.demo; },
