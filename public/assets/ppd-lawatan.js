@@ -2,11 +2,32 @@
    PPDLawatan.mula(id, langkah, { paksa }) — langkah: [{ sel, alt?, tajuk, teks, sebelum? }]
    - sel/alt: pemilih CSS (atau fungsi) elemen yang diserlahkan; alt digunakan jika sel tidak kelihatan
      (contohnya menu sisi yang tersembunyi di telefon). Langkah tanpa elemen dipaparkan di tengah skrin.
-   - Lawatan yang telah selesai/dilangkau tidak dipaparkan lagi kecuali paksa: true. */
+   - Dipaparkan automatik SEKALI sahaja bagi setiap aplikasi (portal, skas, spm) untuk setiap pengguna, iaitu kali
+     pertama pengguna membukanya. Ditanda "sudah" sebaik dipaparkan dan disimpan dalam profil pengguna di pelayan
+     (ppd_profil.lawatan), jadi tidak muncul lagi di peranti lain, selepas tukar peranan, atau selepas dipasang
+     sebagai aplikasi. Butang panduan (paksa: true) sentiasa boleh membukanya semula. */
 (function () {
-  const KUNCI = id => `ppd_lawatan:${id}:${(window.PPDAuth?.currentUser?.() || {}).id || 'tetamu'}`;
-  const sudah = id => { try { return !!localStorage.getItem(KUNCI(id)); } catch { return false; } };
-  const tandaSudah = id => { try { localStorage.setItem(KUNCI(id), String(Date.now())); } catch {} };
+  const uid = () => (window.PPDAuth?.currentUser?.() || {}).id || 'tetamu';
+  const app = id => String(id).split('-')[0]; // 'portal-admin' -> 'portal', 'skas-teacher' -> 'skas'
+  const KUNCI = id => `ppd_lawatan:${app(id)}:${uid()}`;
+  const KUNCI_LAMA = id => `ppd_lawatan:${id}:${uid()}`; // format sebelum ini (setiap peranan)
+  const profil = () => { try { return window.PPDData?.skas?.profil?.(uid()) || {}; } catch { return {}; } };
+  const sudah = id => {
+    try { if (localStorage.getItem(KUNCI(id)) || localStorage.getItem(KUNCI_LAMA(id))) return true; } catch {}
+    const l = profil().lawatan;
+    return !!(l && l[app(id)]);
+  };
+  const tandaSudah = id => {
+    try { localStorage.setItem(KUNCI(id), String(Date.now())); } catch {}
+    // Simpan dalam profil pengguna (disegerak ke pelayan) supaya kekal merentas peranti
+    try {
+      const D = window.PPDData, u = uid();
+      if (!D?.skas?.saveProfil || u === 'tetamu') return;
+      const p = D.skas.profil(u) || {};
+      if (p.lawatan && p.lawatan[app(id)]) return;
+      D.skas.saveProfil(u, { ...p, lawatan: { ...(p.lawatan || {}), [app(id)]: Date.now() } });
+    } catch {}
+  };
 
   const CSS = `
 .pl-latar{position:fixed;inset:0;z-index:2147482999;background:rgba(7,20,38,.62)}
@@ -119,6 +140,8 @@
     const kad = document.createElement('div'); kad.className = 'pl-kad'; kad.setAttribute('role', 'dialog'); kad.setAttribute('aria-modal', 'true'); kad.setAttribute('aria-label', 'Panduan penggunaan');
     document.body.append(latar, sorot, kad);
     aktif = { id, langkah, i: 0, sorot, kad, latar, el: null, selesai: o.selesai };
+    // Ditanda sebaik dipaparkan: walaupun pengguna beralih halaman di tengah lawatan, ia tidak muncul semula
+    if (!o.paksa) tandaSudah(id);
     addEventListener('resize', letak); addEventListener('scroll', letak, true); addEventListener('keydown', kekunci);
     pergi(0);
     return true;
