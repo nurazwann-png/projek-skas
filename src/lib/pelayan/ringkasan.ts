@@ -1,6 +1,6 @@
 // Ringkasan data portal di pelayan, mengikut skop peranan pengguna. Digunakan oleh Pembantu AI (alat baca sahaja)
 // dan laporan. Semua angka dikira daripada stor sebenar dalam PostgreSQL.
-import { bacaSemua, perananTinggi, type PenggunaStor } from "./stor";
+import { bacaSemua, type PenggunaStor } from "./stor";
 
 // Mesti sepadan dengan PEPERIKSAAN_SEMASA dalam public/assets/ppd-data.js
 export const PEPERIKSAAN = { key: "percubaan" as const, label: "Percubaan SPM 2026", buka: "2026-10-28", tarikhAkhir: "2026-11-13" };
@@ -10,9 +10,21 @@ type Pelajar = { id: string; muridId?: string; nama: string };
 type Kelas = { id: string; sekolah: string; kodSekolah?: string; subjek: string; tingkatan: string; kelas: string; guru: string; guruId?: string | null; pelajar: Pelajar[] };
 type Tiket = { id: string; sekolah: string; kodSekolah?: string; tajuk: string; kategori?: string; keutamaan?: string; status: string; tarikh: string; pelaporId?: string };
 type Rekod = { id?: string; program?: string; tarikh?: string; status?: string; level?: string };
-type Org = { kod: string; nama: string };
+type Org = { kod: string; nama: string; jenis?: string };
 
-export type Skop = { jenis: "daerah" } | { jenis: "sekolah"; kod: string; nama: string } | { jenis: "sendiri"; kod: string; nama: string };
+export type Skop = { jenis: "daerah" } | { jenis: "sekolah"; kod: string; nama: string } | { jenis: "sendiri"; kod: string; nama: string } | { jenis: "tiada"; sebab: string };
+export type App = "spm" | "skas" | "efasiliti";
+export type Tahap = "pengguna" | "sekolah" | "admin" | "superadmin";
+const TERTIB_TAHAP: Tahap[] = ["pengguna", "sekolah", "admin", "superadmin"];
+const SEKOLAH_MENENGAH = /^(SMK|SMKA|SMA|SM|SMT|SMS|SBP|KOLEJ|MRSM)\b/;
+
+// Tahap tertinggi yang benar-benar dimiliki pengguna (daripada peranan di pelayan)
+export function tahapMaks(aktor: PenggunaStor): Tahap {
+  if (aktor.roles.includes("superadmin")) return "superadmin";
+  if (aktor.roles.some((r) => r.startsWith("admin_"))) return "admin";
+  if (aktor.roles.some((r) => r.startsWith("sekolah_"))) return "sekolah";
+  return "pengguna";
+}
 
 const num = (v: unknown): v is number => typeof v === "number";
 const GPS = (m: number) => (m >= 90 ? 1 : m >= 80 ? 2 : m >= 70 ? 3 : m >= 65 ? 4 : m >= 60 ? 5 : m >= 55 ? 6 : m >= 50 ? 7 : m >= 45 ? 8 : m >= 40 ? 9 : 10);
@@ -22,7 +34,8 @@ const bundar = (n: number) => Math.round(n * 100) / 100;
 
 export interface Data {
   aktor: PenggunaStor;
-  skop: Skop;
+  tahap: Tahap;
+  skop: Record<App, Skop>;
   pengguna: PenggunaStor[];
   kelas: Kelas[];
   marks: Record<string, Markah>;
@@ -30,33 +43,56 @@ export interface Data {
   rekod: Record<string, Rekod[]>;
 }
 
-export async function muatData(aktor: PenggunaStor): Promise<Data> {
+// Skop data ditentukan SETIAP aplikasi mengikut peranan aktif pengguna dan peranannya dalam aplikasi itu:
+// Admin aplikasi (atau Superadmin) = seluruh daerah; Pentadbir Sekolah aplikasi = sekolahnya; selain itu = data sendiri.
+// Peranan aktif yang dihantar pelayar hanya boleh MENGECILKAN skop, tidak membesarkannya.
+export async function muatData(aktor: PenggunaStor, tahapDiminta?: unknown): Promise<Data> {
   const s = await bacaSemua();
   const org = (s.ppd_organisasi as Org[]) || [];
   const pengguna = ((s.ppd_users as PenggunaStor[]) || []).map((u) => ({ ...u, roles: u.roles || [] }));
   const o = org.find((x) => x.kod === aktor.kodSekolah);
   const namaSekolah = (o?.nama || aktor.org || "").toUpperCase();
-  const skop: Skop = aktor.roles.some(perananTinggi)
-    ? { jenis: "daerah" }
-    : aktor.roles.some((r) => r.startsWith("sekolah_"))
-      ? { jenis: "sekolah", kod: aktor.kodSekolah, nama: namaSekolah }
-      : { jenis: "sendiri", kod: aktor.kodSekolah, nama: namaSekolah };
+  const maks = tahapMaks(aktor);
+  const minta = TERTIB_TAHAP.includes(tahapDiminta as Tahap) ? (tahapDiminta as Tahap) : maks;
+  const tahap = TERTIB_TAHAP.indexOf(minta) <= TERTIB_TAHAP.indexOf(maks) ? minta : maks;
 
-  let kelas = (s.skas_kelas as Kelas[]) || [];
-  let tiket = (s.ppd_efasiliti_tiket as Tiket[]) || [];
-  let rekod = (s.ppd_skas_rekod as Record<string, Rekod[]>) || {};
+  const skopApp = (app: App): Skop => {
+    if (app === "spm" && tahap !== "superadmin" && !(tahap === "admin" && aktor.roles.includes("admin_spm"))) {
+      const menengah = o ? o.jenis === "Pejabat" || SEKOLAH_MENENGAH.test(namaSekolah) : SEKOLAH_MENENGAH.test(namaSekolah) || /^PPD\b/.test(namaSekolah);
+      if (!menengah) return { jenis: "tiada", sebab: "Analitik SPM hanya untuk sekolah menengah (SMK). Sekolah pengguna ini tidak menggunakan Analitik SPM." };
+    }
+    if (tahap === "superadmin" && aktor.roles.includes("superadmin")) return { jenis: "daerah" };
+    if (tahap === "admin" && aktor.roles.includes(`admin_${app}`)) return { jenis: "daerah" };
+    if ((tahap === "admin" || tahap === "sekolah") && aktor.roles.includes(`sekolah_${app}`)) return { jenis: "sekolah", kod: aktor.kodSekolah, nama: namaSekolah };
+    return { jenis: "sendiri", kod: aktor.kodSekolah, nama: namaSekolah };
+  };
+  const skop: Record<App, Skop> = { spm: skopApp("spm"), skas: skopApp("skas"), efasiliti: skopApp("efasiliti") };
+
   const diSekolah = (kod?: string, nama?: string) => (kod && kod === aktor.kodSekolah) || (!!nama && nama.toUpperCase() === namaSekolah);
-  if (skop.jenis === "sekolah") {
-    kelas = kelas.filter((k) => diSekolah(k.kodSekolah, k.sekolah));
-    tiket = tiket.filter((t) => diSekolah(t.kodSekolah, t.sekolah));
-    const ahli = new Set(pengguna.filter((u) => u.kodSekolah === aktor.kodSekolah).map((u) => u.id));
-    rekod = Object.fromEntries(Object.entries(rekod).filter(([uid]) => ahli.has(uid)));
-  } else if (skop.jenis === "sendiri") {
-    kelas = kelas.filter((k) => k.guruId === aktor.id);
-    tiket = tiket.filter((t) => t.pelaporId === aktor.id);
-    rekod = rekod[aktor.id] ? { [aktor.id]: rekod[aktor.id] } : {};
-  }
-  return { aktor, skop, pengguna, kelas, marks: (s.skas_marks as Record<string, Markah>) || {}, tiket, rekod };
+  const ahli = new Set(pengguna.filter((u) => u.kodSekolah === aktor.kodSekolah).map((u) => u.id));
+
+  const semuaKelas = (s.skas_kelas as Kelas[]) || [];
+  const kelas =
+    skop.spm.jenis === "daerah" ? semuaKelas
+      : skop.spm.jenis === "sekolah" ? semuaKelas.filter((k) => diSekolah(k.kodSekolah, k.sekolah))
+        : skop.spm.jenis === "sendiri" ? semuaKelas.filter((k) => k.guruId === aktor.id) : [];
+  const semuaTiket = (s.ppd_efasiliti_tiket as Tiket[]) || [];
+  const tiket =
+    skop.efasiliti.jenis === "daerah" ? semuaTiket
+      : skop.efasiliti.jenis === "sekolah" ? semuaTiket.filter((t) => diSekolah(t.kodSekolah, t.sekolah)) : semuaTiket.filter((t) => t.pelaporId === aktor.id);
+  const semuaRekod = (s.ppd_skas_rekod as Record<string, Rekod[]>) || {};
+  const rekod =
+    skop.skas.jenis === "daerah" ? semuaRekod
+      : skop.skas.jenis === "sekolah" ? Object.fromEntries(Object.entries(semuaRekod).filter(([uid]) => ahli.has(uid)))
+        : semuaRekod[aktor.id] ? { [aktor.id]: semuaRekod[aktor.id] } : {};
+
+  // Markah hanya bagi murid dalam kelas yang berada dalam skop
+  const semuaMarks = (s.skas_marks as Record<string, Markah>) || {};
+  const idMurid = new Set(kelas.flatMap((k) => (k.pelajar || []).map((p) => p.id)));
+  const marks = Object.fromEntries(Object.entries(semuaMarks).filter(([id]) => idMurid.has(id)));
+  // Senarai pengguna hanya yang relevan (untuk nama guru dalam rekod SK@S)
+  const uidRekod = new Set(Object.keys(rekod));
+  return { aktor, tahap, skop, pengguna: pengguna.filter((u) => uidRekod.has(u.id) || u.id === aktor.id), kelas, marks, tiket, rekod };
 }
 
 const belumIsi = (k: Kelas, marks: Record<string, Markah>) => (k.pelajar || []).filter((p) => !marks[p.id] || marks[p.id][PEPERIKSAAN.key] === undefined).length;
@@ -150,7 +186,8 @@ export function aduanFasiliti(d: Data, status?: string) {
 
 // Kelas yang boleh diberi peringatan pengisian markah oleh pengguna ini
 export function kelasBolehDiingatkan(d: Data, ids: string[]) {
-  const boleh = d.skop.jenis === "daerah" ? d.aktor.roles.includes("superadmin") || d.aktor.roles.includes("admin_spm") : d.skop.jenis === "sekolah" && d.aktor.roles.includes("sekolah_spm");
+  // Skop SPM "daerah" atau "sekolah" hanya diberi kepada Admin SPM/Superadmin atau Pentadbir Sekolah SPM
+  const boleh = d.skop.spm.jenis === "daerah" || d.skop.spm.jenis === "sekolah";
   if (!boleh) return [];
   const set = new Set(ids);
   return d.kelas.filter((k) => set.has(k.id) && belumIsi(k, d.marks) > 0).map((k) => ({ kelasId: k.id, label: `${k.subjek} · ${k.tingkatan} ${k.kelas} · ${k.sekolah} (${k.guru})`, belumDiisi: belumIsi(k, d.marks) }));

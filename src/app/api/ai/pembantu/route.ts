@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { penggunaSemasa } from "@/lib/pelayan/sesi";
 import { aiSedia, klienAI, MODEL_AI } from "@/lib/pelayan/ai";
 import { cariTempat, type Tempat } from "@/lib/pelayan/tempat";
-import { aduanFasiliti, kelasBolehDiingatkan, muatData, prestasiSpm, rekodSkas, statusPengisian, type Data } from "@/lib/pelayan/ringkasan";
+import { aduanFasiliti, kelasBolehDiingatkan, muatData, prestasiSpm, rekodSkas, statusPengisian, type Data, type Skop } from "@/lib/pelayan/ringkasan";
 
 // Pembantu AI portal (agentik): Claude memilih sendiri alat baca untuk menjawab soalan tentang data portal,
 // dan boleh MENCADANGKAN tindakan (peringatan pengisian markah). Tindakan hanya dilaksanakan selepas pengguna
@@ -62,8 +62,10 @@ type Cadangan =
 function jalankan(nama: string, input: Record<string, unknown>, d: Data, cadangan: Cadangan[]): unknown {
   switch (nama) {
     case "status_pengisian_markah":
+      if (d.skop.spm.jenis === "tiada") return { ralat: d.skop.spm.sebab };
       return statusPengisian(d, typeof input.sekolah === "string" ? input.sekolah : undefined);
     case "prestasi_spm":
+      if (d.skop.spm.jenis === "tiada") return { ralat: d.skop.spm.sebab };
       return prestasiSpm(d);
     case "rekod_skas":
       return rekodSkas(d);
@@ -113,14 +115,25 @@ export async function POST(req: NextRequest) {
   while (perbualan.length && perbualan[0].role !== "user") perbualan.shift();
   if (!perbualan.length || perbualan[perbualan.length - 1].role !== "user") return Response.json({ ralat: "Tiada soalan diterima." }, { status: 400 });
 
-  const d = await muatData(aktor);
-  const skop =
-    d.skop.jenis === "daerah" ? "seluruh Daerah Dalat" : d.skop.jenis === "sekolah" ? `sekolah ${d.skop.nama} sahaja` : `data peribadi pengguna sahaja (${d.skop.nama})`;
+  const d = await muatData(aktor, b?.tahap);
+  const teksSkop = (x: Skop, sendiri: string) =>
+    x.jenis === "daerah" ? "seluruh Daerah Dalat" : x.jenis === "sekolah" ? `sekolah ${x.nama} sahaja` : x.jenis === "sendiri" ? sendiri : `tiada akses (${x.sebab})`;
+  const skop = [
+    `Analitik SPM: ${teksSkop(d.skop.spm, "kelas yang diajar pengguna sahaja")}`,
+    `SK@S: ${teksSkop(d.skop.skas, "rekod pencapaian pengguna sendiri sahaja")}`,
+    `e-Fasiliti: ${teksSkop(d.skop.efasiliti, "aduan yang dilaporkan pengguna sendiri sahaja")}`,
+  ].join("; ");
+  const bolehBanding = Object.values(d.skop).some((x) => x.jenis === "daerah");
+  const LABEL_TAHAP = { superadmin: "Superadmin", admin: "Admin PPD", sekolah: "Pentadbir Sekolah", pengguna: "Pengguna Biasa (guru)" } as const;
   const sistem = [
     `Anda ialah Pembantu Portal Pengurusan Digital PPD Dalat, Sarawak. Anda membantu ${aktor.nama} memahami data portal dan merancang tindakan.`,
     "",
     `Tarikh hari ini: ${new Date().toLocaleDateString("ms-MY", { day: "numeric", month: "long", year: "numeric" })}.`,
-    `Skop data pengguna ini: ${skop}. Alat hanya memulangkan data dalam skop ini.`,
+    `Peranan aktif pengguna: ${LABEL_TAHAP[d.tahap]}. Skop data mengikut aplikasi: ${skop}. Alat hanya memulangkan data dalam skop ini.`,
+    "- Jawab HANYA berdasarkan data dalam skop peranan pengguna. Jika soalan memerlukan data di luar skop (contohnya sekolah lain, data daerah, atau aplikasi yang tiada akses), beritahu dengan sopan bahawa maklumat itu di luar peranan pengguna; jangan meneka atau menjawab daripada pengetahuan umum.",
+    bolehBanding
+      ? "- Perbandingan antara sekolah dan dengan purata daerah dibenarkan HANYA bagi aplikasi yang skopnya seluruh Daerah Dalat."
+      : "- JANGAN bandingkan dengan sekolah lain, purata daerah, kedudukan atau ranking daerah, dan jangan sebut nama sekolah lain. Fokus kepada sekolah, kelas atau rekod pengguna sendiri.",
     "",
     "Cara bekerja:",
     "- Jawab dalam Bahasa Melayu yang ringkas dan jelas. Gunakan alat untuk mendapatkan angka; jangan sekali-kali mereka angka atau nama.",

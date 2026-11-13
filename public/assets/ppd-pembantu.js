@@ -2,6 +2,8 @@
    Soalan dihantar ke /api/ai/pembantu; AI membaca data portal melalui alat di pelayan (mengikut skop peranan pengguna).
    Tindakan yang dicadangkan AI (peringatan pengisian markah) hanya dilaksanakan selepas pengguna menekan "Hantar". */
 (function () {
+  // Peranan aktif (pelayan hanya menggunakannya untuk MENGECILKAN skop data, bukan membesarkan)
+  const tahapAktif = () => { try { const x = window.PPDAuth && PPDAuth.session(); return x ? x.level : undefined; } catch { return undefined; } };
   if (window.PPDPembantu || !window.PPDAuth || !PPDAuth.session()) return;
   const esc = PPDAuth.esc;
   const css = document.createElement('style');
@@ -64,7 +66,7 @@
     d.querySelector('.pb-ya').onclick = async () => {
       d.querySelectorAll('button').forEach(b => { b.disabled = true; });
       try {
-        const res = await fetch('/api/ai/pembantu/laksana', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kelasIds: senarai.map(c => c.kelasId) }) });
+        const res = await fetch('/api/ai/pembantu/laksana', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kelasIds: senarai.map(c => c.kelasId), tahap: tahapAktif() }) });
         const j = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(j.ralat || 'Gagal menghantar peringatan.');
         d.innerHTML = `<b>Peringatan dihantar kepada ${j.dihantar.length} kelas.</b>Guru akan melihatnya dalam Tugasan Saya dan dalam Analitik SPM.`;
@@ -96,7 +98,7 @@
     tambah(esc(teks), 'pb-m saya');
     const f = tambah('Pembantu sedang menyemak data…', 'pb-fikir');
     try {
-      const res = await fetch('/api/ai/pembantu', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mesej: perbualan }) });
+      const res = await fetch('/api/ai/pembantu', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mesej: perbualan, tahap: tahapAktif() }) });
       const j = await res.json().catch(() => ({}));
       f.remove();
       if (!res.ok) throw new Error(j.ralat || 'Pembantu tidak dapat dihubungi.');

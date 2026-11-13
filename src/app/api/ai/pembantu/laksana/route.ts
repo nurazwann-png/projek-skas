@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   if (asal && new URL(asal).host !== req.headers.get("host")) return Response.json({ ralat: "Permintaan tidak dibenarkan." }, { status: 403 });
   const b = await req.json().catch(() => ({}));
   const ids: string[] = Array.isArray(b?.kelasIds) ? b.kelasIds.map(String).slice(0, 40) : [];
-  const boleh = kelasBolehDiingatkan(await muatData(aktor), ids);
+  const boleh = kelasBolehDiingatkan(await muatData(aktor, b?.tahap), ids);
   if (!boleh.length) return Response.json({ ralat: "Tiada peringatan boleh dihantar." }, { status: 403 });
   const t = Date.now();
   const set = Object.fromEntries(boleh.map((k) => [k.kelasId, { kelasId: k.kelasId, dariId: aktor.id, dariNama: aktor.nama, t }]));
