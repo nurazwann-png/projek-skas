@@ -171,6 +171,10 @@ const WARNA_TAHAP = { hijau: "#067647", kuning: "#b54708", merah: "#b42318" } as
 function PetaAduan({ titik }: { titik: TitikPeta[] }) {
   const W = 100;
   const H = 64;
+  // Dengan banyak sekolah, label bertindih: papar label pada peta hanya jika sedikit; senarai di bawah memberi butiran
+  const label = titik.length <= 8;
+  const TAHAP_SUSUN = { merah: 0, kuning: 1, hijau: 2 } as const;
+  const susun = [...titik].sort((a, b) => TAHAP_SUSUN[a.tahap] - TAHAP_SUSUN[b.tahap] || b.saiz - a.saiz || a.nama.localeCompare(b.nama));
   return (
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
@@ -198,17 +202,18 @@ function PetaAduan({ titik }: { titik: TitikPeta[] }) {
           const tx = kanan ? t.x + r + 1.6 : t.x - r - 1.6;
           return (
             <g key={t.kod}>
+              <title>{`${t.nama}: ${t.nilai}`}</title>
               <circle cx={t.x} cy={cy} r={r + 1.2} fill={WARNA_TAHAP[t.tahap]} opacity=".18" />
               <circle cx={t.x} cy={cy} r={r} fill={WARNA_TAHAP[t.tahap]} stroke="#fff" strokeWidth=".6" />
-              <text x={tx} y={cy - 0.4} textAnchor={kanan ? "start" : "end"} fontSize="2.3" fontWeight="700" fill="#111827">{t.nama}</text>
-              <text x={tx} y={cy + 2.6} textAnchor={kanan ? "start" : "end"} fontSize="2" fill="#4b5563">{t.nilai}</text>
+              {label && <text x={tx} y={cy - 0.4} textAnchor={kanan ? "start" : "end"} fontSize="2.3" fontWeight="700" fill="#111827">{t.nama}</text>}
+              {label && <text x={tx} y={cy + 2.6} textAnchor={kanan ? "start" : "end"} fontSize="2" fill="#4b5563">{t.nilai}</text>}
             </g>
           );
         })}
       </svg>
       {/* Senarai ialah sumber maklumat untuk pembaca skrin dan skrin kecil */}
       <ul className="mt-3 grid gap-x-4 gap-y-2 sm:grid-cols-2">
-        {titik.map((t) => (
+        {susun.map((t) => (
           <li key={t.kod} className="flex items-start gap-2 text-sm">
             <span className="mt-1.5 size-2.5 shrink-0 rounded-full" style={{ background: WARNA_TAHAP[t.tahap] }} aria-hidden />
             <span className="min-w-0">

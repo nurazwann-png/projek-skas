@@ -26,7 +26,7 @@
       const b = SEED_SEKOLAH.find(x => x.kod === o.kod);
       const h = [...o.kod].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
       return { id: b ? b.id : o.kod, kod: o.kod, nama: besar(o.nama), lokasi: o.lokasi || (b && b.lokasi) || 'Bandar',
-        zon: b ? b.zon : 'Zon ' + (1 + (h % 3)), x: b ? b.x : 14 + (h % 70), y: b ? b.y : 22 + ((h >> 7) % 62) };
+        zon: b ? b.zon : 'Zon ' + (1 + (h % 3)), x: b ? b.x : 14 + (h % 70), y: b ? b.y : 22 + ((h >>> 7) % 62) };
     });
   }
   const namaIkutKod = kod => { const s = kod && sekolahList().find(x => x.kod === kod); return s ? s.nama : null; };
@@ -175,6 +175,9 @@
   function seed() {
     if (window.PPD_TANPA_BENIH) return; // sistem sebenar: data datang dari pelayan, bukan data contoh
     if (read(K.seed) === VERSI && read(K.kelas)) return;
+    // Jangan tindih data yang sudah ada di pelayan (contohnya data ujian penuh)
+    const ada = read(K.kelas);
+    if (Array.isArray(ada) && ada.length) { write(K.seed, VERSI); return; }
     const { kelas, marks } = janaSPM();
     write(K.kelas, kelas.map(seragamKelas));
     write(K.marks, marks);

@@ -84,6 +84,34 @@ async function upsert(q: Pertanyaan, koleksi: string, id: string, nilai: unknown
   );
 }
 
+// Ganti keseluruhan koleksi (data ujian, MOD_DEMO sahaja). Bentuk id sama dengan bentuk() dalam ppd-segerak.js.
+export async function gantiKoleksi(data: Record<string, unknown>, oleh: string | null) {
+  const p = await db();
+  await p.transaksi(async (q) => {
+    for (const [kunci, nilai] of Object.entries(data)) {
+      const td = takrif(kunci);
+      if (!td) throw new Error(`Koleksi tidak dikenali: ${kunci}`);
+      if (td.idTetap !== undefined) {
+        await q.query(`DELETE FROM stor_item WHERE koleksi = $1 AND id = $2`, [td.koleksi, td.idTetap]);
+        await upsert(q, td.koleksi, td.idTetap, nilai, oleh);
+        continue;
+      }
+      await q.query(`DELETE FROM stor_item WHERE koleksi = $1 OR (koleksi = $2 AND id = $1)`, [kunci, TERTIB]);
+      if (td.t.jenis === "peta") {
+        for (const [id, v] of Object.entries(nilai as Record<string, unknown>)) await upsert(q, kunci, id, v, oleh);
+      } else {
+        const tertib: string[] = [];
+        for (const x of nilai as Record<string, unknown>[]) {
+          const id = (td.t.id || []).map((f) => (x[f] == null ? "" : String(x[f]))).join(":");
+          if (!tertib.includes(id)) tertib.push(id);
+          await upsert(q, kunci, id, x, oleh);
+        }
+        await upsert(q, TERTIB, kunci, tertib, oleh);
+      }
+    }
+  });
+}
+
 // Benih kali pertama: senarai sekolah (sebenar, atau contoh dalam mod demo) dan akaun demo
 let benihSiap: Promise<void> | null = null;
 function pastikanBenih() {

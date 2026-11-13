@@ -515,7 +515,8 @@ function avatar(u, lv) {
   return `<span class="av" style="background:${A.LEVELS[lv].color}">${A.esc(A.initials(u.nama))}</span>`;
 }
 function renderDemo() {
-  $('demo').innerHTML = A.users().map(u => {
+  const semua = A.users(), utama = semua.filter(u => u.utama);
+  $('demo').innerHTML = (utama.length ? utama : semua.slice(0, 12)).map(u => {
     const lvs = A.levelsFor(u);
     const top = lvs[lvs.length - 1];
     const extra = lvs.filter(l => l !== 'pengguna' && l !== top).length;
