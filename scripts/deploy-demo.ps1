@@ -42,13 +42,16 @@ if ($svc.spec.template.spec.serviceAccountName) { $arg += @('--service-account',
 if ($c.resources.limits.memory) { $arg += @('--memory', $c.resources.limits.memory) }
 if ($c.resources.limits.cpu) { $arg += @('--cpu', $c.resources.limits.cpu) }
 if ($svc.spec.template.spec.timeoutSeconds) { $arg += @('--timeout', [string]$svc.spec.template.spec.timeoutSeconds) }
+$sql = $ann.'run.googleapis.com/cloudsql-instances'
+if ($sql) { $arg += @('--set-cloudsql-instances', $sql) }
 if ($rahsia.Count) { $arg += @('--set-secrets', ($rahsia -join ',')) }
 try { & gcloud @arg } finally { Remove-Item $fail -ErrorAction SilentlyContinue }
 if ($LASTEXITCODE -ne 0) { throw 'Deploy servis demo gagal.' }
 
 Write-Host '4/4 Muat data ujian...'
 $url = gcloud run services describe $DEMO --region $R --project $P --format='value(status.url)'
-$res = Invoke-WebRequest -UseBasicParsing "$url/api/stor" -TimeoutSec 120
-Write-Host "    /api/stor: $($res.StatusCode)"
+# Tanpa log masuk /api/stor memulangkan 401, tetapi permintaan itu sudah mencetuskan muatan data ujian
+try { $kod = (Invoke-WebRequest -UseBasicParsing "$url/api/stor" -TimeoutSec 120).StatusCode } catch { $kod = [int]$_.Exception.Response.StatusCode }
+Write-Host "    /api/stor: $kod $(if ($kod -eq 200 -or $kod -eq 401) { '(OK)' } else { '(semak log: gcloud run services logs read ' + $DEMO + ')' })"
 Write-Host ''
 Write-Host "Servis demo sedia: $url"
