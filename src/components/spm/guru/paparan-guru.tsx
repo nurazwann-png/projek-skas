@@ -12,6 +12,15 @@ import { ModalPelajar, TabAnalisis } from "./tab-analisis";
 import { TabKelas } from "./tab-kelas";
 import { TabRekod, type StatusSimpan } from "./tab-rekod";
 import { TabStatus } from "./tab-status";
+import { useLawatan, type Langkah } from "@/lib/portal/lawatan";
+
+const LAWATAN: Langkah[] = [
+  { tajuk: "Analitik SPM: paparan guru", teks: "Di sini anda mengisi markah murid dan memantau prestasi kelas yang anda ajar. Markah disimpan secara automatik, termasuk semasa luar talian." },
+  { sel: '[data-tab="kelas"]', tajuk: "Kelas Saya", teks: "Senarai kelas dan subjek yang anda ajar. Klik kelas untuk mula mengisi markah." },
+  { sel: '[data-tab="rekod"]', tajuk: "Rekod Markah", teks: "Pilih peperiksaan, kemudian isi markah terus dalam jadual. Untuk ramai murid, muat turun <b>templat Excel</b>, isi, dan <b>muat naik Excel</b>; pratonton dipaparkan sebelum disimpan. Lajur <b>Sasaran</b> ialah sasaran SPM setiap murid." },
+  { sel: '[data-tab="analisis"]', tajuk: "Analisis Kelas", teks: "GPS kelas, taburan gred dan murid berisiko. Klik nama murid untuk melihat prestasinya merentas peperiksaan." },
+  { sel: '[data-tab="status"]', tajuk: "Status Pengisian", teks: "Berapa markah yang belum diisi bagi setiap kelas sebelum tarikh akhir. Peringatan daripada pentadbir sekolah juga dipaparkan di sini." },
+];
 
 const TAB = [
   { id: "kelas", label: "Kelas Saya" },
@@ -44,6 +53,7 @@ export function PaparanGuru({ data, pengguna, segar, makluman, versi }: PropGuru
   const [simpanan, setSimpanan] = useState<StatusSimpan>({ masa: null, gagal: false });
   const [nav, setNav] = useState<Navigasi>(() => navigasiAwal(kelasGuru(data, pengguna.id)));
   const [pelajarId, setPelajarId] = useState<string | null>(null);
+  useLawatan("spm-guru", LAWATAN);
 
   // Baca semula stor setiap kali ia berubah (versi daripada induk, lokal selepas tulisan sendiri)
   const { kelas, marks } = useMemo<{ kelas: Kelas[]; marks: Marks }>(() => {

@@ -6,6 +6,7 @@
 <script>PPDAuth.guard();</script>
 <script src="assets/ppd-data.js"></script>
 <script src="assets/ppd-ui.js"></script>
+<script src="assets/ppd-lawatan.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="assets/ppd-carta.js" defer></script>
 <script src="assets/ppd-roles.js" data-app="skas" defer></script>
@@ -526,6 +527,12 @@ body{display:flex;flex-direction:column;margin:0}
 .empty::before{content:'';display:block;width:44px;height:44px;margin:0 auto 12px;border-radius:50%;background:var(--ppd-accent-l) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313406e' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/22px no-repeat}
 :where(button,a,[tabindex],input,select,textarea):focus-visible{outline:3px solid var(--ppd-gold);outline-offset:2px}
 .step.active{color:var(--accent)}
+/* Butang ? (panduan) di hujung kanan bar atas */
+.topbar{justify-content:flex-start}
+.topbar .bell-btn{margin-left:auto}
+.tb-bantuan{margin-left:auto;flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--t2);font:800 15px/1 inherit;cursor:pointer}
+.tb-bantuan:hover{border-color:var(--accent);color:var(--accent)}
+.bell-btn + .tb-bantuan{margin-left:4px}
 /* Telefon: bar sisi menjadi laci tersembunyi, dibuka dengan butang menu di bar atas */
 .tb-menu{display:none}
 @media(max-width:640px){
@@ -625,14 +632,6 @@ const LEVELS_LAYAK   = ['INT','NAT','NEG','DAE']; // SKL tidak layak
 // SKPM 5.4.2 -- peringkat yang diiktiraf untuk Pencapaian Sekolah (tiada BAH/SKL)
 const LEVELS_SEKOLAH = ['INT','NAT','NEG','DAE'];
 
-// Demo school achievement records
-const DEMO_SCHOOL_RECORDS = [
-  { id:'sr1', program:'World\'s Best School Prize 2026', tarikh:'2026-03-15', level:'INT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t1' },
-  { id:'sr2', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t3' },
-  { id:'sr3', program:'Anugerah Sekolah Cemerlang Sukan PPD Dalat 2026', tarikh:'2026-02-20', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'' },
-  { id:'sr4', program:'SPM 2025 -- Peratus Calon Cemerlang Tertinggi Daerah', tarikh:'2026-04-08', level:'DAE', tahap:'T1', pautanEviden:'https://drive.google.com/...', catatan:'', guruId:'t2' },
-  { id:'sr5', program:'Anugerah Pengurusan Kaunseling Peringkat Negeri 2026', tarikh:'2026-06-01', level:'NEG', tahap:'T2', pautanEviden:'', catatan:'Sijil belum diterima', guruId:'t4' },
-];
 
 // AI Classification -- SKPM 5.4.2 Pencapaian Sekolah
 function aiKlasifikasiSekolah(rec) {
@@ -668,7 +667,10 @@ const isJurulatihViolation = (peranan, level) =>
   isJurulatih(peranan) && level && levelTier(LEVEL_MAP_SKPM[level]||level) > JURULATIH_MIN_TIER;
 
 // AI Classification -- tentukan layak/tidak layak berdasarkan SKPM 5.4.1
-const TAHUN_SEMASA = 2026;
+// Tahun penilaian ditetapkan oleh Admin SK@S (ppd_skas_tetapan); lalai: tahun kalendar semasa
+const TETAPAN_SKAS = PPDData.skas.tetapan();
+const TAHUN_SEMASA = Number(TETAPAN_SKAS.tahunPenilaian) || new Date().getFullYear();
+const PANDUAN_AKTIF = PPDData.skas.panduan().find(p => p.id === TETAPAN_SKAS.panduanAktif) || null;
 function aiKlasifikasi(rec) {
   const reasons = [];
   const passes  = [];
@@ -718,74 +720,28 @@ function aiKlasifikasi(rec) {
   return { layak, reasons, passes };
 }
 
-/* -- Mock data ------------------------------------------------- */
-// Semua rekod adalah pencapaian PERIBADI guru (bukan murid/sekolah)
-// tahap: T1=Tempat1/Anugerah, T2=Tempat2, T3=Tempat3, SH=Saguhati, SY=Penyertaan
-
-/* -- Demo teachers (school roster) ---------------------------- */
-const DEMO_TEACHERS = [
-  { id:'t1', name:'AZMAN BIN HARUN',      jawatan:'Guru Cemerlang Matematik', av:'AH',
-    mataPelajaran:'Matematik', emel:'azman.harun@moe-dl.edu.my', tahunMula:2015, uid:'u_azman',
-    get records() { return PPDData.skas.rekod('u_azman'); } },
-  { id:'t2', name:'SITI NORZAHRA MD ZAIN', jawatan:'Guru Bahasa Melayu',  av:'SN',
-    mataPelajaran:'Bahasa Melayu', emel:'siti.norzahra@moe-dl.edu.my', tahunMula:2018,
-    records: [
-      { id:'t2r1', program:'Anugerah Guru Inovatif Individu -- Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-05-16', tahap:'T1', pengesahan:'Sijil JPN Sarawak', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Negeri','#5.4.1'] },
-      { id:'t2r2', program:'Pertandingan Syarahan Guru Daerah Dalat 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-08-10', tahap:'T2', pengesahan:'Sijil PPD', pautanEviden:'', status:'approved', draft:null, tags:['#Daerah','#5.4.1'] },
-      { id:'t2r3', program:'Bengkel Penulisan Kreatif Sekolah', level:'SKL', peranan:'Peserta', tarikh:'2026-03-05', tahap:'T1', pengesahan:'Sijil sekolah', pautanEviden:'', status:'approved', draft:null, tags:['#Sekolah'] },
-    ]},
-  { id:'t3', name:'MOHD FADHLI ISMAIL', jawatan:'Guru Sains',             av:'MF',
-    mataPelajaran:'Sains', emel:'fadhli@moe-dl.edu.my', tahunMula:2012,
-    records: [
-      { id:'t3r1', program:'Malaysia Teacher Prize (MTP) 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-09-20', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Kebangsaan','#5.4.1'] },
-      { id:'t3r2', program:'Global Educator Award (GEA) 2026', level:'INT', peranan:'Peserta', tarikh:'2026-07-14', tahap:'SH', pengesahan:'Sijil GEA', pautanEviden:'https://drive.google.com/...', status:'approved', draft:null, tags:['#Antarabangsa','#5.4.1'] },
-    ]},
-  { id:'t4', name:'NURUL AIN HAMZAH',   jawatan:'Guru Pendidikan Islam',  av:'NA',
-    mataPelajaran:'Pendidikan Islam', emel:'nurulain@moe-dl.edu.my', tahunMula:2020,
-    records: [
-      { id:'t4r1', program:'Kursus Facilitator STEM Bahagian Mukah', level:'BAH', peranan:'Peserta', tarikh:'2026-04-18', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'', status:'approved', draft:null, tags:['#Bahagian','#5.4.1'] },
-    ]},
-  { id:'t5', name:'REDZUAN OTHMAN',     jawatan:'Guru Pendidikan Jasmani', av:'RO',
-    mataPelajaran:'Pendidikan Jasmani', emel:'redzuan@moe-dl.edu.my', tahunMula:2019,
-    records: [] },
-];
-
-/* -- Demo schools (PPD view) ----------------------------------- */
-const DEMO_SCHOOLS = [
-  { id:'s1', name:'SMK DALAT',       kod:'YEA6101', jenis:'SMK',  av:'SD',
-    teachers: DEMO_TEACHERS,
-    schoolRecords: DEMO_SCHOOL_RECORDS },
-  { id:'s2', name:'SMK OYA',         kod:'YEA6102', jenis:'SMK',  av:'SO',
-    teachers: [
-      { id:'s2t1', name:'HAZWANI RAMLI',    jawatan:'Guru Besar', av:'HR', records:[
-        { id:'s2r1', program:'Anugerah Guru Cemerlang Kebangsaan 2026', level:'NAT', peranan:'Peserta', tarikh:'2026-04-10', tahap:'T1', pengesahan:'Sijil KPM', pautanEviden:'https://drive.google.com/...', tags:[] },
-        { id:'s2r2', program:'Inovasi Pendidikan Peringkat Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-06-15', tahap:'T2', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
-      ]},
-      { id:'s2t2', name:'FADZILAH YUSOF', jawatan:'Guru Matematik', av:'FY', records:[
-        { id:'s2r3', program:'STEM Ambassador Daerah Dalat 2026', level:'DAE', peranan:'Peserta', tarikh:'2026-03-20', tahap:'T1', pengesahan:'Sijil PPD', pautanEviden:'', tags:[] },
-      ]},
-    ],
-    schoolRecords: [
-      { id:'ss2r1', program:'AIA Healthiest Schools Awards 2026', tarikh:'2026-05-10', level:'NAT', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
-      { id:'ss2r2', program:'Anugerah Pengurusan Kaunseling Daerah 2026', tarikh:'2026-03-08', level:'DAE', tahap:'T1', kategori:'HEM', pautanEviden:'https://drive.google.com/...', catatan:'' },
-    ]},
-  { id:'s3', name:'SMK BATANG IGAN', kod:'YEA6103', jenis:'SMK',  av:'BI',
-    teachers: [
-      { id:'s3t1', name:'ROSLAN ABD HAMID', jawatan:'Guru Besar',  av:'RA', records:[
-        { id:'s3r1', program:'Anugerah Pengetua/GB Cemerlang Negeri 2026', level:'NEG', peranan:'Peserta', tarikh:'2026-07-01', tahap:'T1', pengesahan:'Sijil JPN', pautanEviden:'https://drive.google.com/...', tags:[] },
-      ]},
-      { id:'s3t2', name:'NORFADZILAH IDRIS', jawatan:'Guru Sains', av:'NI', records:[] },
-    ],
-    schoolRecords: [
-      { id:'ss3r1', program:'Anugerah Sekolah Cemerlang Kokurikulum PPD Dalat 2026', tarikh:'2026-02-14', level:'DAE', tahap:'T1', kategori:'KOK', pautanEviden:'https://drive.google.com/...', catatan:'' },
-    ]},
-  { id:'s4', name:'SMK AGAMA IGAN',  kod:'YEA6104', jenis:'SMKA', av:'AI',
-    teachers: [
-      { id:'s4t1', name:'ZAINUDIN BAKAR',   jawatan:'Guru Besar',  av:'ZB', records:[] },
-      { id:'s4t2', name:'SALMIAH NORDIN',   jawatan:'Guru BM',     av:'SN', records:[] },
-    ],
-    schoolRecords: [] },
-];
+/* -- Sekolah, guru dan rekod sebenar (stor kongsi PostgreSQL) -------------
+   Bentuk sama seperti data demo lama supaya semua paparan Pentadbir Sekolah dan Admin PPD
+   membaca data sebenar: guru = pengguna berdaftar di sekolah itu, rekod 5.4.1 daripada
+   ppd_skas_rekod, Pencapaian Sekolah 5.4.2 daripada ppd_skas_sekolah. */
+function jenisSekolah(nama) {
+  const n = String(nama || '').toUpperCase();
+  return /^SMKA\b|^SMK AGAMA/.test(n) ? 'SMKA' : /^SMK\b/.test(n) ? 'SMK' : /^SJK/.test(n) ? 'SJK(C)' : /^SK\b/.test(n) ? 'SK' : 'Sekolah';
+}
+function binaSekolah() {
+  const users = PPDAuth.users();
+  const rekod = PPDData.skas.all(), rekSekolah = PPDData.skas.sekolahAll();
+  return PPDData.sekolahList().map(s => ({
+    id: s.kod, kod: s.kod, name: s.nama, jenis: jenisSekolah(s.nama), av: PPDAuth.initials(s.nama),
+    teachers: users.filter(u => u.kodSekolah === s.kod).map(u => ({
+      id: u.id, uid: u.id, name: u.nama, jawatan: u.jawatan || 'Guru', av: PPDAuth.initials(u.nama),
+      mataPelajaran: u.mataPelajaran || '', emel: u.emel, tahunMula: u.tahunMula || null,
+      records: rekod[u.id] || [],
+    })),
+    schoolRecords: rekSekolah[s.kod] || [],
+  }));
+}
+const SEKOLAH_SKAS = binaSekolah();
 
 /* -- Pengguna log masuk & stor kongsi --------------------------- */
 const ME = PPDAuth.currentUser();
@@ -801,11 +757,16 @@ function drafAtauKosong() {
   S._drafMasa = d && drafAda(d.f) ? d.t : null;
   return S._drafMasa ? { ...F_KOSONG(), ...d.f, hasSijil:false, _ai:undefined, namaSijil:'' } : F_KOSONG();
 }
-let _rekodTersimpan = null;
+let _rekodTersimpan = null, _rekSekolahTersimpan = null;
 function simpanAutoSkas(dariInput) {
   if (S.records !== _rekodTersimpan) {
     if (_rekodTersimpan !== null) PPDData.skas.save(ME.id, S.records);
     _rekodTersimpan = S.records;
+  }
+  // Pencapaian Sekolah (5.4.2) disimpan ke stor kongsi (ppd_skas_sekolah) ikut kod sekolah
+  if (S.schoolRecords !== _rekSekolahTersimpan) {
+    if (_rekSekolahTersimpan !== null && SEKOLAH_KOD) PPDData.skas.saveSekolah(SEKOLAH_KOD, S.schoolRecords);
+    _rekSekolahTersimpan = S.schoolRecords;
   }
   if (S.view === 'form' && !S.editingId && drafAda(S.f)) {
     try { localStorage.setItem(DRAF_KEY, JSON.stringify({ f: S.f, t: Date.now() })); } catch {}
@@ -849,12 +810,12 @@ let S = {
   ppdUserSearch: '',
 
   // teacher roster (mutable)
-  teachers: (DEMO_SCHOOLS.find(sc => sc.name === SEKOLAH_SAYA)?.teachers || []).map(t=>({...t})),
+  teachers: (SEKOLAH_SKAS.find(sc => sc.kod === SEKOLAH_KOD)?.teachers || []).map(t=>({...t})),
   usrModal: null,   // null | 'add' | 'edit'
   usrEditId: null,  // id of teacher being edited
 
   // school achievement records
-  schoolRecords: [...(DEMO_SCHOOLS.find(sc => sc.name === SEKOLAH_SAYA)?.schoolRecords || [])],
+  schoolRecords: [...PPDData.skas.sekolah(SEKOLAH_KOD)],
   sfDetailId: null,     // id of school record being viewed in detail
   // school form
   sf: { program:'', tarikh:'', level:'', tahap:'', kategori:'', pautanEviden:'', catatan:'', guruId:'' },
@@ -916,6 +877,12 @@ function pasangMenuMudah(app) {
   b.innerHTML = '<svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
   b.addEventListener('click', () => app.classList.add('menu-buka'));
   tb.prepend(b);
+  // Butang ? membuka semula lawatan berpandu
+  const bantu = document.createElement('button');
+  bantu.type = 'button'; bantu.className = 'tb-bantuan'; bantu.title = 'Tunjukkan panduan'; bantu.setAttribute('aria-label', 'Tunjukkan panduan');
+  bantu.textContent = '?';
+  bantu.addEventListener('click', () => mulaLawatanSkas(true));
+  tb.appendChild(bantu);
   const latar = document.createElement('div');
   latar.className = 'sb-latar'; latar.addEventListener('click', tutup);
   app.appendChild(latar);
@@ -992,7 +959,13 @@ function dashRecRow(r) {
 }
 
 function dashCollapsible(groups) {
-  if (!groups.length) return '<div class="panel" style="margin-top:12px"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>';
+  if (!groups.length) return S.role === 'teacher'
+    ? `<div class="panel" style="margin-top:12px"><div class="pb" style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:28px 18px">
+        <div class="empty" style="padding:0">Belum ada rekod pencapaian.</div>
+        <div style="font-size:13px;color:var(--t2);max-width:46ch">Cara paling cepat: muat naik gambar atau PDF sijil di <b>Semak Pencapaian</b>. AI akan membaca sijil, menilai kelayakan 5.4.1 dan mengisi borang untuk anda.</div>
+        <button class="btn btn-primary" data-view="semak">${IC.spark} Semak sijil pertama saya</button>
+      </div></div>`
+    : '<div class="panel" style="margin-top:12px"><div class="pb"><div class="empty">Tiada rekod.</div></div></div>';
   var lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
   return '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'
     + groups.map(function(g) {
@@ -1134,7 +1107,15 @@ function viewDashboard() {
 }
 
 /* -- RAG document references ----------------------------------- */
+// Petikan daripada panduan aktif yang dimuat naik Admin SK@S; aspek lain (5.4.1 lawan 5.4.2) diketepikan
+function rujukanPanduan(aspek) {
+  const lain = aspek === '5.4.1' ? '5.4.2' : '5.4.1';
+  const semua = (PANDUAN_AKTIF?.rujukan || []).map(x => ({ doc: PANDUAN_AKTIF.nama, section: x.tajuk, excerpt: x.petikan, page: x.muka }));
+  const sesuai = semua.filter(x => !((x.section + x.excerpt).includes(lain) && !(x.section + x.excerpt).includes(aspek)));
+  return (sesuai.length ? sesuai : semua).slice(0, 6);
+}
 function ragRefs(rec, ai) {
+  if (PANDUAN_AKTIF?.rujukan?.length) return rujukanPanduan('5.4.1');
   const refs = [];
   const mappedLevel = LEVEL_MAP_SKPM[rec.level] || rec.level;
 
@@ -2198,6 +2179,125 @@ function sumberKamera(id) {
 }
 
 /* -- Paparan Maklum Balas AI untuk Admin PPD -- */
+/* -- Panduan SKPM & tahun penilaian (Admin SK@S) ----------------------------------
+   Panduan baharu dimuat naik sebagai PDF: teks diekstrak di pelayar (pdf.js, dengan penanda muka surat),
+   AI di pelayan mengekstrak peraturan 5.4.1/5.4.2 dan petikan rujukan. Admin menyemak, kemudian mengaktifkan. */
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+function muatPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return new Promise((ok, gagal) => {
+    const s = document.createElement('script');
+    s.src = PDFJS + 'pdf.min.js';
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; ok(window.pdfjsLib); };
+    s.onerror = () => gagal(new Error('Pembaca PDF tidak dapat dimuatkan. Semak sambungan internet.'));
+    document.head.appendChild(s);
+  });
+}
+async function teksDaripadaPdf(file, kemajuan) {
+  const pdfjs = await muatPdfJs();
+  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const bahagian = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const hlm = await (await doc.getPage(n)).getTextContent();
+    bahagian.push(`=== Muka surat ${n} ===\n` + hlm.items.map(x => x.str + (x.hasEOL ? '\n' : ' ')).join(''));
+    kemajuan?.(n, doc.numPages);
+  }
+  return { teks: bahagian.join('\n\n'), halaman: doc.numPages };
+}
+async function muatNaikPanduan(file) {
+  if (!file) return;
+  if (file.type !== 'application/pdf') { PPDUI.alert('Bukan PDF', 'Pilih fail PDF Panduan Pelaksanaan SKPM.'); return; }
+  setState({ pdMuat: { status: 'baca', mesej: 'Membaca teks PDF…' } });
+  try {
+    const { teks, halaman } = await teksDaripadaPdf(file, (n, jum) => {
+      const el = document.getElementById('pd-kemajuan'); if (el) el.textContent = `Membaca teks PDF… muka surat ${n} daripada ${jum}`;
+    });
+    if (teks.replace(/=== Muka surat \d+ ===/g, '').trim().length < 2000) throw new Error('PDF ini hampir tiada teks (mungkin imej imbasan). Gunakan PDF asal yang mengandungi teks.');
+    setState({ pdMuat: { status: 'analisis', mesej: `AI sedang menganalisis ${halaman} muka surat panduan. Biasanya 1–3 minit; jangan tutup halaman ini.` } });
+    const res = await fetch('/api/skas/panduan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teks, namaFail: file.name, halaman }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.panduan) throw new Error(j.ralat || 'Panduan tidak dapat diproses.');
+    if (window.PPDSegerak) await PPDSegerak.muat();
+    setState({ pdMuat: null, pdPilih: j.panduan.id });
+  } catch (e) {
+    setState({ pdMuat: { status: 'ralat', mesej: e.message || 'Panduan tidak dapat diproses.' } });
+  }
+}
+async function aktifkanPanduan(id) {
+  const p = PPDData.skas.panduan().find(x => x.id === id);
+  const teks = p
+    ? `Semak Pencapaian AI akan menggunakan peraturan daripada "${p.nama}", dan tahun penilaian ditetapkan kepada ${p.tahun}. Rekod sedia ada tidak diubah.`
+    : 'Semak Pencapaian AI akan kembali menggunakan peraturan terbina dalam (Panduan SKPM 2026).';
+  if (!(await PPDUI.confirm(p ? 'Aktifkan panduan ini?' : 'Guna peraturan terbina dalam?', teks, { ok: 'Aktifkan' }))) return;
+  const t = PPDData.skas.tetapan();
+  PPDData.skas.saveTetapan(p ? { ...t, panduanAktif: p.id, tahunPenilaian: p.tahun } : { ...t, panduanAktif: null });
+  setTimeout(() => location.reload(), 700); // tahun & panduan dibaca semasa halaman dimuatkan
+}
+async function padamPanduan(id) {
+  const p = PPDData.skas.panduan().find(x => x.id === id);
+  if (!p || !(await PPDUI.confirm('Padam panduan ini?', `"${p.nama}" akan dibuang daripada senarai.`, { ok: 'Padam', tone: 'warn' }))) return;
+  PPDData.skas.savePanduan(PPDData.skas.panduan().filter(x => x.id !== id));
+  setState({ pdPilih: null });
+}
+function simpanTahunPenilaian(tahun) {
+  const t = PPDData.skas.tetapan();
+  PPDData.skas.saveTetapan({ ...t, tahunPenilaian: tahun });
+  setTimeout(() => location.reload(), 700);
+}
+function viewPPDPanduan() {
+  const senarai = PPDData.skas.panduan();
+  const aktifId = PANDUAN_AKTIF?.id || null;
+  const m = S.pdMuat, pilih = senarai.find(p => p.id === S.pdPilih) || null;
+  const tahunKini = new Date().getFullYear();
+  const pilihanTahun = [tahunKini - 1, tahunKini, tahunKini + 1, tahunKini + 2];
+  if (!pilihanTahun.includes(TAHUN_SEMASA)) pilihanTahun.push(TAHUN_SEMASA);
+  const tarikh = s => new Date(s).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+  const blok = (tajuk, isi) => `<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--t3);margin-bottom:6px">${tajuk}</div>${isi}</div>`;
+  const pra = t => `<div style="white-space:pre-wrap;font-size:12.5px;line-height:1.6;color:var(--t1);background:var(--chip);border-radius:8px;padding:12px;max-height:340px;overflow:auto">${esc(t)}</div>`;
+  return `
+  <div class="pg-head"><div><div class="pg-title">Panduan & Tahun Penilaian</div>
+    <div class="pg-sub">Peraturan yang digunakan oleh Semak Pencapaian AI dan tahun yang dikira layak</div></div></div>
+
+  <div class="panel"><div class="ph"><span class="pt">Tahun penilaian semasa</span></div>
+    <div class="pb" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+      <select class="fi" id="pd-tahun" style="width:auto;min-width:120px">${pilihanTahun.sort().map(y => `<option${y === TAHUN_SEMASA ? ' selected' : ''}>${y}</option>`).join('')}</select>
+      <button class="btn btn-primary" id="pd-tahun-simpan">Simpan tahun</button>
+      <div style="flex-basis:100%;font-size:12px;color:var(--t3);line-height:1.6">Hanya pencapaian bertarikh tahun ${TAHUN_SEMASA} dikira layak untuk 5.4.1 dan 5.4.2. Rekod tahun lain kekal tersimpan dan boleh dilihat; ia tidak dipadam apabila tahun bertukar.</div>
+    </div></div>
+
+  <div class="panel"><div class="ph"><span class="pt">Muat naik panduan baharu</span></div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.6">Muat naik PDF Panduan Pelaksanaan SKPM Kualiti@Sekolah yang baharu. AI akan mengekstrak peraturan Pencapaian Guru (5.4.1), Pencapaian Sekolah (5.4.2) dan petikan rujukan. Semak hasilnya, kemudian tekan <b>Aktifkan</b>.</div>
+      ${m && (m.status === 'baca' || m.status === 'analisis')
+        ? `<div class="notice"><span class="spin">${IC.spin}</span> <span id="pd-kemajuan">${esc(m.mesej)}</span></div>`
+        : `<label class="btn btn-ghost" style="align-self:flex-start;cursor:pointer">${IC.plus} Pilih PDF panduan<input type="file" id="pd-fail" accept="application/pdf" hidden></label>
+           ${m?.status === 'ralat' ? `<div class="notice" style="background:#fef2f2;color:#b91c1c">${esc(m.mesej)}</div>` : ''}`}
+    </div></div>
+
+  <div class="panel"><div class="ph"><span class="pt">Senarai panduan</span></div>
+    <div class="pb" style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px">
+        <div style="flex:1;min-width:0"><b style="font-size:13px">Peraturan terbina dalam</b><div style="font-size:11.5px;color:var(--t3)">Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026</div></div>
+        ${aktifId ? `<button class="btn btn-ghost" data-pd-aktif="" style="font-size:12px">Guna semula</button>` : `<span class="chip" style="background:var(--ok-l);color:var(--ok)">Aktif</span>`}
+      </div>
+      ${senarai.map(p => `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border:1px solid ${p.id === S.pdPilih ? 'var(--accent)' : 'var(--border)'};border-radius:10px">
+        <div style="flex:1;min-width:0"><b style="font-size:13px">${esc(p.nama)}</b><div style="font-size:11.5px;color:var(--t3)">Tahun ${p.tahun} · ${p.halaman || '?'} muka surat · dimuat naik ${tarikh(p.dimuatNaik)} oleh ${esc(p.oleh)}</div></div>
+        ${p.id === aktifId ? `<span class="chip" style="background:var(--ok-l);color:var(--ok)">Aktif</span>` : ''}
+        <button class="btn btn-ghost" data-pd-lihat="${p.id}" style="font-size:12px">Lihat</button>
+        ${p.id === aktifId ? '' : `<button class="btn btn-primary" data-pd-aktif="${p.id}" style="font-size:12px">Aktifkan</button><button class="btn btn-ghost" data-pd-padam="${p.id}" style="font-size:12px;color:var(--danger)">Padam</button>`}
+      </div>`).join('')}
+    </div></div>
+
+  ${pilih ? `<div class="panel"><div class="ph"><span class="pt">${esc(pilih.nama)}</span><span class="chip">Tahun ${pilih.tahun}</span></div>
+    <div class="pb">
+      ${pilih.id === aktifId ? '' : `<div class="notice" style="display:block">Semak peraturan yang diekstrak di bawah. Jika betul, tekan <b>Aktifkan</b> dalam senarai panduan.</div>`}
+      ${pilih.perubahan ? blok('Perubahan berbanding peraturan semasa', `<div style="white-space:pre-wrap;font-size:12.5px;line-height:1.6;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px">${esc(pilih.perubahan)}</div>`) : ''}
+      ${blok('Peraturan Pencapaian Guru (5.4.1)', pra(pilih.peraturanGuru))}
+      ${blok('Peraturan Pencapaian Sekolah (5.4.2)', pra(pilih.peraturanSekolah))}
+      ${blok(`Petikan rujukan (${(pilih.rujukan || []).length})`, (pilih.rujukan || []).map(x => `<div style="border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px"><div style="font-size:11.5px;font-weight:700">${esc(x.tajuk)} <span style="color:var(--accent)">${esc(x.muka)}</span></div><div style="font-size:12px;color:var(--t2);font-style:italic;margin-top:3px">"${esc(x.petikan)}"</div></div>`).join(''))}
+    </div></div>` : ''}`;
+}
+
 function viewPPDMaklumBalasAI() {
   const senarai = mbSemua();
   const kira = Object.fromEntries(MB_BAHAGIAN.map(b => [b, senarai.filter(x => (x.salah || []).includes(b)).length]));
@@ -2708,6 +2808,7 @@ function sidebarAdmin() {
       { pv:'charts',          label:'Carta & Analitik',  icon:i('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>') },
       { pv:'schools',         label:'Senarai Sekolah',   icon:i('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>') },
       { pv:'maklum_balas_ai', label:'Maklum Balas AI',   icon:i('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>') },
+      { pv:'panduan',         label:'Panduan & Tahun',   icon:i('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>') },
     ];
     return `<aside class="sidebar">
       <div class="sb-logo"><span class="sb-logo-tile"><img src="assets/logo-skas.png" alt=""></span><span><span class="mark">SK@S</span><span class="sub">SKPM Kualiti@Sekolah</span></span></div>
@@ -2756,7 +2857,7 @@ function sidebarAdmin() {
 /* -- School Admin view (Analysis Dashboard) -------------------- */
 function viewSchoolAdmin() {
   // -- 5.4.1 Pencapaian Guru (all teachers combined)
-  const allTeacherRecs = DEMO_TEACHERS.flatMap(t => t.records.map(r => ({ ...r, _teacherName: t.name })));
+  const allTeacherRecs = S.teachers.flatMap(t => t.records.map(r => ({ ...r, _teacherName: t.name })));
   const tClassified    = allTeacherRecs.map(r => ({ ...r, ai: aiKlasifikasi(r) }));
   const tLayak         = tClassified.filter(r => r.ai.layak);
   const tTidakLayak    = tClassified.filter(r => !r.ai.layak);
@@ -2915,19 +3016,19 @@ function viewSchoolAdmin() {
     <div class="panel">
       <div class="pb" style="display:flex;flex-direction:column;gap:10px">
         ${(()=>{
-          const isiGuru    = DEMO_TEACHERS.filter(t=>t.records.length>0);
-          const tidakIsi   = DEMO_TEACHERS.filter(t=>t.records.length===0);
-          const pct        = Math.round(isiGuru.length/DEMO_TEACHERS.length*100);
+          const isiGuru    = S.teachers.filter(t=>t.records.length>0);
+          const tidakIsi   = S.teachers.filter(t=>t.records.length===0);
+          const pct        = Math.round(isiGuru.length/S.teachers.length*100);
           return `
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2)">
-            <span><strong style="color:var(--ok);font-size:18px">${isiGuru.length}</strong> / ${DEMO_TEACHERS.length} guru telah mengisi</span>
+            <span><strong style="color:var(--ok);font-size:18px">${isiGuru.length}</strong> / ${S.teachers.length} guru telah mengisi</span>
             <span style="font-weight:700;color:${pct===100?'var(--ok)':'var(--accent)'}">${pct}%</span>
           </div>
           <div style="background:var(--border);border-radius:99px;height:8px;overflow:hidden">
             <div style="height:100%;width:${pct}%;background:var(--ok);border-radius:99px;transition:width .4s"></div>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-            ${DEMO_TEACHERS.map(t=>{
+            ${S.teachers.map(t=>{
               const layakCnt = t.records.filter(r=>aiKlasifikasi(r).layak).length;
               const hasRec   = t.records.length>0;
               return `<div style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px solid ${hasRec?'var(--border)':'var(--danger)'};background:${hasRec?'var(--chip)':'var(--danger-l)'}">
@@ -3351,7 +3452,7 @@ function viewSchoolAchievementDetail() {
       </div>` : '';
 
   // RAG references for SKPM 5.4.2
-  const ragSklRefs = [
+  const ragSklRefs = PANDUAN_AKTIF?.rujukan?.length ? rujukanPanduan('5.4.2') : [
     {
       doc: 'Panduan Pelaksanaan SKPM Kualiti@Sekolah Tahun 2026',
       section: 'Standard 5, Aspek 5.4, Sub-standard 5.4.2 - Pencapaian Sekolah',
@@ -3679,8 +3780,8 @@ function viewUsers() {
       <div class="pg-title">Senarai Guru</div>
       <div class="pg-sub">${esc(SEKOLAH_SAYA)} &middot; ${teachers.length} guru berdaftar &middot; Tahun ${TAHUN_SEMASA}</div>
     </div>
-    <button class="btn btn-primary" id="btn-add-teacher" style="gap:6px">${i('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',16)} Tambah Guru</button>
   </div>
+  <div class="notice" style="display:block">Senarai ini ialah akaun guru yang berdaftar di sekolah anda. Guru mendaftar sendiri dengan akaun Google rasmi; akaun diurus oleh Superadmin PPD.</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
     ${teachers.map(t => {
       const recs   = t.records;
@@ -3717,10 +3818,6 @@ function viewUsers() {
               </div>
               <div style="font-size:10.5px;color:var(--t3);text-align:right">${pct}% layak SKPM 5.4.1</div>`
           }
-          <div style="display:flex;gap:6px;margin-top:2px">
-            <button class="btn btn-ghost usr-edit-btn" data-tid="${t.id}" style="flex:1;font-size:11px;padding:5px 8px;gap:4px" onclick="event.stopPropagation()">${i('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',13)} Edit</button>
-            <button class="btn usr-del-btn" data-tid="${t.id}" data-tname="${esc(t.name)}" style="flex:1;font-size:11px;padding:5px 8px;gap:4px;background:var(--danger-l);color:var(--danger);border:none" onclick="event.stopPropagation()">${i('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>',13)} Padam</button>
-          </div>
         </div>
       </div>`;
     }).join('')}
@@ -3834,20 +3931,20 @@ function viewPPDCharts() {
     return new Date(r.tarikh).getFullYear() === selectedYear;
   };
   const availYears = [...new Set(
-    DEMO_SCHOOLS.flatMap(sch=>[
+    SEKOLAH_SKAS.flatMap(sch=>[
       ...sch.teachers.flatMap(t=>(t.records||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())),
       ...(sch.schoolRecords||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())
     ]).filter(Boolean)
   )].sort((a,b)=>b-a);
 
-  const allTRecs = DEMO_SCHOOLS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})))).filter(filterByYear);
-  const allSRecs = DEMO_SCHOOLS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))).filter(filterByYear);
+  const allTRecs = SEKOLAH_SKAS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})))).filter(filterByYear);
+  const allSRecs = SEKOLAH_SKAS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))).filter(filterByYear);
   const tLayakAll = allTRecs.filter(r=>aiKlasifikasi(r).layak);
   const sLayakAll = allSRecs.filter(r=>aiKlasifikasiSekolah(r).layak);
   const tPct = allTRecs.length ? Math.round(tLayakAll.length/allTRecs.length*100) : 0;
   const sPct = allSRecs.length ? Math.round(sLayakAll.length/allSRecs.length*100) : 0;
   const totalRecs = allTRecs.length + allSRecs.length;
-  const totalSchools = DEMO_SCHOOLS.length;
+  const totalSchools = SEKOLAH_SKAS.length;
 
   const lvlOrder = ['INT','NAT','NEG','BAH','DAE','SKL'];
   const countByLevel = arr => {
@@ -4004,15 +4101,15 @@ function viewPPDAnalysis() {
     return new Date(r.tarikh).getFullYear() === selectedYear;
   };
   const availYears = [...new Set(
-    DEMO_SCHOOLS.flatMap(sch=>[
+    SEKOLAH_SKAS.flatMap(sch=>[
       ...sch.teachers.flatMap(t=>(t.records||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())),
       ...(sch.schoolRecords||[]).map(r=>r.tarikh&&new Date(r.tarikh).getFullYear())
     ]).filter(Boolean)
   )].sort((a,b)=>b-a);
 
   // Aggregate all schools (filtered by year)
-  const allTRecs = DEMO_SCHOOLS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})))).filter(filterByYear);
-  const allSRecs = DEMO_SCHOOLS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))).filter(filterByYear);
+  const allTRecs = SEKOLAH_SKAS.flatMap(sch => sch.teachers.flatMap(t => (t.records||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id})))).filter(filterByYear);
+  const allSRecs = SEKOLAH_SKAS.flatMap(sch => (sch.schoolRecords||[]).map(r=>({...r,_school:sch.name,_schoolId:sch.id}))).filter(filterByYear);
 
   const tLayakAll  = allTRecs.filter(r=>aiKlasifikasi(r).layak);
   const tTidakAll  = allTRecs.filter(r=>!aiKlasifikasi(r).layak);
@@ -4045,7 +4142,7 @@ function viewPPDAnalysis() {
   };
 
   // Per-school stats table
-  const schoolRows = DEMO_SCHOOLS.map(sch => {
+  const schoolRows = SEKOLAH_SKAS.map(sch => {
     const tR = sch.teachers.flatMap(t=>t.records||[]);
     const sR = sch.schoolRecords || [];
     const tL = tR.filter(r=>aiKlasifikasi(r).layak).length;
@@ -4091,7 +4188,7 @@ function viewPPDAnalysis() {
   }).join('');
 
   // Cadangan C: sekolah lemah (<50%)
-  const schoolsWeak = DEMO_SCHOOLS.map(sch=>{
+  const schoolsWeak = SEKOLAH_SKAS.map(sch=>{
     const tR=sch.teachers.flatMap(t=>(t.records||[]).filter(filterByYear));
     const sR=(sch.schoolRecords||[]).filter(filterByYear);
     const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
@@ -4118,7 +4215,7 @@ function viewPPDAnalysis() {
   <div class="pg-head">
     <div>
       <div class="pg-title">Analisis Daerah</div>
-      <div class="pg-sub">PPD Dalat &middot; SKPM Aspek 5.4 &middot; Tahun ${selectedYear} &middot; ${DEMO_SCHOOLS.length} Sekolah</div>
+      <div class="pg-sub">PPD Dalat &middot; SKPM Aspek 5.4 &middot; Tahun ${selectedYear} &middot; ${SEKOLAH_SKAS.length} Sekolah</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button id="btn-ppd-csv" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:9px;border:1.5px solid var(--bdr);background:var(--card);color:var(--t1);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--bdr)'">
@@ -4224,7 +4321,7 @@ function viewPPDAnalysis() {
       ${(()=>{
         const medal = i => i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
         const MAX_SLOT = 20 * LEVELS_LAYAK.length; // 20 × 4 = 80
-        const ranked = DEMO_SCHOOLS.map(sch=>{
+        const ranked = SEKOLAH_SKAS.map(sch=>{
           const tR=sch.teachers.flatMap(t=>t.records||[]);
           const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
           const pct=Math.min(100,Math.round(tL/MAX_SLOT*100));
@@ -4291,7 +4388,7 @@ function viewPPDSchools() {
   const jenisFilter = S.ppdSchoolJenis || 'all';
   const statusFilter = S.ppdSchoolStatus || 'all';
   // compute pct for each school for status filter
-  const withStats = DEMO_SCHOOLS.map(sch => {
+  const withStats = SEKOLAH_SKAS.map(sch => {
     const tRecs = sch.teachers.flatMap(t=>t.records||[]);
     const tLayak = tRecs.filter(r=>aiKlasifikasi(r).layak).length;
     const sLayak = (sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;
@@ -4322,7 +4419,7 @@ function viewPPDSchools() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div style="font-size:18px;font-weight:800;color:var(--t1)">Senarai Sekolah</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Dalat &middot; ${filtered.length} / ${DEMO_SCHOOLS.length} sekolah</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">PPD Dalat &middot; ${filtered.length} / ${SEKOLAH_SKAS.length} sekolah</div>
       </div>
     </div>
     <!-- Search + filter jenis + filter status (Cadangan 3 + P) -->
@@ -4378,7 +4475,7 @@ function viewPPDSchools() {
 
 
 function viewPPDSchoolLanding() {
-  const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
+  const sch = SEKOLAH_SKAS.find(s=>s.id===S.selectedSchoolId);
   if(!sch) return '<p>Sekolah tidak dijumpai.</p>';
   const pengguna = penggunaSekolah(sch.name);
   const admins = pengguna.filter(u=>u.roles.includes('sekolah_skas'));
@@ -4416,7 +4513,7 @@ function perananSkas(u) {
   return ['Pengguna Biasa', PPDAuth.LEVELS.pengguna.color];
 }
 function viewPPDSchoolUsers() {
-  const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
+  const sch = SEKOLAH_SKAS.find(s=>s.id===S.selectedSchoolId);
   if(!sch) return '<p>Sekolah tidak dijumpai.</p>';
   const users = penggunaSekolah(sch.name);
   const boleh = PPDAuth.assignableRoles(ME, ME_LV, 'skas').length > 0;
@@ -4449,7 +4546,7 @@ function viewPPDSchoolUsers() {
 }
 
 function viewPPDSchoolDetail() {
-  const sch = DEMO_SCHOOLS.find(s=>s.id===S.selectedSchoolId);
+  const sch = SEKOLAH_SKAS.find(s=>s.id===S.selectedSchoolId);
   if (!sch) return `<div class="sa-wrap"><p>Sekolah tidak dijumpai.</p></div>`;
 
   const tRecs = sch.teachers.flatMap(t=>(t.records||[]).map(r=>({...r,_tname:t.name})));
@@ -4593,6 +4690,7 @@ function buildContent() {
       : S.ppdView==='schools'           ? viewPPDSchools()
       : S.ppdView==='charts'            ? viewPPDCharts()
       : S.ppdView==='maklum_balas_ai'   ? viewPPDMaklumBalasAI()
+      : S.ppdView==='panduan'           ? viewPPDPanduan()
       : viewPPDAnalysis();
   }
   if (S.role === 'school_admin') {
@@ -4615,7 +4713,7 @@ function buildContent() {
 
 function buildTopbarTitle() {
   if (S.role === 'ppd_admin') {
-    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', maklum_balas_ai:'Maklum Balas AI' }[S.ppdView] || 'SK@S';
+    return { analysis:'Analisis Daerah', charts:'Carta & Analitik', schools:'Senarai Sekolah', school_landing:'Butiran Sekolah', school_users:'Pengguna Sekolah', school_detail:'Analisis Pencapaian', maklum_balas_ai:'Maklum Balas AI', panduan:'Panduan & Tahun Penilaian' }[S.ppdView] || 'SK@S';
   }
   if (S.role === 'school_admin') {
     return { analysis:'Analisis Pencapaian', users:'Senarai Pengguna', teacher_detail:'Rekod Guru', school_achievements:'Pencapaian Sekolah', school_achievement_detail:'Butiran Pencapaian Sekolah', school_form:'Tambah Pencapaian Sekolah', school_semak:'Semak Pencapaian Sekolah', school_profile:'Profil Sekolah' }[S.saView] || 'SK@S';
@@ -4627,7 +4725,7 @@ function buildApp() {
   const contentHtml = buildContent();
   if (S.role === 'ppd_admin') {
     // Count new records (demo: records submitted in last 7 days across all schools)
-    const allNewRecs = DEMO_SCHOOLS.flatMap(sch=>[
+    const allNewRecs = SEKOLAH_SKAS.flatMap(sch=>[
       ...sch.teachers.flatMap(t=>(t.records||[]).filter(r=>r.tarikh&&((new Date()-new Date(r.tarikh))/864e5)<7)),
       ...(sch.schoolRecords||[]).filter(r=>r.tarikh&&((new Date()-new Date(r.tarikh))/864e5)<7)
     ]);
@@ -4880,6 +4978,13 @@ function bind() {
   // ppd admin nav
   document.querySelectorAll('[data-ppdview]').forEach(b=>b.addEventListener('click',()=>{ setState({ppdView:b.dataset.ppdview,selectedSchoolId:null,ppdFilter:null}); }));
 
+  // Panduan & tahun penilaian
+  document.getElementById('pd-fail')?.addEventListener('change',e=>muatNaikPanduan(e.target.files[0]));
+  document.getElementById('pd-tahun-simpan')?.addEventListener('click',()=>simpanTahunPenilaian(Number(document.getElementById('pd-tahun').value)));
+  document.querySelectorAll('[data-pd-lihat]').forEach(b=>b.addEventListener('click',()=>setState({pdPilih:b.dataset.pdLihat})));
+  document.querySelectorAll('[data-pd-aktif]').forEach(b=>b.addEventListener('click',()=>aktifkanPanduan(b.dataset.pdAktif)));
+  document.querySelectorAll('[data-pd-padam]').forEach(b=>b.addEventListener('click',()=>padamPanduan(b.dataset.pdPadam)));
+
   // ppd school cards (both from senarai and from analysis table)
   document.querySelectorAll('[data-school]').forEach(b=>b.addEventListener('click',()=>setState({ppdView:'school_landing',selectedSchoolId:b.dataset.school,ppdFilter:null,expandedPpdRecs:[]})));
 
@@ -4892,7 +4997,7 @@ function bind() {
 
   // buka Urus Peranan portal, ditapis ke sekolah semasa
   const bup=document.getElementById('btn-buka-urus-peranan');
-  if(bup)bup.addEventListener('click',()=>{ const sch=DEMO_SCHOOLS.find(x=>x.id===S.selectedSchoolId); window.PPDRoles && PPDRoles.open(sch?sch.name:''); });
+  if(bup)bup.addEventListener('click',()=>{ const sch=SEKOLAH_SKAS.find(x=>x.id===S.selectedSchoolId); window.PPDRoles && PPDRoles.open(sch?sch.name:''); });
 
   // ppd back button (from school_detail → school_landing)
   const bpb=document.getElementById('btn-ppd-back');
@@ -4914,7 +5019,7 @@ function bind() {
       const medal=i=>i===0?'&#x1F947;':i===1?'&#x1F948;':i===2?'&#x1F949;':`<span style="display:inline-block;width:20px;text-align:center;font-size:12px;font-weight:700;color:var(--t3)">${i+1}</span>`;
       const levelsForMode = isGuru ? LEVELS_LAYAK : LEVELS_SEKOLAH;
       const MAX_SLOT = 20 * levelsForMode.length; // 20 × 4 = 80
-      const ranked=DEMO_SCHOOLS.map(sch=>{
+      const ranked=SEKOLAH_SKAS.map(sch=>{
         let layak;
         if(isGuru){layak=sch.teachers.flatMap(t=>t.records||[]).filter(r=>aiKlasifikasi(r).layak).length;}
         else{layak=(sch.schoolRecords||[]).filter(r=>aiKlasifikasiSekolah(r).layak).length;}
@@ -4973,7 +5078,7 @@ function bind() {
     const yr=S.ppdYearFilter||TAHUN_SEMASA;
     const filterYr=r=>!r.tarikh||new Date(r.tarikh).getFullYear()===yr;
     const rows=[['Sekolah','Kod','Jenis','Guru Layak','Guru Total','% Guru','Sekolah Layak','Sekolah Total','% Sekolah']];
-    DEMO_SCHOOLS.forEach(sch=>{
+    SEKOLAH_SKAS.forEach(sch=>{
       const tR=sch.teachers.flatMap(t=>(t.records||[])).filter(filterYr);
       const sR=(sch.schoolRecords||[]).filter(filterYr);
       const tL=tR.filter(r=>aiKlasifikasi(r).layak).length;
@@ -5351,5 +5456,38 @@ window.addEventListener('ppd-peranan-berubah', () => { if (S.ppdView === 'school
 // Peranan ikut sesi log masuk portal (bukan parameter URL)
 S.role = PPDAuth.appRoleFor(ME, ME_LV, 'skas');
 
+/* -- Lawatan berpandu kali pertama SK@S (ikut peranan) ---------------------------- */
+const NOTA_MENU = ' Pada telefon, buka menu ☰ di atas untuk ke bahagian ini.';
+function langkahSkas() {
+  const evidens = { tajuk: 'Evidens untuk MoEIS', teks: `SK@S tidak menyimpan fail evidens dan tidak memerlukan pautan. Simpan evidens dalam format <b>PDF</b> di <b>Google Drive</b> (ID DELIMa sekolah, "Anyone with the link" sebagai "Viewer") untuk pengisian di <b>MoEIS</b> (Panduan SKPM ${TAHUN_SEMASA}).` };
+  const bantuan = { sel: '.tb-bantuan', tajuk: 'Buka semula panduan', teks: 'Tekan butang <b>?</b> ini bila-bila masa untuk melihat panduan ini semula.' };
+  if (S.role === 'teacher') return [
+    { tajuk: 'Selamat datang ke SK@S', teks: `SK@S merekod <b>Pencapaian Guru (SKPM 5.4.1)</b> anda bagi tahun penilaian <b>${TAHUN_SEMASA}</b>. Rekod disimpan terus tanpa perlu kelulusan.` },
+    { sel: '[data-view="semak"]', alt: '.tb-menu', tajuk: 'Semak Pencapaian: cara paling cepat', teks: 'Muat naik gambar atau PDF sijil. AI membaca sijil, menilai kelayakan 5.4.1 berdasarkan Panduan SKPM dan mengisi borang untuk anda. Tekan <b>Guna untuk borang</b>, semak, kemudian simpan.' + NOTA_MENU },
+    { sel: '[data-view="form"]', alt: '.tb-menu', tajuk: 'Tambah Pencapaian (manual)', teks: 'Isi sendiri jika tiada sijil digital. Pratonton AI menunjukkan sama ada rekod layak. Sijil pingat sahaja: Emas = Tempat Pertama; Perak dan Gangsa = Saguhati.' },
+    { sel: '[data-view="records"]', alt: '.tb-menu', tajuk: 'Rekod Pencapaian Saya', teks: 'Semua rekod anda, mengikut peringkat. Klik rekod untuk butiran, edit atau padam.' },
+    evidens, bantuan,
+  ];
+  if (S.role === 'school_admin') return [
+    { tajuk: 'SK@S: Pentadbir Sekolah', teks: `Rekod <b>Pencapaian Sekolah (SKPM 5.4.2)</b> dan pantau pencapaian guru sekolah anda bagi tahun penilaian <b>${TAHUN_SEMASA}</b>.` },
+    { sel: '[data-saview="analysis"]', alt: '.tb-menu', tajuk: 'Analisis Pencapaian', teks: 'Ringkasan pencapaian guru dan sekolah yang layak, mengikut peringkat.' + NOTA_MENU },
+    { sel: '[data-saview="school_semak"]', alt: '.tb-menu', tajuk: 'Semak Pencapaian Sekolah', teks: 'Muat naik sijil atau surat penganugerahan (satu atau beberapa sekaligus). AI menyemak kelayakan 5.4.2. Nama sekolah anda <b>mesti tertulis sebagai penerima</b>.' },
+    { sel: '[data-saview="school_achievements"]', alt: '.tb-menu', tajuk: 'Pencapaian Sekolah', teks: 'Senarai pencapaian sekolah yang telah disimpan, mengikut peringkat dan slot.' },
+    { sel: '[data-saview="users"]', alt: '.tb-menu', tajuk: 'Guru dan rekod mereka', teks: 'Guru yang berdaftar di sekolah anda dan rekod 5.4.1 masing-masing. Akaun guru diurus oleh Superadmin PPD.' },
+    evidens, bantuan,
+  ];
+  if (S.role === 'ppd_admin') return [
+    { tajuk: 'SK@S: Admin PPD', teks: `Pantau pencapaian guru (5.4.1) dan sekolah (5.4.2) seluruh Daerah Dalat bagi tahun penilaian <b>${TAHUN_SEMASA}</b>.` },
+    { sel: '[data-ppdview="analysis"]', alt: '.tb-menu', tajuk: 'Analisis Daerah', teks: 'Bilangan pencapaian layak setiap sekolah dan sekolah yang memerlukan perhatian.' + NOTA_MENU },
+    { sel: '[data-ppdview="schools"]', alt: '.tb-menu', tajuk: 'Senarai Sekolah', teks: 'Masuk ke setiap sekolah untuk melihat rekod guru dan pencapaian sekolah.' },
+    { sel: '[data-ppdview="maklum_balas_ai"]', alt: '.tb-menu', tajuk: 'Maklum Balas AI', teks: 'Laporan pengguna apabila keputusan Semak Pencapaian AI salah, untuk menambah baik peraturan semakan.' },
+    { sel: '[data-ppdview="panduan"]', alt: '.tb-menu', tajuk: 'Panduan & Tahun Penilaian', teks: 'Tetapkan tahun penilaian dan muat naik Panduan SKPM baharu. AI mengekstrak peraturan 5.4.1/5.4.2 dan petikan rujukan; semak, kemudian <b>Aktifkan</b>.' },
+    bantuan,
+  ];
+  return [];
+}
+function mulaLawatanSkas(paksa) { window.PPDLawatan && PPDLawatan.mula('skas-' + S.role, langkahSkas(), { paksa }); }
+
 render();
+setTimeout(() => mulaLawatanSkas(false), 700);
 </script>

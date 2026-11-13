@@ -200,6 +200,15 @@
     all: () => read(K.skas) || {},
     rekod: uid => (read(K.skas) || {})[uid] || [],
     save(uid, list) { const all = skas.all(); all[uid] = list; return write(K.skas, all); },
+    // Pencapaian Sekolah (5.4.2) ikut kod sekolah
+    sekolahAll: () => read('ppd_skas_sekolah') || {},
+    sekolah: kod => (read('ppd_skas_sekolah') || {})[kod] || [],
+    saveSekolah(kod, list) { const all = skas.sekolahAll(); all[kod] = list; return write('ppd_skas_sekolah', all); },
+    // Tahun penilaian dan panduan aktif (Admin SK@S)
+    tetapan: () => read('ppd_skas_tetapan') || {},
+    saveTetapan: t => write('ppd_skas_tetapan', t),
+    panduan: () => read('ppd_skas_panduan') || [],
+    savePanduan: list => write('ppd_skas_panduan', list),
   };
   const efasiliti = {
     tiket: () => (read(K.tiket) || []).map(seragamTiket),

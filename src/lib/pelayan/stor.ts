@@ -24,6 +24,9 @@ export const KOLEKSI: Record<string, TakrifKoleksi> = {
   ppd_peringatan: { jenis: "senarai", id: ["kelasId"] },
   ppd_spm_intervensi: { jenis: "senarai", id: ["id"] },
   ppd_skas_maklumbalas_ai: { jenis: "senarai", id: ["t", "olehId"] },
+  ppd_skas_sekolah: { jenis: "peta" }, // Pencapaian Sekolah 5.4.2, ikut kod sekolah
+  ppd_skas_panduan: { jenis: "senarai", id: ["id"] }, // Panduan SKPM yang dimuat naik (peraturan + rujukan)
+  ppd_skas_tetapan: { jenis: "nilai" }, // { tahunPenilaian, panduanAktif }
 };
 // Kunci berawalan (satu nilai bagi setiap akhiran)
 export const AWALAN: Record<string, TakrifKoleksi> = {
@@ -231,6 +234,19 @@ export async function tulis(aktor: PenggunaStor, ops: Op[]): Promise<Ditolak[]> 
 
       if (koleksi === "ppd_organisasi" && !superadmin) { ditolak.push({ k: op.k, sebab: "Hanya Superadmin boleh mengurus senarai sekolah." }); continue; }
       if (koleksi === "ppd_pengumuman" && !adminApa) { ditolak.push({ k: op.k, sebab: "Hanya Admin PPD boleh mengurus pengumuman." }); continue; }
+      const adminSkas = superadmin || aktor.roles.includes("admin_skas");
+      if ((koleksi === "ppd_skas_panduan" || koleksi === "ppd_skas_tetapan") && !adminSkas) { ditolak.push({ k: op.k, sebab: "Hanya Admin SK@S boleh mengurus panduan dan tahun penilaian." }); continue; }
+      // Rekod guru: setiap guru hanya menulis rekod sendiri (kunci = id pengguna)
+      if (koleksi === "ppd_skas_rekod" && !adminSkas) {
+        const lain = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.id);
+        if (lain.length) { ditolak.push({ k: op.k, sebab: "Anda hanya boleh mengubah rekod pencapaian sendiri." }); continue; }
+      }
+      // Pencapaian Sekolah: Pentadbir SK@S sekolah hanya menulis sekolah sendiri (kunci = kod sekolah)
+      if (koleksi === "ppd_skas_sekolah" && !adminSkas) {
+        const boleh = aktor.roles.includes("sekolah_skas");
+        const lain = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.kodSekolah);
+        if (!boleh || lain.length) { ditolak.push({ k: op.k, sebab: "Hanya Pentadbir SK@S sekolah ini boleh mengubah pencapaian sekolah." }); continue; }
+      }
 
       if (koleksi === "ppd_users") {
         const sedia = await q.query<{ id: string; nilai: PenggunaStor }>(`SELECT id, nilai FROM stor_item WHERE koleksi = 'ppd_users'`);

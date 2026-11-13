@@ -20,6 +20,9 @@
     ppd_peringatan: { jenis: 'senarai', id: ['kelasId'] },
     ppd_spm_intervensi: { jenis: 'senarai', id: ['id'] },
     ppd_skas_maklumbalas_ai: { jenis: 'senarai', id: ['t', 'olehId'] },
+    ppd_skas_sekolah: { jenis: 'peta' },
+    ppd_skas_panduan: { jenis: 'senarai', id: ['id'] },
+    ppd_skas_tetapan: { jenis: 'nilai' },
   };
   const AWALAN = ['skas_gps_sejarah:', 'skas_gps_sasaran:'];
   const K_BARIS = 'ppd_segerak_baris', K_SESI = 'ppd_sesi';

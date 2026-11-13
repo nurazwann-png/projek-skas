@@ -16,6 +16,7 @@
 <script src="assets/ppd-scrolly.js" defer></script>
 <script src="assets/ppd-sungai.js"></script>
 <script src="assets/ppd-lokasi.js"></script>
+<script src="assets/ppd-lawatan.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 :root {
@@ -489,6 +490,14 @@ img { max-width: 100%; }
 .sk-tbl th { background: var(--surface-2); font-size: 11.5px; color: var(--t2); }
 .sk-tbl tr:last-child td { border-bottom: 0; }
 .sk-tbl td.kod { font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
+.sk-baris { cursor: pointer; }
+.sk-baris:hover td { background: var(--surface-2); }
+.sk-urus { border: 1px solid var(--border); background: var(--surface); color: var(--navy, #13406e); font: 700 12px inherit; border-radius: 999px; padding: 4px 11px; cursor: pointer; white-space: nowrap; }
+.sk-urus:hover { border-color: var(--navy, #13406e); }
+.upg-kepala { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin-bottom: 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); }
+.upg-kepala[hidden] { display: none; }
+.upg-kepala b { display: block; font-size: 14px; color: var(--t1); }
+.upg-kepala span { font-size: 12px; color: var(--t3); }
 .sk-act { display: flex; gap: 6px; justify-content: flex-end; }
 .sk-act button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--t2); }
 .sk-act button.del { color: var(--red); }
@@ -784,16 +793,18 @@ img { max-width: 100%; }
     </form>
 
     <div class="upg-tabs" role="tablist">
-      <button type="button" class="upg-tab on" data-upgtab="pengguna" role="tab" aria-selected="true">Pengguna &amp; Peranan</button>
-      <button type="button" class="upg-tab" data-upgtab="sekolah" role="tab" aria-selected="false">Senarai Sekolah</button>
+      <button type="button" class="upg-tab on" data-upgtab="ppd" role="tab" aria-selected="true">Pengguna PPD</button>
+      <button type="button" class="upg-tab" data-upgtab="sekolah" role="tab" aria-selected="false">Pengguna Sekolah</button>
       <button type="button" class="upg-tab" data-upgtab="audit" role="tab" aria-selected="false">Log Audit</button>
     </div>
     <div id="upg-pane-pengguna">
-      <input class="inp" id="upg-cari" type="search" placeholder="Cari nama, emel atau organisasi" style="margin-bottom:12px">
+      <div id="upg-kepala" class="upg-kepala" hidden></div>
+      <input class="inp" id="upg-cari" type="search" placeholder="Cari nama atau emel" style="margin-bottom:12px">
       <div id="upg-list"></div>
     </div>
     <div id="upg-pane-sekolah" hidden>
-      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Senarai ini digunakan semasa pendaftaran: pengguna memilih <b>kod sekolah</b> dan nama sekolah dipaparkan secara automatik. Kod sekolah menentukan sekolah pengguna dalam semua aplikasi.</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Pilih sekolah untuk mengurus penggunanya. Senarai ini juga digunakan semasa pendaftaran: pengguna memilih <b>kod sekolah</b> dan nama sekolah dipaparkan secara automatik.</div>
+      <input class="inp" id="sk-cari" type="search" placeholder="Cari nama atau kod sekolah" style="margin-bottom:10px">
       <form id="sk-form" class="sk-form" novalidate>
         <input type="hidden" id="sk-asal">
         <div><label for="sk-kod">Kod sekolah</label><input class="inp inp-besar" id="sk-kod" placeholder="YEA6105" maxlength="10" autocomplete="off"></div>
@@ -1240,6 +1251,53 @@ function updateUI() {
     btnAdmin.style.display = isAdmin ? 'inline-flex' : 'none';
   }
   renderPengumuman();
+  clearTimeout(window._lawatanMasa);
+  window._lawatanMasa = setTimeout(() => mulaLawatanPortal(false), 900);
+}
+
+/* ── Lawatan berpandu kali pertama (ikut peranan aktif) ─────────────── */
+function langkahPortal(lv) {
+  const awal = [
+    { tajuk: 'Selamat datang ke Portal PPD Dalat', teks: 'Satu pintu masuk untuk SK@S, Analitik SPM dan e-Fasiliti. Panduan ringkas ini menunjukkan bahagian penting untuk peranan anda. Anda boleh membukanya semula bila-bila masa melalui menu profil.' },
+    { sel: '#user-banner', tajuk: 'Peranan anda', teks: 'Jika anda ada lebih daripada satu peranan (contohnya Pengguna Biasa dan Pentadbir Sekolah), tukar di sini. Paparan portal dan semua aplikasi mengikut peranan yang aktif.' },
+  ];
+  const peranan = {
+    pengguna: [
+      { sel: '#fokus', tajuk: 'Fokus semasa', teks: 'Peratus markah peperiksaan semasa yang telah anda isi, tarikh akhir, rekod SK@S anda dan aduan aktif. Klik untuk terus ke aplikasi.' },
+      { sel: '#tugasan', tajuk: 'Tugasan saya', teks: 'Kelas yang markahnya belum lengkap dan peringatan daripada pentadbir dipaparkan di sini mengikut keutamaan.' },
+      { sel: '#spm-card', tajuk: 'Analitik SPM: isi markah', teks: 'Isi markah murid kelas anda terus dalam jadual, atau muat naik fail Excel (templat disediakan). Anda juga boleh menetapkan sasaran SPM setiap murid.' },
+      { sel: '#skpm-card', tajuk: 'SK@S: pencapaian guru (5.4.1)', teks: 'Guna <b>Semak Pencapaian</b>: muat naik sijil dan AI mengisi borang serta menilai kelayakan. Simpan evidens PDF dalam Google Drive anda untuk pengisian di <b>MoEIS</b>.' },
+      { sel: '#efasiliti-card', tajuk: 'e-Fasiliti', teks: 'Laporkan kerosakan dengan gambar dan ikuti statusnya sehingga selesai.' },
+    ],
+    sekolah: [
+      { sel: '#fokus', tajuk: 'Fokus sekolah', teks: 'Peratus pengisian markah seluruh sekolah, rekod pencapaian guru SK@S dan aduan aktif sekolah anda.' },
+      { sel: '#spm-card', tajuk: 'Analitik SPM sekolah', teks: 'Analisis sekolah, <b>Headcount</b> berbanding sasaran, <b>Semak Pengisian</b> (siapa belum isi markah), pelajar berisiko dan laporan.' },
+      { sel: '#skpm-card', tajuk: 'SK@S: pencapaian sekolah (5.4.2)', teks: 'Rekod Pencapaian Sekolah (boleh disemak oleh AI) dan lihat rekod pencapaian guru sekolah anda. Evidens PDF disimpan dalam Google Drive DELIMa sekolah untuk MoEIS.' },
+      { sel: '#efasiliti-card', tajuk: 'Aduan fasiliti sekolah', teks: 'Lapor dan pantau aduan kerosakan sekolah anda.' },
+    ],
+    admin: [
+      { sel: '#kpis', tajuk: 'Ringkasan daerah', teks: 'Angka utama seluruh Daerah Dalat mengikut aplikasi yang anda urus.' },
+      { sel: '#spm-card', tajuk: 'Analitik SPM daerah', teks: 'GPS setiap sekolah, jurang, Headcount daerah dan pemantauan pengisian markah. Hantar peringatan kepada kelas yang belum lengkap.' },
+      { sel: '#skpm-card', tajuk: 'SK@S: Admin', teks: 'Analisis pencapaian seluruh daerah. Di menu <b>Panduan & Tahun</b>, tetapkan tahun penilaian dan muat naik Panduan SKPM baharu supaya AI mengikut peraturan terkini.' },
+      { sel: '#pautan', tajuk: 'Laporan sedia cetak', teks: 'Pautan pantas, termasuk <b>Laporan</b>: SKPM 5.4.1, prestasi SPM dan ketepatan AI, sedia dicetak atau dimuat turun ke Excel.' },
+      { sel: '#pengumuman', tajuk: 'Pengumuman', teks: 'Terbitkan pengumuman kepada semua pengguna portal.' },
+    ],
+    superadmin: [
+      { sel: '#user-banner .ub-admin', alt: '#profile-chip', tajuk: 'Urus Pengguna', teks: 'Tab <b>Pengguna PPD</b> untuk pegawai PPD, tab <b>Pengguna Sekolah</b> untuk memilih sekolah dan mengurus penggunanya, serta senarai sekolah dan Log Audit. Admin dan Superadmin hanya untuk emel @moe.gov.my.' },
+    ],
+  };
+  const akhir = [
+    { sel: '#cari-btn', tajuk: 'Carian pantas', teks: 'Tekan <b>Ctrl+K</b> atau butang ini untuk mencari aplikasi, sekolah atau tindakan dengan cepat.' },
+    { sel: '#lk-peta', tajuk: 'Peta sekolah', teks: 'Klik sekolah untuk maklumat. Untuk arah antara dua sekolah, <b>tekan lama</b> pada sekolah pertama dan seret anak panah ke sekolah kedua.' },
+    { sel: '.pb-btn', tajuk: 'Tanya Pembantu', teks: 'Pembantu AI menjawab daripada data portal mengikut peranan anda, contohnya "Kelas mana belum isi markah?", "Arah ke SK Sg Rasau" atau "Macam mana nak muat naik markah?".' },
+    { sel: '#profile-chip', tajuk: 'Buka semula panduan ini', teks: 'Panduan ini boleh dibuka semula dari menu profil: <b>Tunjukkan panduan</b>.' },
+  ];
+  return [...awal, ...(peranan[lv] || []), ...akhir];
+}
+function mulaLawatanPortal(paksa) {
+  if (!window.PPDLawatan || !document.getElementById('modal-pengguna').hidden) return;
+  const lv = activeLevel();
+  PPDLawatan.mula('portal-' + lv, langkahPortal(lv), { paksa });
 }
 
 function handleAppCardClick(app) {
@@ -1271,6 +1329,7 @@ function toggleProfileMenu() {
     </div>
     <div class="pmenu-roles"><span class="lbl">Peranan diberi</span>${chips}</div>
     ${lv === 'superadmin' ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}Urus Pengguna &amp; Peranan</button>` : ''}
+    <button class="mi" role="menuitem" onclick="closeProfileMenu();mulaLawatanPortal(true)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Tunjukkan panduan</button>
     <button class="mi out" role="menuitem" onclick="A.logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log keluar</button>`;
   document.querySelector('.masthead-top').appendChild(m);
   document.getElementById('profile-chip').setAttribute('aria-expanded', 'true');
@@ -1298,11 +1357,31 @@ function paparNamaOrg() {
   el.classList.toggle('ada', !!o);
 }
 document.getElementById('upg-org').addEventListener('change', paparNamaOrg);
+// Urus Pengguna dipecah: Pengguna PPD (senarai biasa) dan Pengguna Sekolah (senarai sekolah → pengguna sekolah itu)
+let upgTab = 'ppd', upgKod = null;
+const orgPejabat = kod => { const o = A.orgByKod(kod); return !o || o.jenis === 'Pejabat'; };
+const kodPejabat = () => (A.organisasi().find(o => o.jenis === 'Pejabat') || {}).kod || '';
+function pilihOrgBorang(kod) {
+  const sel = document.getElementById('upg-org');
+  if (kod && [...sel.options].some(o => o.value === kod)) sel.value = kod;
+  paparNamaOrg();
+}
+function tunjukPaneUpg() {
+  document.querySelectorAll('[data-upgtab]').forEach(x => { const on = x.dataset.upgtab === upgTab; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+  const senaraiSekolah = upgTab === 'sekolah' && !upgKod;
+  document.getElementById('upg-pane-pengguna').hidden = upgTab === 'audit' || senaraiSekolah;
+  document.getElementById('upg-pane-sekolah').hidden = !senaraiSekolah;
+  document.getElementById('upg-pane-audit').hidden = upgTab !== 'audit';
+  document.getElementById('upg-cari').value = '';
+  if (senaraiSekolah) renderSenaraiSekolah(); else renderUrusPengguna();
+  pilihOrgBorang(upgTab === 'ppd' ? kodPejabat() : upgKod || '');
+}
 function openUrusPengguna() {
   if (activeLevel() !== 'superadmin') return;
   isiPilihanOrg();
   document.getElementById('upg-err').hidden = true;
-  renderUrusPengguna();
+  upgTab = 'ppd'; upgKod = null;
+  tunjukPaneUpg();
   document.getElementById('modal-pengguna').hidden = false;
 }
 function closeUrusPengguna() {
@@ -1312,7 +1391,12 @@ function closeUrusPengguna() {
 function renderUrusPengguna() {
   const me = getUser();
   const q = A.normEmail(document.getElementById('upg-cari').value);
-  const list = A.users().filter(u => !q || [u.nama, u.emel, u.org].some(s => String(s).toLowerCase().includes(q)));
+  const skop = upgTab === 'sekolah' && upgKod ? A.users().filter(u => u.kodSekolah === upgKod) : A.users().filter(u => orgPejabat(u.kodSekolah));
+  const list = skop.filter(u => !q || [u.nama, u.emel, u.org].some(s => String(s).toLowerCase().includes(q)));
+  const kepala = document.getElementById('upg-kepala');
+  const sk = upgKod && A.orgByKod(upgKod);
+  kepala.hidden = !(upgTab === 'sekolah' && sk);
+  if (sk) kepala.innerHTML = `<button type="button" class="btn-ghost-sm" id="upg-balik">← Senarai sekolah</button><div style="min-width:0"><b>${A.esc(sk.nama)}</b><span>${A.esc(sk.kod)} · ${skop.length} pengguna</span></div>`;
   const superCount = A.users().filter(u => u.roles.includes('superadmin')).length;
   document.getElementById('upg-list').innerHTML = list.length ? list.map(u => {
     const lvs = A.levelsFor(u), top = lvs[lvs.length - 1];
@@ -1332,16 +1416,16 @@ function renderUrusPengguna() {
       </div>
       ${groups}
     </div>`;
-  }).join('') : '<div style="padding:16px;text-align:center;color:var(--t3);font-size:13px">Tiada pengguna sepadan</div>';
+  }).join('') : `<div style="padding:16px;text-align:center;color:var(--t3);font-size:13px">${skop.length ? 'Tiada pengguna sepadan' : upgKod ? 'Belum ada pengguna berdaftar di sekolah ini' : 'Tiada pengguna PPD'}</div>`;
   document.getElementById('upg-audit').innerHTML = A.auditHTML(A.auditLog());
 }
 document.querySelectorAll('[data-upgtab]').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('[data-upgtab]').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
-  document.getElementById('upg-pane-pengguna').hidden = b.dataset.upgtab !== 'pengguna';
-  document.getElementById('upg-pane-audit').hidden = b.dataset.upgtab !== 'audit';
-  document.getElementById('upg-pane-sekolah').hidden = b.dataset.upgtab !== 'sekolah';
-  if (b.dataset.upgtab === 'sekolah') renderSenaraiSekolah();
+  upgTab = b.dataset.upgtab; upgKod = null;
+  tunjukPaneUpg();
 }));
+document.getElementById('upg-kepala').addEventListener('click', e => {
+  if (e.target.closest('#upg-balik')) { upgKod = null; tunjukPaneUpg(); }
+});
 document.getElementById('upg-list').addEventListener('click', async e => {
   const tg = e.target.closest('.tg');
   const del = e.target.closest('[data-del]');
@@ -1367,14 +1451,16 @@ function renderSenaraiSekolah() {
   document.getElementById('sk-lokasi').innerHTML = A.LOKASI.map(l => `<option>${l}</option>`).join('');
   document.getElementById('sk-jenis').innerHTML = A.JENIS_ORG.map(j => `<option>${j}</option>`).join('');
   const kiraPengguna = kod => A.users().filter(u => u.kodSekolah === kod).length;
-  document.getElementById('sk-list').innerHTML = A.organisasi().map(o => `<tr>
+  const q = (document.getElementById('sk-cari').value || '').trim().toUpperCase();
+  const senarai = A.organisasi().filter(o => o.jenis !== 'Pejabat' && (!q || o.nama.includes(q) || o.kod.includes(q)));
+  document.getElementById('sk-list').innerHTML = senarai.length ? senarai.map(o => `<tr class="sk-baris" data-sk-urus="${A.esc(o.kod)}">
     <td class="kod">${A.esc(o.kod)}</td>
-    <td>${A.esc(o.nama)}</td>
+    <td><b>${A.esc(o.nama)}</b></td>
     <td>${A.esc(o.lokasi)}</td>
     <td><span class="sk-jenis">${A.esc(o.jenis)}</span></td>
-    <td style="text-align:right">${kiraPengguna(o.kod)}</td>
+    <td style="text-align:right"><button type="button" class="sk-urus" data-sk-urus="${A.esc(o.kod)}">${kiraPengguna(o.kod)} pengguna ›</button></td>
     <td><div class="sk-act"><button type="button" data-sk-ubah="${A.esc(o.kod)}">Edit</button><button type="button" class="del" data-sk-padam="${A.esc(o.kod)}">Padam</button></div></td>
-  </tr>`).join('');
+  </tr>`).join('') : '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--t3)">Tiada sekolah sepadan</td></tr>';
   resetBorangSekolah();
 }
 function resetBorangSekolah() {
@@ -1386,8 +1472,11 @@ function resetBorangSekolah() {
   document.getElementById('sk-err').hidden = true;
 }
 document.getElementById('sk-batal').addEventListener('click', resetBorangSekolah);
+document.getElementById('sk-cari').addEventListener('input', renderSenaraiSekolah);
 document.getElementById('sk-list').addEventListener('click', async e => {
   const ubah = e.target.closest('[data-sk-ubah]'), padam = e.target.closest('[data-sk-padam]');
+  const urus = !ubah && !padam && e.target.closest('[data-sk-urus]');
+  if (urus) { upgKod = urus.dataset.skUrus; tunjukPaneUpg(); return; }
   if (ubah) {
     const o = A.orgByKod(ubah.dataset.skUbah);
     document.getElementById('sk-asal').value = o.kod;

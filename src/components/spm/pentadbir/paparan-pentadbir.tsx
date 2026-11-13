@@ -12,6 +12,16 @@ import { TabAnalitikSekolah } from "./tab-analitik";
 import { TabBerisiko } from "./tab-berisiko";
 import { TabLaporanSekolah } from "./tab-laporan";
 import { TabSemakPengisian } from "./tab-semak";
+import { useLawatan, type Langkah } from "@/lib/portal/lawatan";
+
+const LAWATAN: Langkah[] = [
+  { tajuk: "Analitik SPM: Pentadbir Sekolah", teks: "Pantau prestasi SPM dan pengisian markah seluruh sekolah anda." },
+  { sel: '[data-tab="analitik"]', tajuk: "Analitik Sekolah", teks: "GPS sekolah dan setiap subjek, sejarah GPS, sasaran sekolah dan jurang prestasi (SES, jantina, lokasi)." },
+  { sel: '[data-tab="semak"]', tajuk: "Semak Pengisian", teks: "Kelas yang markahnya belum lengkap. Hantar <b>peringatan</b> kepada guru terus dari sini." },
+  { sel: '[data-tab="berisiko"]', tajuk: "Pelajar Berisiko", teks: "Murid yang berisiko gagal untuk tindakan intervensi." },
+  { sel: '[data-tab="headcount"]', tajuk: "Headcount", teks: "Perbandingan markah terkini dengan sasaran SPM setiap murid yang ditetapkan oleh guru." },
+  { sel: '[data-tab="laporan"]', tajuk: "Laporan", teks: "Laporan sekolah sedia cetak dan muat turun Excel." },
+];
 
 export type { PropPentadbir } from "./kongsi";
 
@@ -27,6 +37,7 @@ type TabId = (typeof TAB)[number]["id"];
 export function PaparanPentadbir(props: PropPentadbir) {
   const { data, pengguna, versi } = props;
   const [tab, setTab] = useState<TabId>("analitik");
+  useLawatan("spm-pentadbir", LAWATAN);
   const k = useMemo(() => {
     void versi; // baca semula stor apabila versi berubah
     return binaKonteks(data, pengguna);

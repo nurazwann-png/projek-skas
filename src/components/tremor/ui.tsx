@@ -80,6 +80,7 @@ export function TabNavigation<T extends string>({ tab, aktif, pilih, label }: { 
           key={t.id}
           type="button"
           role="tab"
+          data-tab={t.id}
           aria-selected={aktif === t.id}
           onClick={() => pilih(t.id)}
           className={cn(
