@@ -394,8 +394,6 @@ html,body{height:100%;font-family:var(--b);font-size:14px;line-height:1.5;backgr
 .school-card:hover{box-shadow:var(--shadow);border-color:var(--border-2);transform:translateY(-1px)}
 
 @media(max-width:640px){
-  .sidebar{width:56px}
-  .sb-logo .sub,.sb-btn span,.sb-uname,.sb-urole,.sb-ppd{display:none}
   .stat-row{grid-template-columns:1fr 1fr}
   .frow,.frow3{grid-template-columns:1fr}
 }
@@ -528,15 +526,31 @@ body{display:flex;flex-direction:column;margin:0}
 .empty::before{content:'';display:block;width:44px;height:44px;margin:0 auto 12px;border-radius:50%;background:var(--ppd-accent-l) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313406e' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E") center/22px no-repeat}
 :where(button,a,[tabindex],input,select,textarea):focus-visible{outline:3px solid var(--ppd-gold);outline-offset:2px}
 .step.active{color:var(--accent)}
+/* Telefon: bar sisi menjadi laci tersembunyi, dibuka dengan butang menu di bar atas */
+.tb-menu{display:none}
 @media(max-width:640px){
-  .sidebar{width:60px}
-  .sb-logo{justify-content:center;padding:12px 8px}
-  .sb-logo .mark,.sb-logo .sub,.sb-section-lbl{display:none}
-  .sb-footer{justify-content:center;padding:12px 6px}
-  .sb-btn{justify-content:center;padding:10px 0}
-  .sb-btn.active::before{left:-12px}
   .notif-panel{left:12px;right:12px;width:auto}
-}</style>
+  .sidebar{position:fixed;top:0;bottom:0;left:0;z-index:300;width:min(270px,82vw);transform:translateX(-100%);transition:transform .22s ease;padding-top:env(safe-area-inset-top,0px)}
+  .menu-buka .sidebar{transform:none;box-shadow:0 0 40px rgba(0,0,0,.35)}
+  .sb-latar{display:none}
+  .menu-buka .sb-latar{display:block;position:fixed;inset:0;z-index:299;background:rgba(15,23,42,.45)}
+  .tb-menu{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--t1);cursor:pointer}
+  .tb-menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+  .topbar{justify-content:flex-start;padding:10px 12px;gap:10px;min-height:56px}
+  .topbar .bell-btn{margin-left:auto}
+  .tb-info{min-width:0}
+  .tb-info .g,.tb-info .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .content{padding:14px 12px}
+  /* Teks panjang tanpa ruang (nama fail, pautan) tidak boleh melebarkan panel melebihi skrin */
+  .content > *,.content [style*="flex-direction:column"] > *,.panel,.pb > *{min-width:0;max-width:100%}
+  .content{overflow-x:hidden}
+  .content > [style*="margin:0 auto"]{width:100%}
+}
+@media(max-width:480px){
+  .pb[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:minmax(0,1fr)!important}
+  .pb[style*="grid-template-columns:1fr 1fr"] [style*="grid-column:span 2"]{grid-column:auto!important}
+}
+@media(prefers-reduced-motion:reduce){.sidebar{transition:none}}</style>
 
 <div class="ppd-strip"><div class="ppd-strip-l"><a href="ppd-dalat.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Portal PPD Dalat</a><span class="ppd-strip-sep">|</span><span class="ppd-strip-app">SK@S · SKPM Kualiti@Sekolah</span></div><div class="ppd-strip-r"><span class="ppd-flag"></span><span>Portal rasmi KPM</span></div></div>
 <div class="shell" id="app" data-theme-root></div>
@@ -641,7 +655,7 @@ function aiKlasifikasiSekolah(rec) {
   else passes.push(`Tahap: ${TAHAP_MAP[rec.tahap]?.short||rec.tahap}`);
   const yr = rec.tarikh ? new Date(rec.tarikh).getFullYear() : null;
   if (yr && yr < TAHUN_SEMASA) { layak = false; reasons.push(`Pencapaian tahun ${yr} tidak layak -- hanya tahun ${TAHUN_SEMASA}.`); }
-  if (!rec.pautanEviden) { layak = false; reasons.push(`Pautan evidens (Google Drive PDF) belum diisi.`); }
+  // Evidens disimpan dalam Google Drive untuk MoEIS, bukan dalam SK@S (Panduan ms 58)
   return { layak, reasons, passes };
 }
 
@@ -883,11 +897,31 @@ const render = () => {
     if (n) n.textContent = buildTopbarTitle();
   } else {
     S._fullRender = false;
-    document.getElementById('app').innerHTML = buildApp();
+    const app = document.getElementById('app');
+    app.classList.remove('menu-buka');
+    app.innerHTML = buildApp();
+    pasangMenuMudah(app);
   }
   bind();
   simpanAutoSkas();
 };
+
+// Telefon: butang menu di bar atas membuka bar sisi sebagai laci; ketik di luar, pilih menu atau Esc untuk tutup
+function pasangMenuMudah(app) {
+  const tb = app.querySelector('.topbar'), sb = app.querySelector('.sidebar');
+  if (!tb || !sb) return;
+  const tutup = () => app.classList.remove('menu-buka');
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'tb-menu'; b.setAttribute('aria-label', 'Buka menu');
+  b.innerHTML = '<svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
+  b.addEventListener('click', () => app.classList.add('menu-buka'));
+  tb.prepend(b);
+  const latar = document.createElement('div');
+  latar.className = 'sb-latar'; latar.addEventListener('click', tutup);
+  app.appendChild(latar);
+  sb.addEventListener('click', e => { if (e.target.closest('button, a')) tutup(); });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('app')?.classList.remove('menu-buka'); });
 
 /* -- Sidebar --------------------------------------------------- */
 function sidebar() {
@@ -926,14 +960,17 @@ function topbar(title) {
   </div>`;
 }
 
-/* -- Evidens Pencapaian Guru (5.4.1): tidak disimpan dalam SK@S --------
-   Rekod guru disimpan terus tanpa kelulusan. Evidens disimpan oleh guru dalam Google Drive
-   untuk pengisian di MoEIS (Panduan Pelaksanaan SKPM Kualiti@Sekolah 2026, ms 10 dan 58–59). */
-const TEKS_EVIDENS = 'Simpan evidens dalam format <b>PDF</b> di <b>Google Drive</b> menggunakan ID DELIMa sekolah, dan tetapkan folder kepada <i>"Anyone with the link"</i> sebagai <i>"Viewer"</i>. Pautan ini diperlukan semasa pengisian Pencapaian Guru (5.4.1) di <b>MoEIS</b> dan dikongsi dengan Penyelaras SKPM Daerah. Jika pencapaian melibatkan lebih daripada seorang guru, gabungkan semua sijil dalam satu fail PDF.';
-function notaEvidensHTML() {
+/* -- Evidens Pencapaian Guru (5.4.1) dan Sekolah (5.4.2): tidak disimpan dalam SK@S --------
+   Rekod disimpan terus tanpa kelulusan. Evidens disimpan dalam Google Drive untuk pengisian
+   di MoEIS (Panduan Pelaksanaan SKPM Kualiti@Sekolah 2026, ms 10 dan 58–59). */
+const TEKS_EVIDENS = {
+  guru: 'Simpan evidens dalam format <b>PDF</b> di <b>Google Drive</b> menggunakan ID DELIMa sekolah, dan tetapkan folder kepada <i>"Anyone with the link"</i> sebagai <i>"Viewer"</i>. Pautan ini diperlukan semasa pengisian Pencapaian Guru (5.4.1) di <b>MoEIS</b> dan dikongsi dengan Penyelaras SKPM Daerah. Jika pencapaian melibatkan lebih daripada seorang guru, gabungkan semua sijil dalam satu fail PDF.',
+  sekolah: 'Simpan evidens dalam format <b>PDF</b> di <b>Google Drive</b> menggunakan ID DELIMa sekolah, dan tetapkan folder kepada <i>"Anyone with the link"</i> sebagai <i>"Viewer"</i>. Pautan ini diperlukan semasa pengisian Pencapaian Sekolah (5.4.2) di <b>MoEIS</b> dan dikongsi dengan Penyelaras SKPM Daerah.',
+};
+function notaEvidensHTML(jenis = 'guru') {
   return `<div style="display:flex;gap:8px;padding:10px 12px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe">
     <span style="color:#1d4ed8;flex-shrink:0;margin-top:1px">${i('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',14)}</span>
-    <span style="font-size:12.5px;color:#1e3a8a;line-height:1.55">${TEKS_EVIDENS} <span style="color:#64748b">(Panduan SKPM 2026, ms 58–59)</span></span>
+    <span style="font-size:12.5px;color:#1e3a8a;line-height:1.55">${TEKS_EVIDENS[jenis] || TEKS_EVIDENS.guru} <span style="color:#64748b">(Panduan SKPM 2026, ms 58–59)</span></span>
   </div>`;
 }
 
@@ -1952,7 +1989,7 @@ function butangEvidens(dalamBorang) {
   return `<div class="evidens-pdf${dalamBorang ? ' borang' : ''}">
     <button type="button" class="btn btn-ghost" id="btn-evidens-pdf">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>', 14)} Muat turun evidens PDF${fail.length > 1 ? ` (${fail.length} dokumen digabung)` : ''}</button>
     ${dalamBorang === 'guru' ? `<span>Simpan fail ini dalam Google Drive anda untuk pengisian di MoEIS.</span>`
-      : dalamBorang ? `<span>Muat naik fail ini ke Google Drive DELIMa sekolah, tetapkan "Sesiapa yang ada pautan — Penonton", kemudian tampal pautannya di sini.</span>` : ''}
+      : dalamBorang ? `<span>Simpan fail ini dalam Google Drive DELIMa sekolah untuk pengisian di MoEIS.</span>` : ''}
   </div>`;
 }
 async function muatTurunEvidens(e) {
@@ -2088,7 +2125,7 @@ async function pukalSimpanSemua() {
   const ids = pukalItem().filter(pukalLengkap).map(x => x.id);
   let n = 0;
   for (const id of ids) if (await pukalSimpan(id)) n++;
-  if (n) PPDUI.alert('Rekod disimpan', `${n} pencapaian sekolah disimpan. Lengkapkan pautan evidens Google Drive bagi setiap rekod dalam Pencapaian Sekolah.`, { tone: 'info', ok: 'OK' });
+  if (n) PPDUI.alert('Rekod disimpan', `${n} pencapaian sekolah disimpan. Simpan evidens PDF setiap pencapaian dalam Google Drive DELIMa sekolah untuk pengisian di MoEIS.`, { tone: 'info', ok: 'OK' });
 }
 // Buka satu item pukal dalam paparan semakan biasa (butiran penuh, borang, evidens PDF)
 function pukalKeSatu(id, keBorang) {
@@ -2149,7 +2186,7 @@ function viewSemakPukal() {
         <thead><tr><th>Fail</th><th>Pencapaian dikesan</th><th>Keputusan</th><th>Slot 5.4.2</th><th></th></tr></thead>
         <tbody>${item.map(baris).join('')}</tbody>
       </table></div>
-      <div class="pb pk-nota">"Simpan" hanya muncul jika AI menilai <b>layak</b>, nama sekolah sepadan, dan semua medan wajib dikesan. Yang lain boleh dibuka dalam borang untuk dilengkapkan. Pautan evidens Google Drive perlu diisi kemudian bagi setiap rekod.</div>
+      <div class="pb pk-nota">"Simpan" hanya muncul jika AI menilai <b>layak</b>, nama sekolah sepadan, dan semua medan wajib dikesan. Yang lain boleh dibuka dalam borang untuk dilengkapkan. Evidens PDF disimpan dalam Google Drive DELIMa sekolah untuk pengisian di MoEIS.</div>
     </div>` : ''}`;
 }
 
@@ -3305,15 +3342,7 @@ function viewSchoolAchievementDetail() {
     </div>`
   ).join('');
 
-  const evidenStatus = r.pautanEviden
-    ? `<div style="display:flex;gap:8px;padding:9px 12px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0">
-        <span style="color:#15803d;flex-shrink:0;margin-top:1px">${i('<polyline points="20 6 9 17 4 12"/>',14)}</span>
-        <span style="font-size:12.5px;color:#166534;line-height:1.5">Pautan eviden disertakan.</span>
-      </div>`
-    : `<div style="display:flex;gap:8px;padding:9px 12px;border-radius:8px;background:#f8fafc;border:1px solid var(--border)">
-        <span style="color:#64748b;flex-shrink:0;margin-top:1px">${i('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',14)}</span>
-        <span style="font-size:12.5px;color:#475569;line-height:1.5">Pautan eviden (PDF Google Drive) belum diisi. Diperlukan semasa input ke sistem SKPM.</span>
-      </div>`;
+  const evidenStatus = notaEvidensHTML('sekolah');
 
   const notLayakNote = !ai.layak
     ? `<div style="margin-top:6px;padding:11px 14px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;gap:8px">
@@ -3465,15 +3494,8 @@ function viewSchoolAchievementDetail() {
         ${summaryRow('Tahap Pencapaian', th ? th.label : '--')}
         ${summaryRow('Kategori', katLabel)}
         ${summaryRow('Tarikh Pencapaian', fmtDate(r.tarikh))}
-        ${summaryRow('Status Eviden', r.pautanEviden ? 'Disertakan' : 'Belum diisi')}
+        ${summaryRow('Evidens', 'PDF dalam Google Drive DELIMa sekolah (untuk MoEIS)')}
         ${r.catatan ? summaryRow('Catatan', r.catatan) : ''}
-        <div style="grid-column:span 2;padding-top:4px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Pautan Eviden</div>
-          ${r.pautanEviden
-            ? `<div style="font-size:12.5px;color:var(--accent);word-break:break-all">${esc(r.pautanEviden)}</div>`
-            : `<div style="font-size:12.5px;color:var(--t3);font-style:italic">Belum diisi &mdash; sila tambah pautan Google Drive PDF sebelum input ke SKPM</div>`
-          }
-        </div>
       </div>
     </div>
 
@@ -3536,10 +3558,9 @@ function viewSchoolForm() {
       </div>
 
       <div class="fg">
-        <label class="fl">Pautan Evidens Google Drive (PDF) <span class="req">*</span></label>
-        <input class="fi" id="sf-pautanEviden" placeholder="https://drive.google.com/..." value="${sf.pautanEviden}">
-        <div class="fn" style="margin-top:4px">Simpan dalam Google Drive menggunakan ID DELIMa sekolah. Tetapkan kepada "anyone with the link" sebagai "viewer".${SRC}</div>
-        ${sf._semak ? butangEvidens(true) : ''}
+        <label class="fl">Evidens</label>
+        ${notaEvidensHTML('sekolah')}
+        ${sf._semak ? butangEvidens('sekolah') : ''}
       </div>
 
       <div class="fg">
