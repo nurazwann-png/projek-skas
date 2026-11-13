@@ -23,6 +23,8 @@
     ppd_skas_sekolah: { jenis: 'peta' },
     ppd_skas_panduan: { jenis: 'senarai', id: ['id'] },
     ppd_skas_tetapan: { jenis: 'nilai' },
+    ppd_profil: { jenis: 'peta' },
+    ppd_profil_sekolah: { jenis: 'peta' },
   };
   const AWALAN = ['skas_gps_sejarah:', 'skas_gps_sasaran:'];
   const K_BARIS = 'ppd_segerak_baris', K_SESI = 'ppd_sesi';

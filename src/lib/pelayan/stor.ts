@@ -4,6 +4,7 @@
 // mengubah item berlainan (cth. markah murid berlainan) tidak saling menimpa.
 import { db, type Pertanyaan } from "./db";
 import benihOrganisasi from "./benih-organisasi.json";
+import { bersihNama } from "./nama";
 
 export type JenisKoleksi = "senarai" | "peta" | "nilai";
 export interface TakrifKoleksi {
@@ -27,6 +28,8 @@ export const KOLEKSI: Record<string, TakrifKoleksi> = {
   ppd_skas_sekolah: { jenis: "peta" }, // Pencapaian Sekolah 5.4.2, ikut kod sekolah
   ppd_skas_panduan: { jenis: "senarai", id: ["id"] }, // Panduan SKPM yang dimuat naik (peraturan + rujukan)
   ppd_skas_tetapan: { jenis: "nilai" }, // { tahunPenilaian, panduanAktif }
+  ppd_profil: { jenis: "peta" }, // profil guru ikut id pengguna: jawatan, mata pelajaran, tahun mula
+  ppd_profil_sekolah: { jenis: "peta" }, // profil sekolah ikut kod: alamat, hubungan, gred, bilangan
 };
 // Kunci berawalan (satu nilai bagi setiap akhiran)
 export const AWALAN: Record<string, TakrifKoleksi> = {
@@ -115,7 +118,14 @@ function bina(baris: Baris[]): Record<string, unknown> {
   for (const [kunci, t] of Object.entries(KOLEKSI)) {
     const b = ikut.get(kunci);
     if (!b || !b.length) continue;
-    if (t.jenis === "peta") keluar[kunci] = Object.fromEntries(b.map((x) => [x.id, x.nilai]));
+    if (kunci === "ppd_users") {
+      // Nama Google kadangkala berlabel ("PPD Dalat - …", "… (Guru)"); pulangkan nama sahaja
+      const susun = tertib.get(kunci) || [];
+      const kedudukan = new Map(susun.map((id, i) => [id, i]));
+      keluar[kunci] = [...b]
+        .sort((a, c) => (kedudukan.get(a.id) ?? 1e9) - (kedudukan.get(c.id) ?? 1e9))
+        .map((x) => { const u = x.nilai as PenggunaStor; return { ...u, nama: bersihNama(u.nama) }; });
+    } else if (t.jenis === "peta") keluar[kunci] = Object.fromEntries(b.map((x) => [x.id, x.nilai]));
     else if (t.jenis === "nilai") keluar[kunci] = b[0].nilai;
     else if (kunci === "ppd_audit") {
       keluar[kunci] = b.map((x) => x.nilai as { t: number }).sort((a, c) => c.t - a.t).slice(0, 500);
@@ -201,7 +211,13 @@ function semakPengguna(aktor: PenggunaStor, lama: PenggunaStor | undefined, baru
   }
   if (aktor.roles.includes("superadmin")) return null;
   if (!lama || !baru) return "Hanya Superadmin boleh mendaftar atau memadam pengguna.";
-  if (!sama(tanpa(lama), tanpa(baru))) return "Hanya Superadmin boleh mengubah maklumat pengguna.";
+  if (!sama(tanpa(lama), tanpa(baru))) {
+    // Pengguna boleh membetulkan NAMA sendiri sahaja (emel, sekolah dan peranan kekal)
+    const tanpaNama = (u: PenggunaStor) => ({ ...tanpa(u), nama: undefined });
+    const namaSahaja = lama.id === aktor.id && sama(tanpaNama(lama), tanpaNama(baru))
+      && sama([...(lama.roles || [])].sort(), [...(baru.roles || [])].sort()) && bersihNama(baru.nama).length >= 3;
+    if (!namaSahaja) return "Hanya Superadmin boleh mengubah maklumat pengguna.";
+  }
   const appAdmin = new Set(aktor.roles.filter((r) => r.startsWith("admin_")).map((r) => r.slice(6)));
   const a = new Set(lama.roles || []), b = new Set(baru.roles || []);
   const beza = [...a].filter((r) => !b.has(r)).concat([...b].filter((r) => !a.has(r)));
@@ -241,7 +257,20 @@ export async function tulis(aktor: PenggunaStor, ops: Op[]): Promise<Ditolak[]> 
         const lain = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.id);
         if (lain.length) { ditolak.push({ k: op.k, sebab: "Anda hanya boleh mengubah rekod pencapaian sendiri." }); continue; }
       }
-      // Pencapaian Sekolah: Pentadbir SK@S sekolah hanya menulis sekolah sendiri (kunci = kod sekolah)
+      // Profil guru: diri sendiri, atau Pentadbir SK@S bagi guru di sekolahnya
+      if (koleksi === "ppd_profil" && !adminSkas) {
+        const ids = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.id);
+        if (ids.length) {
+          const r = await q.query<{ id: string; nilai: PenggunaStor }>(`SELECT id, nilai FROM stor_item WHERE koleksi = 'ppd_users' AND id = ANY($1::text[])`, [ids]);
+          const sekolahSama = aktor.roles.includes("sekolah_skas") && r.rows.length === ids.length && r.rows.every((x) => x.nilai.kodSekolah === aktor.kodSekolah);
+          if (!sekolahSama) { ditolak.push({ k: op.k, sebab: "Anda hanya boleh mengubah profil sendiri." }); continue; }
+        }
+      }
+      // Profil sekolah dan Pencapaian Sekolah: Pentadbir SK@S sekolah hanya menulis sekolah sendiri (kunci = kod sekolah)
+      if (koleksi === "ppd_profil_sekolah" && !adminSkas) {
+        const lain = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.kodSekolah);
+        if (!aktor.roles.includes("sekolah_skas") || lain.length) { ditolak.push({ k: op.k, sebab: "Hanya Pentadbir SK@S sekolah ini boleh mengubah profil sekolah." }); continue; }
+      }
       if (koleksi === "ppd_skas_sekolah" && !adminSkas) {
         const boleh = aktor.roles.includes("sekolah_skas");
         const lain = [...set.map(([id]) => id), ...del].filter((id) => id !== aktor.kodSekolah);
@@ -250,7 +279,8 @@ export async function tulis(aktor: PenggunaStor, ops: Op[]): Promise<Ditolak[]> 
 
       if (koleksi === "ppd_users") {
         const sedia = await q.query<{ id: string; nilai: PenggunaStor }>(`SELECT id, nilai FROM stor_item WHERE koleksi = 'ppd_users'`);
-        const lama = new Map(sedia.rows.map((r) => [r.id, r.nilai]));
+        // Bandingkan dengan nama yang telah dibersihkan, sama seperti yang dihantar kepada pelayar
+        const lama = new Map(sedia.rows.map((r) => [r.id, { ...r.nilai, nama: bersihNama(r.nilai.nama) }]));
         let gagal = false;
         for (const [id, v] of set) {
           const sebab = semakPengguna(aktor, lama.get(id), v as PenggunaStor);
@@ -271,6 +301,7 @@ export async function tulis(aktor: PenggunaStor, ops: Op[]): Promise<Ditolak[]> 
           }
         }
         if (gagal) continue; // seluruh op pengguna ditolak supaya pelayar memuat semula keadaan sebenar
+        set = set.map(([id, v]) => [id, { ...(v as PenggunaStor), nama: bersihNama((v as PenggunaStor).nama) }]);
       }
 
       if (koleksi === "ppd_audit") {

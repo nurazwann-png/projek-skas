@@ -733,11 +733,14 @@ function binaSekolah() {
   const rekod = PPDData.skas.all(), rekSekolah = PPDData.skas.sekolahAll();
   return PPDData.sekolahList().map(s => ({
     id: s.kod, kod: s.kod, name: s.nama, jenis: jenisSekolah(s.nama), av: PPDAuth.initials(s.nama),
-    teachers: users.filter(u => u.kodSekolah === s.kod).map(u => ({
-      id: u.id, uid: u.id, name: u.nama, jawatan: u.jawatan || 'Guru', av: PPDAuth.initials(u.nama),
-      mataPelajaran: u.mataPelajaran || '', emel: u.emel, tahunMula: u.tahunMula || null,
-      records: rekod[u.id] || [],
-    })),
+    teachers: users.filter(u => u.kodSekolah === s.kod).map(u => {
+      const p = PPDData.skas.profil(u.id); // profil tersimpan (ppd_profil)
+      return {
+        id: u.id, uid: u.id, name: u.nama, jawatan: p.jawatan || 'Guru', av: PPDAuth.initials(u.nama),
+        mataPelajaran: p.mataPelajaran || '', emel: u.emel, tahunMula: p.tahunMula || null,
+        records: rekod[u.id] || [],
+      };
+    }),
     schoolRecords: rekSekolah[s.kod] || [],
   }));
 }
@@ -778,8 +781,23 @@ function simpanAutoSkas(dariInput) {
 const cartaAttr = spec => ` data-carta="${esc(JSON.stringify(spec))}"`;
 // Profil guru yang log masuk: padan ikut akaun portal, bukan guru pertama dalam senarai
 function profilSaya() {
-  return S.teachers.find(t => t.uid === ME.id) || S.profilSaya || { id: 'me', uid: ME.id, name: ME.nama, jawatan: 'Guru',
-    av: PPDAuth.initials(ME.nama), mataPelajaran: '', emel: ME.emel, tahunMula: null, records: [] };
+  const p = PPDData.skas.profil(ME.id);
+  return S.teachers.find(t => t.uid === ME.id) || S.profilSaya || { id: 'me', uid: ME.id, name: ME.nama, jawatan: p.jawatan || 'Guru',
+    av: PPDAuth.initials(ME.nama), mataPelajaran: p.mataPelajaran || '', emel: ME.emel, tahunMula: p.tahunMula || null, records: [] };
+}
+// Betulkan nama sendiri dalam akaun portal (pelayan membenarkan perubahan nama sahaja untuk akaun sendiri)
+async function simpanNamaSendiri(nama) {
+  try {
+    const j = await (await fetch('/api/stor', { cache: 'no-store' })).json();
+    const saya = (j.stor?.ppd_users || []).find(u => u.id === ME.id);
+    if (!saya) return { ok: false, mesej: 'Akaun anda tidak dijumpai.' };
+    const res = await fetch('/api/stor', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ops: [{ k: 'ppd_users', set: { [ME.id]: { ...saya, nama } } }] }) });
+    const h = await res.json().catch(() => ({}));
+    if (!res.ok || (h.ditolak || []).length) return { ok: false, mesej: (h.ditolak || [])[0]?.sebab || 'Pelayan menolak perubahan nama.' };
+    if (window.PPDSegerak) await PPDSegerak.muat();
+    return { ok: true, nama: (PPDAuth.users().find(u => u.id === ME.id) || {}).nama || nama };
+  } catch { return { ok: false, mesej: 'Tidak dapat menghubungi pelayan. Cuba lagi.' }; }
 }
 function buangDraf() { try { localStorage.removeItem(DRAF_KEY); } catch {} S._drafMasa = null; }
 
@@ -3693,30 +3711,26 @@ function viewSchoolForm() {
 }
 
 /* -- School Profile view (school admin) ------------------------ */
-function viewSchoolProfile() {
-  const school = {
-    nama: SEKOLAH_SAYA,
-    kod: 'BBA3021',
-    jenis: 'Sekolah Kebangsaan',
-    ppd: 'PPD Dalat',
-    negeri: 'Wilayah Persekutuan Kuala Lumpur',
-    alamat: `${SEKOLAH_SAYA}, 96300 Dalat, Sarawak`,
-    poskod: '53300',
-    bandar: 'Kuala Lumpur',
-    telefon: '03-4149 2200',
-    faks: '03-4149 2201',
-    emel: 'skwm1@moe.gov.my',
-    gred: 'A',
-    bilGuru: 48,
-    bilMurid: 1240,
-    sesi: '2026',
+// Medan profil sekolah yang boleh dikemas kini oleh Pentadbir SK@S (disimpan dalam ppd_profil_sekolah)
+const MEDAN_PROFIL_SEKOLAH = ['alamat', 'poskod', 'bandar', 'telefon', 'faks', 'emel', 'gred', 'bilGuru', 'bilMurid'];
+function profilSekolahSemasa() {
+  const p = PPDData.skas.profilSekolah(SEKOLAH_KOD);
+  return {
+    // Maklumat rasmi daripada senarai sekolah (diurus Superadmin)
+    nama: SEKOLAH_SAYA, kod: SEKOLAH_KOD || '-', jenis: jenisSekolah(SEKOLAH_SAYA), ppd: 'PPD Dalat', negeri: 'Sarawak', sesi: String(TAHUN_SEMASA),
+    alamat: p.alamat || '', poskod: p.poskod || '', bandar: p.bandar || '', telefon: p.telefon || '', faks: p.faks || '', emel: p.emel || '',
+    gred: p.gred || '', bilGuru: p.bilGuru || S.teachers.length || '', bilMurid: p.bilMurid || '',
   };
+}
+function viewSchoolProfile() {
+  const school = profilSekolahSemasa();
 
   const editing = S._profileEdit || false;
 
-  const field = (lbl, val, key, type='text') => editing
-    ? `<div class="pf-field"><label class="pf-lbl">${lbl}</label><input class="pf-inp" type="${type}" value="${val}" data-pfkey="${key}"/></div>`
-    : `<div class="pf-field"><label class="pf-lbl">${lbl}</label><div class="pf-val">${val||'<span style="opacity:.45">-</span>'}</div></div>`;
+  // Medan rasmi (nama, kod, jenis, PPD, negeri, sesi) kekal baca sahaja walaupun dalam mod edit
+  const field = (lbl, val, key, type='text') => editing && MEDAN_PROFIL_SEKOLAH.includes(key)
+    ? `<div class="pf-field"><label class="pf-lbl">${lbl}</label><input class="pf-inp" type="${type}" value="${esc(String(val ?? ''))}" data-pfkey="${key}"/></div>`
+    : `<div class="pf-field"><label class="pf-lbl">${lbl}</label><div class="pf-val">${val ? esc(String(val)) : '<span style="opacity:.45">-</span>'}</div></div>`;
 
   const hdr = (t) => `<div class="pf-section-hdr">${t}</div>`;
 
@@ -3726,7 +3740,7 @@ function viewSchoolProfile() {
       <div class="pf-avatar">${school.nama.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}</div>
       <div class="pf-hero-info">
         <div class="pf-school-name">${school.nama}</div>
-        <div class="pf-meta"><span class="pf-badge">${school.jenis}</span><span class="pf-kod">${school.kod}</span><span class="pf-gred">Gred ${school.gred}</span></div>
+        <div class="pf-meta"><span class="pf-badge">${esc(school.jenis)}</span><span class="pf-kod">${esc(school.kod)}</span>${school.gred ? `<span class="pf-gred">Gred ${esc(school.gred)}</span>` : ''}</div>
         <div class="pf-ppd">${school.ppd} &middot; ${school.negeri}</div>
       </div>
       <div class="pf-hero-actions">
@@ -3762,10 +3776,12 @@ function viewSchoolProfile() {
       </div>
       <div class="pf-card">
         ${hdr('Statistik Sekolah')}
-        <div class="pf-stats-grid">
-          <div class="pf-stat"><div class="pf-stat-val">${school.bilGuru}</div><div class="pf-stat-lbl">Jumlah Guru</div></div>
-          <div class="pf-stat"><div class="pf-stat-val">${school.bilMurid}</div><div class="pf-stat-lbl">Jumlah Murid</div></div>
-        </div>
+        ${editing
+          ? field('Jumlah Guru', school.bilGuru, 'bilGuru', 'number') + field('Jumlah Murid', school.bilMurid, 'bilMurid', 'number')
+          : `<div class="pf-stats-grid">
+          <div class="pf-stat"><div class="pf-stat-val">${esc(String(school.bilGuru || '-'))}</div><div class="pf-stat-lbl">Jumlah Guru</div></div>
+          <div class="pf-stat"><div class="pf-stat-val">${esc(String(school.bilMurid || '-'))}</div><div class="pf-stat-lbl">Jumlah Murid</div></div>
+        </div>`}
       </div>
     </div>
   </div>`;
@@ -4792,7 +4808,7 @@ function bind() {
         <div class="fg"><label class="fl">Nama Penuh</label><input class="fi" id="myp-name" value="${esc(me.name||'')}" placeholder="cth. AZMAN BIN HARUN" style="text-transform:uppercase"></div>
         <div class="fg"><label class="fl">Jawatan</label><input class="fi" id="myp-jawatan" value="${esc(me.jawatan||'')}" placeholder="cth. Guru Cemerlang Matematik"></div>
         <div class="fg"><label class="fl">Mata Pelajaran</label><input class="fi" id="myp-mp" value="${esc(me.mataPelajaran||'')}" placeholder="cth. Matematik, Sains"></div>
-        <div class="fg"><label class="fl">E-mel</label><input class="fi" type="email" id="myp-emel" value="${esc(me.emel||'')}" placeholder="cth. nama@moe-dl.edu.my"></div>
+        <div class="fg"><label class="fl">E-mel</label><input class="fi" type="email" id="myp-emel" value="${esc(me.emel||'')}" readonly style="opacity:.7"><div class="level-note">Emel ialah akaun log masuk Google anda dan tidak boleh diubah di sini.</div></div>
         <div class="fg"><label class="fl">Tahun Mula Berkhidmat</label><input class="fi" type="number" id="myp-tahun" value="${me.tahunMula||''}" min="1970" max="2026" placeholder="cth. 2015"></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
@@ -4803,14 +4819,23 @@ function bind() {
     document.body.appendChild(ov);
     document.getElementById('myp-cancel').addEventListener('click',()=>ov.remove());
     ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-    document.getElementById('myp-save').addEventListener('click',()=>{
+    document.getElementById('myp-save').addEventListener('click',async()=>{
+      const btn=document.getElementById('myp-save');
       const name=PPDAuth.besar(document.getElementById('myp-name').value.trim()||me.name);
       const jawatan=document.getElementById('myp-jawatan').value.trim()||me.jawatan;
       const mp=document.getElementById('myp-mp').value.trim();
-      const emel=document.getElementById('myp-emel').value.trim();
-      const tahunMula=parseInt(document.getElementById('myp-tahun').value)||me.tahunMula;
-      const av=(name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase())||me.av;
-      const baru={...me,name,jawatan,mataPelajaran:mp,emel,tahunMula,av};
+      const tahunMula=parseInt(document.getElementById('myp-tahun').value)||me.tahunMula||null;
+      btn.disabled=true; btn.textContent='Menyimpan…';
+      // Jawatan, mata pelajaran dan tahun mula: ppd_profil (disegerakkan ke pelayan)
+      PPDData.skas.saveProfil(ME.id,{...PPDData.skas.profil(ME.id),jawatan,mataPelajaran:mp,tahunMula});
+      // Nama: akaun pengguna di pelayan (pengguna boleh membetulkan nama sendiri sahaja)
+      let namaAkhir=me.name;
+      if(name!==me.name){
+        const r=await simpanNamaSendiri(name);
+        if(r.ok) namaAkhir=r.nama; else PPDUI.alert('Nama tidak dikemas kini', r.mesej);
+      }
+      const av=PPDAuth.initials(namaAkhir)||me.av;
+      const baru={...me,name:namaAkhir,jawatan,mataPelajaran:mp,tahunMula,av};
       if (S.teachers.some(t=>t.id===me.id)) setState({teachers:S.teachers.map(t=>t.id===me.id?baru:t)});
       else setState({profilSaya:baru});
       ov.remove();
@@ -4866,7 +4891,7 @@ function bind() {
       <div style="display:flex;flex-direction:column;gap:12px">
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">Nama *</label>
-          <input id="tcm-name" type="text" class="input" value="${esc(teacher?teacher.name:'')}" placeholder="Nama penuh guru" style="width:100%;box-sizing:border-box">
+          <input id="tcm-name" type="text" class="input" value="${esc(teacher?teacher.name:'')}" placeholder="Nama penuh guru" style="width:100%;box-sizing:border-box${teacher?';opacity:.7':''}"${teacher?' readonly title="Nama diurus oleh pemilik akaun atau Superadmin"':''}>
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">Jawatan</label>
@@ -4878,7 +4903,7 @@ function bind() {
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">E-mel</label>
-          <input id="tcm-emel" type="email" class="input" value="${esc(teacher&&teacher.emel?teacher.emel:'')}" placeholder="nama@moe-dl.edu.my" style="width:100%;box-sizing:border-box">
+          <input id="tcm-emel" type="email" class="input" value="${esc(teacher&&teacher.emel?teacher.emel:'')}" placeholder="nama@moe-dl.edu.my" style="width:100%;box-sizing:border-box${teacher?';opacity:.7':''}"${teacher?' readonly':''}>
         </div>
         <div>
           <label style="font-size:11.5px;font-weight:600;color:var(--t3);display:block;margin-bottom:4px">Tahun Mula Berkhidmat</label>
@@ -4902,8 +4927,9 @@ function bind() {
       const tahunVal=document.getElementById('tcm-tahun').value.trim();
       const tahunMula=tahunVal?parseInt(tahunVal):undefined;
       if(teacher){
-        // Edit existing
-        const updated=S.teachers.map(x=>x.id===tid?{...x,name,jawatan,mataPelajaran:mp,emel,tahunMula}:x);
+        // Edit profil guru: disimpan ke ppd_profil (nama & emel diurus melalui akaun)
+        if(teacher.uid) PPDData.skas.saveProfil(teacher.uid,{...PPDData.skas.profil(teacher.uid),jawatan,mataPelajaran:mp,tahunMula:tahunMula||null});
+        const updated=S.teachers.map(x=>x.id===tid?{...x,jawatan,mataPelajaran:mp,tahunMula}:x);
         ov.remove();
         setState({teachers:updated});
       } else {
@@ -4965,7 +4991,13 @@ function bind() {
   const pfcancel=document.querySelector('[data-pfcancel]');
   if(pfcancel)pfcancel.addEventListener('click',()=>setState({_profileEdit:false}));
   const pfsave=document.querySelector('[data-pfsave]');
-  if(pfsave)pfsave.addEventListener('click',()=>setState({_profileEdit:false}));
+  if(pfsave)pfsave.addEventListener('click',()=>{
+    // Simpan ke stor kongsi (ppd_profil_sekolah) supaya kekal selepas muat semula
+    const p = { ...PPDData.skas.profilSekolah(SEKOLAH_KOD) };
+    document.querySelectorAll('[data-pfkey]').forEach(el => { if (MEDAN_PROFIL_SEKOLAH.includes(el.dataset.pfkey)) p[el.dataset.pfkey] = el.value.trim(); });
+    if (SEKOLAH_KOD) PPDData.skas.saveProfilSekolah(SEKOLAH_KOD, p);
+    setState({_profileEdit:false});
+  });
 
   // level collapse toggles (school achievements)
   document.querySelectorAll('[data-lvltoggle]').forEach(b=>b.addEventListener('click',()=>{

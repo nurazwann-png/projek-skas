@@ -209,6 +209,11 @@
     saveTetapan: t => write('ppd_skas_tetapan', t),
     panduan: () => read('ppd_skas_panduan') || [],
     savePanduan: list => write('ppd_skas_panduan', list),
+    // Profil guru (ikut id pengguna) dan profil sekolah (ikut kod)
+    profil: uid => (read('ppd_profil') || {})[uid] || {},
+    saveProfil(uid, p) { const all = read('ppd_profil') || {}; all[uid] = p; return write('ppd_profil', all); },
+    profilSekolah: kod => (read('ppd_profil_sekolah') || {})[kod] || {},
+    saveProfilSekolah(kod, p) { const all = read('ppd_profil_sekolah') || {}; all[kod] = p; return write('ppd_profil_sekolah', all); },
   };
   const efasiliti = {
     tiket: () => (read(K.tiket) || []).map(seragamTiket),
