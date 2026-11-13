@@ -1118,15 +1118,15 @@ function kiraNaik(akar) {
 /* ── Kad "Fokus semasa" dalam hero: angka sebenar daripada stor, mengikut skop peranan aktif ─ */
 function skopData(u, lv) {
   const D = PPDData;
-  if (lv === 'pengguna') return { label: 'kelas saya', kelas: D.spm.kelasGuru(u.id), tiket: D.efasiliti.tiket().filter(t => t.pelaporId === u.id), rekod: D.skas.rekod(u.id), lblRekod: 'Rekod SK@S saya menunggu pengesahan', lblTiket: 'Aduan aktif saya' };
+  if (lv === 'pengguna') return { label: 'kelas saya', kelas: D.spm.kelasGuru(u.id), tiket: D.efasiliti.tiket().filter(t => t.pelaporId === u.id), rekod: D.skas.rekod(u.id), lblRekod: 'Rekod pencapaian SK@S saya', lblTiket: 'Aduan aktif saya' };
   if (lv === 'sekolah') {
     const sk = D.sekolahUser(u);
     const ahli = new Set(A.users().filter(x => sk && x.kodSekolah === sk.kod).map(x => x.id));
     const semua = D.skas.all();
     return { label: sk ? sk.nama : 'sekolah', kelas: sk ? D.spm.kelasSekolah(sk.nama) : [], tiket: D.efasiliti.tiket().filter(t => sk && t.kodSekolah === sk.kod),
-      rekod: Object.keys(semua).filter(id => ahli.has(id)).flatMap(id => semua[id]), lblRekod: 'Rekod SK@S menunggu pengesahan', lblTiket: 'Aduan aktif sekolah' };
+      rekod: Object.keys(semua).filter(id => ahli.has(id)).flatMap(id => semua[id]), lblRekod: 'Rekod pencapaian guru SK@S', lblTiket: 'Aduan aktif sekolah' };
   }
-  return { label: 'seluruh daerah', kelas: D.spm.kelas(), tiket: D.efasiliti.tiket(), rekod: Object.values(D.skas.all()).flat(), lblRekod: 'Rekod SK@S menunggu pengesahan', lblTiket: 'Aduan fasiliti aktif' };
+  return { label: 'seluruh daerah', kelas: D.spm.kelas(), tiket: D.efasiliti.tiket(), rekod: Object.values(D.skas.all()).flat(), lblRekod: 'Rekod pencapaian guru SK@S', lblTiket: 'Aduan fasiliti aktif' };
 }
 function renderFokus(u, lv) {
   const el = document.getElementById('fokus');
@@ -1137,7 +1137,7 @@ function renderFokus(u, lv) {
   const baki = -D.hari(pe.tarikhAkhir);
   const akhir = new Date(pe.tarikhAkhir).toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' });
   const L = 2 * Math.PI * 34;
-  const menunggu = s.rekod.filter(r => r.status === 'pending').length;
+  const bilRekod = s.rekod.length;
   const aduan = s.tiket.filter(D.efasiliti.aktif).length;
   const go = '<svg class="go" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
   el.innerHTML = `
@@ -1154,7 +1154,7 @@ function renderFokus(u, lv) {
       </span>
     </a>
     <div class="fokus-rows">
-      <a class="fokus-row" href="${A.APPS.skas.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.award}</svg></span><span class="l">${s.lblRekod}</span><b>${menunggu}</b>${go}</a>
+      <a class="fokus-row" href="${A.APPS.skas.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.award}</svg></span><span class="l">${s.lblRekod}</span><b>${bilRekod}</b>${go}</a>
       <a class="fokus-row" href="${A.APPS.efasiliti.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.wrench}</svg></span><span class="l">${s.lblTiket}</span><b>${aduan}</b>${go}</a>
     </div>`;
   // Cincin terisi selepas lukisan pertama supaya peralihan kelihatan
@@ -1172,7 +1172,7 @@ function renderKPI(u, lv) {
     const aduan = PPDData.efasiliti.tiket().filter(t => t.pelaporId === u.id && PPDData.efasiliti.aktif(t)).length;
     el.innerHTML = kpiHTML('book', '#2f6fb3', kelas.length, 'Kelas Saya')
       + kpiHTML('pen', belum ? '#b54708' : '#17935a', belum, 'Markah Percubaan Belum Diisi')
-      + kpiHTML('award', '#0f9e94', rekod.filter(r => r.status === 'approved').length + '/' + rekod.length, 'Rekod SK@S Disahkan')
+      + kpiHTML('award', '#0f9e94', rekod.length, 'Rekod Pencapaian SK@S')
       + kpiHTML('wrench', '#1d6fa5', aduan, 'Aduan Aktif Saya');
   } else {
     el.innerHTML = kpiHTML('grid', '#2f6fb3', 3, 'Aplikasi Aktif')

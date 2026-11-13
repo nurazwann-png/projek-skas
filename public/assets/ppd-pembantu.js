@@ -18,6 +18,7 @@
 .pb-m{max-width:88%;padding:10px 13px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px}
 .pb-m.saya{align-self:flex-end;background:#13406e;color:#fff;border-bottom-right-radius:4px}
 .pb-m.ai{align-self:flex-start;background:#fff;border:1px solid #dde3eb;border-bottom-left-radius:4px}
+.pb-m.info{align-self:flex-start;background:#fbf3e1;color:#7a5410;border:1px solid #e5c066}
 .pb-m.ralat{align-self:flex-start;background:#fdecea;color:#8a1c12;border:1px solid #f3c2bc}
 .pb-fikir{align-self:flex-start;color:#6b7686;font-size:12.5px;padding:4px 6px}
 .pb-cadang{align-self:stretch;background:#fbf3e1;border:1px solid #ecd9a6;border-radius:14px;padding:12px 13px;font-size:13px}
@@ -46,7 +47,7 @@
 
   let panel = null, sibuk = false;
   const perbualan = []; // {role, content}
-  const CONTOH = ['Kelas mana yang belum lengkap isi markah Percubaan?', 'Ringkaskan prestasi SPM setiap sekolah', 'Aduan fasiliti mana yang paling lama terbuka?', 'Sediakan draf laporan ringkas untuk mesyuarat minggu ini'];
+  const CONTOH = ['Kelas mana yang belum lengkap isi markah Percubaan?', 'Ringkaskan prestasi SPM setiap sekolah', 'Arah dari SK Sg Rasau ke PPD Dalat','Aduan fasiliti mana yang paling lama terbuka?', 'Sediakan draf laporan ringkas untuk mesyuarat minggu ini'];
 
   function tambah(html, kelas) {
     const log = panel.querySelector('.pb-log');
@@ -71,6 +72,19 @@
       } catch (e) { d.innerHTML = esc(e.message); d.className = 'pb-m ralat'; }
     };
   }
+  // Arah ialah paparan sahaja (tiada data diubah), jadi terus dipaparkan di peta tanpa pengesahan
+  function bukaArah(c) {
+    const ok = window.PPDLokasi?.arahKe && document.getElementById('lk-peta') && PPDLokasi.arahKe(c.asal.kod, c.tuju.kod);
+    if (ok) {
+      tambah(`Arah dari <b>${esc(c.asal.nama)}</b> ke <b>${esc(c.tuju.nama)}</b> dipaparkan di peta.`, 'pb-m info');
+      // Telefon: tutup panel supaya peta kelihatan
+      if (matchMedia('(max-width: 600px)').matches) tutup();
+      return;
+    }
+    try { sessionStorage.setItem('ppd_arah_tertunda', JSON.stringify({ asal: c.asal.kod, tuju: c.tuju.kod })); } catch {}
+    tambah(`Membuka peta untuk arah dari <b>${esc(c.asal.nama)}</b> ke <b>${esc(c.tuju.nama)}</b>…`, 'pb-m info');
+    setTimeout(() => { location.href = '/ppd-dalat.html#lokasi'; }, 600);
+  }
   async function hantar(teks) {
     teks = teks.trim();
     if (!teks || sibuk) return;
@@ -88,7 +102,11 @@
       if (!res.ok) throw new Error(j.ralat || 'Pembantu tidak dapat dihubungi.');
       perbualan.push({ role: 'assistant', content: j.jawapan });
       tambah(esc(j.jawapan), 'pb-m ai');
-      if (j.cadangan && j.cadangan.length) paparCadangan(j.cadangan);
+      const cad = j.cadangan || [];
+      const arah = cad.find(c => c.jenis === 'arah');
+      const ingat = cad.filter(c => c.jenis === 'peringatan_markah');
+      if (ingat.length) paparCadangan(ingat);
+      if (arah) bukaArah(arah);
     } catch (e) {
       f.remove(); perbualan.pop();
       tambah(esc(e.message || 'Ralat tidak dijangka.'), 'pb-m ralat');
@@ -103,7 +121,7 @@
         <div><b>Pembantu Portal</b><small>Menjawab daripada data portal mengikut peranan anda</small></div>
         <button type="button" class="pb-x" aria-label="Tutup pembantu">×</button></div>
       <div class="pb-log" aria-live="polite">
-        <div class="pb-m ai">Saya boleh menyemak pengisian markah, prestasi SPM, rekod SK@S dan aduan fasiliti, serta menyediakan draf ringkasan. Apa yang anda ingin tahu?</div>
+        <div class="pb-m ai">Saya boleh menyemak pengisian markah, prestasi SPM, rekod SK@S dan aduan fasiliti, menyediakan draf ringkasan, serta menunjukkan arah ke sekolah di peta. Apa yang anda ingin tahu?</div>
         <div class="pb-cth">${CONTOH.map(c => `<button type="button">${esc(c)}</button>`).join('')}</div>
       </div>
       <form class="pb-borang"><textarea rows="1" placeholder="Taip soalan anda…" aria-label="Soalan kepada pembantu"></textarea>

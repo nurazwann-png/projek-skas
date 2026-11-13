@@ -4,19 +4,18 @@
 // Semua angka dikira daripada stor portal yang sama dengan aplikasi lain; tiada angka contoh.
 import { Download, FileText, Printer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Badge, Button, Callout, Card, Metrik, TabNavigation, Table, TableRoot, TajukBahagian, Td, Th } from "@/components/tremor/ui";
+import { Button, Callout, Card, Metrik, TabNavigation, Table, TableRoot, TajukBahagian, Td, Th } from "@/components/tremor/ui";
 import { muatStorPortal, type PPDAuthApi, type PPDDataApi, type Pengguna, type Sesi } from "@/lib/portal/stor";
 import { analisisDaerah, fmtGps } from "@/lib/spm/analitik";
 
 type SemakanAI = { keputusan?: string; kategori?: string; keyakinan?: number; diubah?: { lbl: string }[] };
-type Rekod = { id?: string; program?: string; level?: string; tahap?: string; peranan?: string; tarikh?: string; status?: string; semakanAI?: SemakanAI };
+type Rekod = { id?: string; program?: string; level?: string; tahap?: string; peranan?: string; tarikh?: string; semakanAI?: SemakanAI };
 type MaklumBalas = { salah?: string[] };
 type DataPenuh = PPDDataApi & { skas: { all(): Record<string, Rekod[]> }; sekolahUser(u: Pengguna): { kod: string; nama: string } | null };
 type AuthPenuh = PPDAuthApi & { users(): Pengguna[] };
 
 const PERINGKAT: Record<string, string> = { INT: "Antarabangsa", NAT: "Kebangsaan", NEG: "Negeri", BAH: "Bahagian", DAE: "Daerah", SKL: "Sekolah" };
 const TAHAP: Record<string, string> = { T1: "Tempat Pertama / Anugerah", T2: "Tempat Kedua", T3: "Tempat Ketiga", SH: "Saguhati", SY: "Penyertaan" };
-const STATUS: Record<string, string> = { approved: "Disahkan", pending: "Menunggu pengesahan", rejected: "Ditolak" };
 const TAB = [
   { id: "skpm", label: "SKPM 5.4.1 Pencapaian Guru" },
   { id: "spm", label: "SPM Daerah" },
@@ -104,10 +103,8 @@ export function LaporanApp() {
   }, [k, daerah, versi]);
 
   const ai = useMemo(() => {
+    // Rekod guru disimpan tanpa kelulusan; ketepatan diukur daripada pembetulan pengguna dan laporan "Keputusan AI salah?"
     const denganAI = rekod.filter((x) => x.r.semakanAI);
-    const diputus = denganAI.filter((x) => x.r.status === "approved" || x.r.status === "rejected");
-    // "Setuju": AI kata layak dan pentadbir mengesahkan, ATAU AI kata tidak layak/perlu semakan dan pentadbir menolak
-    const setuju = diputus.filter((x) => (x.r.semakanAI!.keputusan === "layak") === (x.r.status === "approved"));
     const medan = new Map<string, number>();
     let adaUbah = 0;
     for (const x of denganAI) {
@@ -124,10 +121,7 @@ export function LaporanApp() {
     return {
       jumlah: rekod.length,
       denganAI: denganAI.length,
-      diputus: diputus.length,
-      setuju: setuju.length,
-      layakDitolak: diputus.filter((x) => x.r.semakanAI!.keputusan === "layak" && x.r.status === "rejected").length,
-      raguDisahkan: diputus.filter((x) => x.r.semakanAI!.keputusan !== "layak" && x.r.status === "approved").length,
+      layak: denganAI.filter((x) => x.r.semakanAI!.keputusan === "layak").length,
       adaUbah,
       medan: [...medan].sort((a, b) => b[1] - a[1]),
       maklumBalas: mb.length,
@@ -141,8 +135,9 @@ export function LaporanApp() {
     history.replaceState(null, "", id === "skpm" ? location.pathname : `#${id}`);
   };
 
-  const kepalaSkpm = ["Sekolah", "Guru", "Program / pencapaian", "Peringkat", "Tahap", "Peranan", "Tarikh", "Status"];
-  const barisSkpm = rekod.map((x) => [x.guru?.org || "", x.guru?.nama || "", x.r.program || "", PERINGKAT[x.r.level || ""] || x.r.level || "", TAHAP[x.r.tahap || ""] || x.r.tahap || "", x.r.peranan || "", x.r.tarikh || "", STATUS[x.r.status || ""] || x.r.status || ""]);
+  const kepalaSkpm = ["Sekolah", "Guru", "Program / pencapaian", "Peringkat", "Tahap", "Peranan", "Tarikh"];
+  const barisSkpm = rekod.map((x) => [x.guru?.org || "", x.guru?.nama || "", x.r.program || "", PERINGKAT[x.r.level || ""] || x.r.level || "", TAHAP[x.r.tahap || ""] || x.r.tahap || "", x.r.peranan || "", x.r.tarikh || ""]);
+  const bilGuru = new Set(rekod.map((x) => x.guru?.id).filter(Boolean)).size;
   const kepalaSpm = ["Sekolah", "GPS", "% murid lulus semua subjek", "Murid", "Murid berisiko", "% pengisian markah", "Kelas belum lengkap"];
   const barisSpm = (spm?.sekolah || []).map((s) => [s.nama, s.gps, s.lulusPct, s.bilMurid, s.berisiko, s.isiPct, s.kelasBelum.length]);
 
@@ -195,7 +190,7 @@ export function LaporanApp() {
             <div className="tak-cetak">
               <TajukBahagian
                 tajuk="Pencapaian Guru (SKPM 5.4.1)"
-                sub={`${rekod.length} rekod · ${rekod.filter((x) => x.r.status === "approved").length} disahkan · ${rekod.filter((x) => x.r.status === "pending").length} menunggu pengesahan`}
+                sub={`${rekod.length} rekod daripada ${bilGuru} guru`}
                 kanan={
                   <div className="flex gap-2">
                     <Button variant="secondary" disabled={!rekod.length} onClick={() => excel("pencapaian-guru-skpm-5-4-1", "SKPM 5.4.1", kepalaSkpm, barisSkpm)}><Download className="size-4" aria-hidden /> Muat turun Excel</Button>
@@ -221,7 +216,6 @@ export function LaporanApp() {
                           <Td>{TAHAP[x.r.tahap || ""] || x.r.tahap}</Td>
                           <Td>{x.r.peranan}</Td>
                           <Td>{x.r.tarikh}</Td>
-                          <Td><Badge variant={x.r.status === "approved" ? "success" : x.r.status === "rejected" ? "error" : "warning"}>{STATUS[x.r.status || ""] || x.r.status}</Badge></Td>
                         </tr>
                       ))}
                     </tbody>
@@ -229,7 +223,7 @@ export function LaporanApp() {
                 </TableRoot>
               </Card>
             )}
-            <p className="tak-cetak text-xs text-gray-500">Pencapaian Sekolah (5.4.2) direkod dan dilaporkan dalam aplikasi SK@S.</p>
+            <p className="tak-cetak text-xs text-gray-500">Rekod disimpan terus oleh guru tanpa kelulusan. Evidens (PDF) disimpan oleh guru dalam Google Drive untuk pengisian di MoEIS (Panduan SKPM 2026, ms 58). Pencapaian Sekolah (5.4.2) direkod dan dilaporkan dalam aplikasi SK@S.</p>
           </section>
         )}
 
@@ -281,24 +275,17 @@ export function LaporanApp() {
 
         {sedia && tab === "ai" && (
           <section className="space-y-4">
-            <TajukBahagian tajuk="Ketepatan Semak Pencapaian AI" sub="Diukur daripada keputusan pentadbir sekolah terhadap rekod yang telah disemak AI" />
+            <TajukBahagian tajuk="Ketepatan Semak Pencapaian AI" sub="Diukur daripada pembetulan guru terhadap maklumat yang diisi AI" />
             <Callout tajuk="Cara ukuran ini dikira">
-              AI dianggap tepat apabila keputusannya sepadan dengan keputusan manusia: AI menilai &quot;layak&quot; dan pentadbir mengesahkan, atau AI menilai &quot;tidak layak / perlu semakan&quot; dan pentadbir menolak. Rekod yang belum diputuskan tidak dikira.
+              Rekod guru disimpan tanpa kelulusan pentadbir. AI dianggap tepat bagi sesuatu rekod apabila guru menyimpannya tanpa mengubah mana-mana medan yang diisi AI. Laporan &quot;Keputusan AI salah?&quot; daripada pengguna turut dipaparkan.
             </Callout>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Metrik label="Rekod disemak AI" nilai={ai.denganAI} nota={`daripada ${ai.jumlah} rekod pencapaian guru`} />
-              <Metrik label="Sepadan dengan pentadbir" nilai={ai.diputus ? `${Math.round((ai.setuju / ai.diputus) * 100)}%` : "–"} nota={ai.diputus ? `${ai.setuju} daripada ${ai.diputus} rekod yang telah diputuskan` : "Belum ada rekod disemak AI yang diputuskan"} tona={ai.diputus ? (ai.setuju / ai.diputus >= 0.9 ? "baik" : ai.setuju / ai.diputus >= 0.75 ? "sederhana" : "lemah") : null} />
-              <Metrik label="Medan diubah pengguna" nilai={ai.denganAI ? `${Math.round((ai.adaUbah / ai.denganAI) * 100)}%` : "–"} nota={`${ai.adaUbah} rekod: pengguna membetulkan sekurang-kurangnya satu medan yang diisi AI`} />
+              <Metrik label="Disimpan tanpa pembetulan" nilai={ai.denganAI ? `${Math.round(((ai.denganAI - ai.adaUbah) / ai.denganAI) * 100)}%` : "–"} nota={ai.denganAI ? `${ai.denganAI - ai.adaUbah} daripada ${ai.denganAI} rekod disemak AI` : "Belum ada rekod disemak AI"} tona={ai.denganAI ? ((ai.denganAI - ai.adaUbah) / ai.denganAI >= 0.9 ? "baik" : (ai.denganAI - ai.adaUbah) / ai.denganAI >= 0.75 ? "sederhana" : "lemah") : null} />
+              <Metrik label="Dinilai layak oleh AI" nilai={ai.layak} nota={`daripada ${ai.denganAI} rekod disemak AI`} />
               <Metrik label="Laporan 'Keputusan AI salah?'" nilai={ai.maklumBalas} nota="Maklum balas pengguna semasa semakan" />
             </div>
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card>
-                <h3 className="text-sm font-semibold text-gray-900">Percanggahan dengan pentadbir</h3>
-                <dl className="mt-3 space-y-2 text-sm">
-                  <div className="flex justify-between gap-4"><dt className="text-gray-600">AI kata layak, pentadbir menolak</dt><dd className="font-semibold tabular-nums">{ai.layakDitolak}</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-gray-600">AI ragu atau kata tidak layak, pentadbir mengesahkan</dt><dd className="font-semibold tabular-nums">{ai.raguDisahkan}</dd></div>
-                </dl>
-              </Card>
               <Card>
                 <h3 className="text-sm font-semibold text-gray-900">Medan yang paling kerap dibetulkan</h3>
                 {ai.medan.length || ai.bahagian.length ? (

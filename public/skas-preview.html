@@ -700,14 +700,7 @@ function aiKlasifikasi(rec) {
     passes.push(`Tahun pencapaian ${TAHUN_SEMASA} -- memenuhi syarat tahun penilaian semasa.`);
   }
 
-  // 5. Eviden
-  if (!rec.pautanEviden) {
-    reasons.push('Pautan eviden (PDF Google Drive) belum diisi. Diperlukan semasa input ke sistem SKPM.');
-    // nota sahaja -- tidak menjejaskan kelayakan teknikal
-  } else {
-    passes.push(`Pautan eviden disertakan.`);
-  }
-
+  // Evidens tidak disimpan dalam SK@S: guru menyimpan PDF dalam Google Drive sendiri untuk pengisian MoEIS (Panduan ms 58)
   return { layak, reasons, passes };
 }
 
@@ -933,18 +926,15 @@ function topbar(title) {
   </div>`;
 }
 
-/* -- Status pengesahan rekod ------------------------------------ */
-const STATUS_REKOD = { pending:['Menunggu pengesahan','#b54708'], approved:['Disahkan','#067647'], rejected:['Ditolak','#b42318'] };
-function statusRekodHTML(r) {
-  const st = STATUS_REKOD[r.status] || STATUS_REKOD.pending;
-  return `<span class="st-rekod" style="--sc:${st[1]}">${st[0]}</span>`;
-}
-function tetapStatusRekod(tid, rid, status) {
-  const t = S.teachers.find(x => x.id === tid);
-  if (!t) return;
-  const recs = t.records.map(r => r.id === rid ? { ...r, status, disahkanOleh: ME.nama, disahkanPada: new Date().toISOString() } : r);
-  if (t.uid) PPDData.skas.save(t.uid, recs);
-  setState({ teachers: S.teachers.map(x => x.id === tid ? { ...x, records: recs } : x) });
+/* -- Evidens Pencapaian Guru (5.4.1): tidak disimpan dalam SK@S --------
+   Rekod guru disimpan terus tanpa kelulusan. Evidens disimpan oleh guru dalam Google Drive
+   untuk pengisian di MoEIS (Panduan Pelaksanaan SKPM Kualiti@Sekolah 2026, ms 10 dan 58–59). */
+const TEKS_EVIDENS = 'Simpan evidens dalam format <b>PDF</b> di <b>Google Drive</b> menggunakan ID DELIMa sekolah, dan tetapkan folder kepada <i>"Anyone with the link"</i> sebagai <i>"Viewer"</i>. Pautan ini diperlukan semasa pengisian Pencapaian Guru (5.4.1) di <b>MoEIS</b> dan dikongsi dengan Penyelaras SKPM Daerah. Jika pencapaian melibatkan lebih daripada seorang guru, gabungkan semua sijil dalam satu fail PDF.';
+function notaEvidensHTML() {
+  return `<div style="display:flex;gap:8px;padding:10px 12px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe">
+    <span style="color:#1d4ed8;flex-shrink:0;margin-top:1px">${i('<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',14)}</span>
+    <span style="font-size:12.5px;color:#1e3a8a;line-height:1.55">${TEKS_EVIDENS} <span style="color:#64748b">(Panduan SKPM 2026, ms 58–59)</span></span>
+  </div>`;
 }
 
 /* -- Dashboard view -------------------------------------------- */
@@ -961,7 +951,6 @@ function dashRecRow(r) {
     + '<div class="ach-row-meta">'+r.peranan+' &middot; '+fmtDate(r.tarikh)+'</div>'
     + thHtml + errHtml
     + '</div>'
-    + '<div style="flex-shrink:0">'+statusRekodHTML(r)+'</div>'
     + '</div>';
 }
 
@@ -1373,16 +1362,7 @@ function viewRecordDetail() {
     </div>`
   ).join('');
 
-  // Eviden note — neutral, shown for all records
-  const evidenStatus = r.pautanEviden
-    ? `<div style="display:flex;gap:8px;padding:9px 12px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0">
-        <span style="color:#15803d;flex-shrink:0;margin-top:1px">${i('<polyline points="20 6 9 17 4 12"/>',14)}</span>
-        <span style="font-size:12.5px;color:#166534;line-height:1.5">Pautan eviden disertakan.</span>
-      </div>`
-    : `<div style="display:flex;gap:8px;padding:9px 12px;border-radius:8px;background:#f8fafc;border:1px solid var(--border)">
-        <span style="color:#64748b;flex-shrink:0;margin-top:1px">${i('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',14)}</span>
-        <span style="font-size:12.5px;color:#475569;line-height:1.5">Pautan eviden (PDF Google Drive) belum diisi. Diperlukan semasa input ke sistem SKPM.</span>
-      </div>`;
+  const evidenStatus = notaEvidensHTML();
 
   const notLayakNote = !ai.layak
     ? `<div style="margin-top:6px;padding:11px 14px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;gap:8px">
@@ -1470,14 +1450,7 @@ function viewRecordDetail() {
         ${summaryRow('Tahap Pencapaian', th ? th.label : '--')}
         ${summaryRow('Tarikh Pencapaian', fmtDate(r.tarikh))}
         ${summaryRow('Jenis Pengesahan', r.pengesahan || '--')}
-        ${summaryRow('Status Eviden', r.pautanEviden ? 'Disertakan' : 'Belum diisi')}
-        <div style="grid-column:span 2;padding-top:4px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Pautan Eviden</div>
-          ${r.pautanEviden
-            ? `<div style="font-size:12.5px;color:var(--accent);word-break:break-all">${esc(r.pautanEviden)}</div>`
-            : `<div style="font-size:12.5px;color:var(--t3);font-style:italic">Belum diisi &mdash; sila tambah pautan Google Drive PDF sebelum input ke SKPM</div>`
-          }
-        </div>
+        ${summaryRow('Evidens', 'PDF dalam Google Drive anda (untuk MoEIS)')}
       </div>
     </div>
 
@@ -1978,7 +1951,8 @@ function butangEvidens(dalamBorang) {
   if (!fail.length) return '';
   return `<div class="evidens-pdf${dalamBorang ? ' borang' : ''}">
     <button type="button" class="btn btn-ghost" id="btn-evidens-pdf">${i('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>', 14)} Muat turun evidens PDF${fail.length > 1 ? ` (${fail.length} dokumen digabung)` : ''}</button>
-    ${dalamBorang ? `<span>Muat naik fail ini ke Google Drive DELIMa sekolah, tetapkan "Sesiapa yang ada pautan — Penonton", kemudian tampal pautannya di sini.</span>` : ''}
+    ${dalamBorang === 'guru' ? `<span>Simpan fail ini dalam Google Drive anda untuk pengisian di MoEIS.</span>`
+      : dalamBorang ? `<span>Muat naik fail ini ke Google Drive DELIMa sekolah, tetapkan "Sesiapa yang ada pautan — Penonton", kemudian tampal pautannya di sini.</span>` : ''}
   </div>`;
 }
 async function muatTurunEvidens(e) {
@@ -2504,11 +2478,10 @@ function viewForm() {
               <input class="fi" id="f-pengesahan" placeholder="cth. Sijil KPM, Surat JPN, Lesen AFC..." value="${esc(f.pengesahan)}">
               <div class="level-note">Dokumen rasmi yang mengesahkan pencapaian ini</div>
             </div>
-            <div class="fg">
-              <label class="fl">Pautan Eviden (Google Drive)</label>
-              <input class="fi" id="f-pautanEviden" placeholder="https://drive.google.com/..." value="${esc(f.pautanEviden)}">
-              <div class="level-note">PDF format &middot; Tetapan: "Sesiapa yang ada pautan &mdash; Penonton"</div>
-              ${f._semak ? butangEvidens(true) : ''}
+            <div class="fg" style="grid-column:1/-1">
+              <label class="fl">Evidens</label>
+              ${notaEvidensHTML()}
+              ${f._semak ? butangEvidens('guru') : ''}
             </div>
           </div>
 
@@ -2616,7 +2589,7 @@ function viewForm() {
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button class="btn btn-ghost" id="btn-prev">&larr; Kembali</button>
       <button class="btn btn-pri" id="btn-submit">
-        ${IC.ccheck} ${S.editingId?'Simpan Perubahan':'Hantar untuk Kelulusan'}
+        ${IC.ccheck} ${S.editingId?'Simpan Perubahan':'Simpan Rekod'}
       </button>
     </div>
   </div>`;
@@ -3759,11 +3732,7 @@ function viewTeacherDetail() {
       <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         ${ai.layak
           ? '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:10px">&#10003; Layak 5.4.1</span>'
-          : '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">&#10007; Tidak Layak</span>'}
-        ${r.status === 'pending' || !r.status
-          ? `<div class="sah-btns"><button class="btn btn-sah" data-sah="${r.id}">&#10003; Sahkan</button><button class="btn btn-tolak" data-tolak="${r.id}">Tolak</button></div>`
-          : statusRekodHTML(r)}
-      </div>
+          : '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-size:10px">&#10007; Tidak Layak</span>'}      </div>
     </div>`;
   };
 
@@ -5191,10 +5160,6 @@ function bind() {
       if (S.f._ai?.[fmap[id]]) el.closest('.fg')?.classList.toggle('perlu-isi', !el.value); });
   });
 
-  document.querySelectorAll('[data-sah]').forEach(b => b.addEventListener('click', () => tetapStatusRekod(S.selectedTeacherId, b.dataset.sah, 'approved')));
-  document.querySelectorAll('[data-tolak]').forEach(b => b.addEventListener('click', async () => {
-    if (await PPDUI.confirm('Tolak rekod ini?', 'Guru akan melihat rekod ini sebagai Ditolak dan boleh mengemas kininya.', { ok: 'Tolak' })) tetapStatusRekod(S.selectedTeacherId, b.dataset.tolak, 'rejected');
-  }));
   const bdb = document.getElementById('btn-draf-buang');
   if (bdb) bdb.addEventListener('click', () => { buangDraf(); setState({ f: F_KOSONG(), formStep: 1 }); });
 
@@ -5324,8 +5289,7 @@ function bind() {
         level:S.f.level,peranan:S.f.peranan,
         tarikh:S.f.tarikhmula,
         tahap:S.f.tahap,pengesahan:S.f.pengesahan,
-        pautanEviden:S.f.pautanEviden,
-        status:'pending',draft:draft||null,
+        draft:draft||null,
         ...(semakanAI?{semakanAI}:{}),
         tags:[`#${LVL[S.f.level]?.label||S.f.level}`,`#5.4.1`],
       };

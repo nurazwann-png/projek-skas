@@ -197,10 +197,7 @@
 .lk-leg summary::-webkit-details-marker{display:none}
 .lk-leg summary::after{content:'';width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-135deg);margin-top:3px;transition:transform .15s}
 .lk-leg[open] summary::after{transform:rotate(45deg);margin-top:-3px}
-.lk-legenda .lk-leg-isi{flex-direction:column;align-items:stretch;gap:5px;margin-top:6px}
-.lk-sentuh{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:800;padding:7px 12px;border-radius:999px;background:rgba(11,42,74,.88);color:#fff;font:600 12px/1.3 inherit;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.lk-sentuh[hidden]{display:none}
-.lk-butang{background:#fff;border:0;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:#0b2a4a}
+.lk-legenda .lk-leg-isi{flex-direction:column;align-items:stretch;gap:5px;margin-top:6px}.lk-butang{background:#fff;border:0;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:#0b2a4a}
 .lk-butang:hover{background:#f3f5f8}
 .lk-butang svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .leaflet-control-layers{border-radius:10px!important;box-shadow:0 2px 10px rgba(7,28,51,.18)!important;border:0!important;font:600 12px inherit}
@@ -244,11 +241,18 @@
 .lk-atas-kiri{position:absolute;top:12px;left:12px;z-index:850;display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:calc(100% - 76px)}
 .lk-seret{display:flex;align-items:center;gap:7px;height:38px;padding:0 14px 0 6px;border:0;border-radius:999px;background:#0b2a4a;color:#fff;font:700 12px/1 inherit;box-shadow:0 2px 10px rgba(7,28,51,.3);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .lk-seret:active{cursor:grabbing}
+.lk-seret[hidden],.lk-mesej[hidden]{display:none}
+.lk-mesej{padding:7px 12px;border-radius:999px;background:rgba(11,42,74,.9);color:#fff;font:600 12px/1.3 inherit;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .lk-seret i{width:28px;height:28px;border-radius:50%;background:#c8962a;display:grid;place-items:center}
 .lk-seret svg,.lk-hantu svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .lk-seret small{display:block;font-size:10px;font-weight:600;opacity:.75;margin-top:2px}
 .lk-hantu{position:fixed;z-index:10000;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:#c8962a;color:#fff;display:grid;place-items:center;pointer-events:none;box-shadow:0 0 0 4px rgba(255,255,255,.85),0 6px 16px rgba(0,0,0,.35)}
 .lk-pin.sasar{transform:scale(1.3);box-shadow:0 0 0 5px rgba(200,150,42,.65),0 6px 14px rgba(7,28,51,.35)}
+/* Tekan lama pada sekolah: anak panah ke sekolah lain */
+.lk-pin{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.lk-pin img{pointer-events:none;-webkit-user-drag:none}
+.lk-pin.asal-panah{transform:scale(1.2);box-shadow:0 0 0 5px rgba(11,42,74,.45),0 6px 14px rgba(7,28,51,.35)}
+.lk-panah{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:950;overflow:visible}
 .lk-peta.lk-sasar-peta{box-shadow:inset 0 0 0 3px #c8962a}
 .lk-arah-cip{display:flex;align-items:center;gap:4px;max-width:100%;padding:4px 4px 4px 12px;border-radius:999px;background:#fff;box-shadow:0 2px 10px rgba(7,28,51,.22);font:600 12px/1.2 inherit;color:#475467}
 .lk-arah-cip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -314,8 +318,8 @@
 .lk-arah-langkah li i.s{background:#e0f4f7;color:#0e7490}
 .lk-arah-paksa.sungai{border-color:#0e7490;color:#0e7490;margin-right:4px}
 @media (max-width:600px){
-  .lk-arah{top:auto;bottom:10px;left:10px;right:10px;width:auto;max-width:none;max-height:65%}
-  .lk-ada-arah .leaflet-bottom.leaflet-right,.lk-ada-arah .gm-bundled-control,.lk-ada-arah .lk-g-kawalan,.lk-ada-arah .lk-sentuh{display:none!important}
+  .lk-arah{top:auto;bottom:10px;left:10px;right:10px;width:auto;max-width:none;max-height:50%}
+  .lk-ada-arah .leaflet-bottom.leaflet-right,.lk-ada-arah .gm-bundled-control,.lk-ada-arah .lk-g-kawalan{display:none!important}
 }
 /* Panel sisi */
 .lk-sisi{display:flex;flex-direction:column;border-left:1px solid var(--border,#dde3eb);min-width:0;max-height:580px}
@@ -363,7 +367,7 @@
   .lk-ringkas{grid-template-columns:repeat(3,minmax(0,160px))}
 }
 @media (max-width:600px){
-  .lk-peta{height:clamp(360px,62vh,480px)}
+  .lk-peta{height:clamp(340px,56vh,450px)}
   .lk-ringkas{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 10px 4px}
   .lk-ringkas div{padding:7px 8px}
   .lk-ringkas b{font-size:17px}
@@ -435,16 +439,7 @@
 
   function enjinLeaflet(petaEl, h) {
     // Roda tetikus terus zum peta apabila kursor di atas peta; wheelPxPerZoomLevel lebih tinggi = zum lebih licin
-    const peta = L.map(petaEl, { scrollWheelZoom: true, wheelPxPerZoomLevel: 90, wheelDebounceTime: 30, zoomControl: false, zoomSnap: .25, zoomDelta: .5, dragging: !SENTUH });
-    // Skrin sentuh: peta dikunci supaya satu jari menatal halaman; ketik peta untuk menggerakkannya,
-    // dan ia dikunci semula apabila peta ditatal keluar dari skrin
-    if (SENTUH) {
-      const nota = L.DomUtil.create('div', 'lk-sentuh', petaEl);
-      nota.textContent = 'Ketik peta untuk menggerakkannya';
-      const kunci = ya => { ya ? peta.dragging.disable() : peta.dragging.enable(); nota.hidden = !ya; };
-      peta.on('click', () => kunci(false));
-      new IntersectionObserver(([e]) => { if (!e.isIntersecting) kunci(true); }, { threshold: 0.4 }).observe(petaEl);
-    }
+    const peta = L.map(petaEl, { scrollWheelZoom: true, wheelPxPerZoomLevel: 90, wheelDebounceTime: 30, zoomControl: false, zoomSnap: .25, zoomDelta: .5, dragging: true, touchZoom: true });
     const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
     const topo = L.tileLayer(ESRI + 'World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19, attribution: 'Peta &copy; Esri, HERE, Garmin, &copy; penyumbang OpenStreetMap',
@@ -557,8 +552,8 @@
     window.gm_authFailure = () => h.gagal('Kunci Google Maps ditolak');
     const peta = new g.Map(petaEl, {
       mapId: konfig.mapId, center: { lat: PPD.lat, lng: PPD.lng }, zoom: 11,
-      // Skrin sentuh: satu jari menatal halaman, dua jari menggerakkan peta (Google memaparkan petunjuknya sendiri)
-      gestureHandling: SENTUH ? 'cooperative' : 'greedy', clickableIcons: false,
+      // Satu jari menyeret peta, dua jari (pinch) zum
+      gestureHandling: 'greedy', clickableIcons: false,
       fullscreenControl: SENTUH, fullscreenControlOptions: { position: P.RIGHT_TOP },
       mapTypeControl: true, mapTypeControlOptions: { position: P.TOP_RIGHT, style: g.MapTypeControlStyle.DROPDOWN_MENU },
       zoomControl: true, zoomControlOptions: { position: P.RIGHT_BOTTOM },
@@ -697,7 +692,7 @@
     const senaraiEl = el.querySelector('#lk-senarai'), cariEl = el.querySelector('#lk-cari'), petaEl = el.querySelector('#lk-peta');
     const kawasanEl = el.querySelector('#lk-kawasan'), asramaEl = el.querySelector('#lk-asrama');
     const notaEl = el.querySelector('#lk-nota');
-    const NOTA = 'Lokasi dan logo: Sektor Perancangan PPD Dalat. Maklumat sekolah: EMIS Online (8 Nov 2026). Jarak dalam senarai ialah jarak laluan dari PPD Dalat: jalan raya, atau sungai bagi sekolah tanpa jalan raya (anggaran bot 25 km/j). Gunakan roda tetikus di atas peta untuk zum.';
+    const NOTA = 'Lokasi dan logo: Sektor Perancangan PPD Dalat. Maklumat sekolah: EMIS Online (8 Nov 2026). Jarak dalam senarai ialah jarak laluan dari PPD Dalat: jalan raya, atau sungai bagi sekolah tanpa jalan raya (anggaran bot 25 km/j). Gunakan roda tetikus atau dua jari untuk zum. Untuk arah antara dua sekolah: tekan lama pada sekolah pertama, kemudian seret anak panah ke sekolah kedua.';
     notaEl.textContent = NOTA;
     let jenis = '', pilihId = null;
     let E = null, laluanGoogle = false, googleGagal = false, garis = null;
@@ -724,8 +719,9 @@
     const IKON_ARAH = '<svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>';
     const atasKiriEl = document.createElement('div');
     atasKiriEl.className = 'lk-atas-kiri';
-    atasKiriEl.innerHTML = `<button type="button" class="lk-seret" title="Seret ke penanda sekolah untuk mendapatkan arah"><i>${IKON_ARAH}</i><span>Seret ke sekolah<small></small></span></button><div class="lk-arah-cip" role="status" hidden></div>`;
-    const seretEl = atasKiriEl.querySelector('.lk-seret'), seretNota = seretEl.querySelector('small'), cipEl = atasKiriEl.querySelector('.lk-arah-cip');
+    // Skrin sentuh: butang seret tidak dipaparkan (guna tekan lama pada sekolah) supaya peta tidak sesak
+    atasKiriEl.innerHTML = `<button type="button" class="lk-seret" title="Seret ke penanda sekolah untuk mendapatkan arah"${SENTUH ? ' hidden' : ''}><i>${IKON_ARAH}</i><span>Seret ke sekolah<small></small></span></button><div class="lk-arah-cip" role="status" hidden></div><div class="lk-mesej" role="status" hidden></div>`;
+    const seretEl = atasKiriEl.querySelector('.lk-seret'), seretNota = seretEl.querySelector('small'), cipEl = atasKiriEl.querySelector('.lk-arah-cip'), mesejEl = atasKiriEl.querySelector('.lk-mesej');
     // Jangan biarkan peta (Leaflet) menganggap sentuhan pada kawalan ini sebagai seretan peta
     ['mousedown', 'touchstart', 'pointerdown', 'dblclick', 'wheel'].forEach(n => atasKiriEl.addEventListener(n, e => e.stopPropagation()));
     cipEl.addEventListener('click', e => {
@@ -735,8 +731,8 @@
     const kemasSeret = () => { seretNota.textContent = 'dari ' + pendek(cariL(asalId)); };
     let notaMasa = null;
     function notaSeret(teks) {
-      seretNota.textContent = teks; clearTimeout(notaMasa);
-      notaMasa = setTimeout(kemasSeret, 2800);
+      mesejEl.textContent = teks; mesejEl.hidden = false; clearTimeout(notaMasa);
+      notaMasa = setTimeout(() => { mesejEl.hidden = true; }, 2800);
     }
     // Penanda (atau kelompok) terdekat dengan titik skrin, dalam jarak 34px
     function sasaranDi(x, y) {
@@ -794,6 +790,76 @@
     seretEl.addEventListener('pointerup', e => tamatSeret(e, false));
     seretEl.addEventListener('pointercancel', e => tamatSeret(e, true));
 
+    // Tekan lama pada sekolah 1 → anak panah muncul; seret ke sekolah 2 untuk arah 1 → 2.
+    // Pendengar fasa tangkap (capture) supaya pergerakan tidak sampai ke peta semasa anak panah aktif.
+    const TAHAN_MS = 450;
+    const panahEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    panahEl.setAttribute('class', 'lk-panah'); panahEl.setAttribute('aria-hidden', 'true');
+    panahEl.innerHTML = '<defs><marker id="lk-mata-panah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#c8962a"/></marker></defs>'
+      + '<line stroke="#fff" stroke-width="10" stroke-linecap="round"/><line stroke="#c8962a" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9" marker-end="url(#lk-mata-panah)"/>';
+    panahEl.style.display = 'none';
+    let tekan = null;
+    function lukisPanah(x, y) {
+      const pr = petaEl.getBoundingClientRect(), r = tekan.el.getBoundingClientRect();
+      const x1 = r.left + r.width / 2 - pr.left, y1 = r.top + r.height / 2 - pr.top;
+      panahEl.querySelectorAll('line').forEach(g => { g.setAttribute('x1', x1); g.setAttribute('y1', y1); g.setAttribute('x2', x - pr.left); g.setAttribute('y2', y - pr.top); });
+      const s = sasaranDi(x, y);
+      tandaSasaran(s && s.dataset.lkp !== tekan.id ? s : null);
+    }
+    function aktifkanPanah(x, y) {
+      if (!tekan) return;
+      tekan.aktif = true;
+      navigator.vibrate?.(25);
+      E.tutupPopup();
+      tekan.el.classList.add('asal-panah');
+      panahEl.style.display = '';
+      lukisPanah(x, y);
+    }
+    function batalTekan() {
+      if (!tekan) return;
+      clearTimeout(tekan.masa);
+      tekan.el.classList.remove('asal-panah');
+      panahEl.style.display = 'none';
+      tekan = null;
+    }
+    // Klik yang dijana selepas tekan lama (contohnya membuka popup penanda) disekat sekali sahaja
+    function sekatKlikSeterusnya() {
+      const h = e => { e.stopPropagation(); e.preventDefault(); };
+      window.addEventListener('click', h, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener('click', h, { capture: true }), 400);
+    }
+    petaEl.addEventListener('pointerdown', e => {
+      if (!E || e.button > 0 || tekan) return;
+      const pin = e.target.closest?.('[data-lkp]');
+      if (!pin || !petaEl.contains(pin)) return;
+      tekan = { id: pin.dataset.lkp, el: pin, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, aktif: false };
+      tekan.masa = setTimeout(() => aktifkanPanah(tekan.x, tekan.y), TAHAN_MS);
+    }, true);
+    petaEl.addEventListener('contextmenu', e => { if (e.target.closest?.('[data-lkp]')) e.preventDefault(); });
+    window.addEventListener('pointermove', e => {
+      if (!tekan) return;
+      tekan.x = e.clientX; tekan.y = e.clientY;
+      if (!tekan.aktif) { if (Math.hypot(e.clientX - tekan.x0, e.clientY - tekan.y0) > 10) batalTekan(); return; }
+      e.stopPropagation();
+      lukisPanah(e.clientX, e.clientY);
+    }, true);
+    ['mousemove', 'touchmove'].forEach(n => window.addEventListener(n, e => {
+      if (!tekan?.aktif) return;
+      e.stopPropagation();
+      if (n === 'touchmove') e.preventDefault();
+    }, { capture: true, passive: false }));
+    window.addEventListener('pointerup', () => {
+      if (!tekan) return;
+      const { aktif, id } = tekan;
+      batalTekan();
+      if (!aktif) return;
+      sekatKlikSeterusnya();
+      const s = sasarEl;
+      if (!s) return notaSeret('Lepas anak panah pada sekolah lain');
+      lepasPada(s, id);
+    }, true);
+    window.addEventListener('pointercancel', () => { batalTekan(); tandaSasaran(null); }, true);
+
     // Desktop: seret baris sekolah dari senarai ke peta. Lepas pada sekolah lain = arah antara kedua-duanya;
     // lepas di tempat lain dalam peta = arah ke sekolah yang diseret.
     const JENIS_SERET = 'text/x-lk-sekolah';
@@ -837,11 +903,12 @@
 
     function siapkan() {
       E.overlay(arahEl);
-      E.overlay(atasKiriEl); kemasSeret();
+      E.overlay(atasKiriEl); E.overlay(panahEl); kemasSeret();
       lukis();
       paparDaerah();
       E.onZum(z => petaEl.classList.toggle('lk-jauh', z < 12));
       notaEl.textContent = NOTA + (E.sumber === 'google' ? ' Peta dan arah memandu: Google Maps.' : '');
+      if (arahTertunda) { const t = arahTertunda; arahTertunda = null; setTimeout(() => arahKe(t.asal, t.tuju), 300); }
     }
 
     async function mulaPeta() {
@@ -862,6 +929,24 @@
     function paparDaerah() {
       E?.muat(LOKASI, { kiri: 30, atas: 60, kanan: 30, bawah: 30 });
     }
+
+    // Arah yang diminta melalui Pembantu AI (kod EMIS). Dari halaman lain, permintaan dihantar melalui sessionStorage.
+    let arahTertunda = null;
+    try {
+      const s = sessionStorage.getItem('ppd_arah_tertunda');
+      if (s) { sessionStorage.removeItem('ppd_arah_tertunda'); arahTertunda = JSON.parse(s); }
+    } catch {}
+    function arahKe(asalKod, tujuKod) {
+      const cari = k => LOKASI.find(l => l.kod === k) || (/^PPD/i.test(k || '') ? PPD : null);
+      const A = cari(asalKod) || PPD, B = cari(tujuKod);
+      if (!B) return false;
+      if (!E) { arahTertunda = { asal: asalKod, tuju: tujuKod }; return true; }
+      asalId = A.id === B.id ? PPD.id : A.id;
+      tunjukArah(B);
+      petaEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return true;
+    }
+    window.PPDLokasi.arahKe = arahKe;
 
     // ---- Arah dari mana-mana tempat ke mana-mana tempat: jalan raya (OSRM) atau sungai (graf PPDSungai)
     let asalId = PPD.id;
@@ -947,7 +1032,11 @@
       cipEl.innerHTML = `<span>Arah ke <b>${esc(pendek(B))}</b></span><button type="button" data-cip-buka>Buka</button><button type="button" class="padam" data-cip-padam aria-label="Padam laluan">Padam</button>`;
       cipEl.hidden = false;
     }
-    function bukaSemulaArah() { if (!laluanId) return; cipEl.hidden = true; arahEl.hidden = false; petaEl.classList.add('lk-ada-arah'); }
+    function bukaSemulaArah() {
+      if (!laluanId) return;
+      cipEl.hidden = true; arahEl.hidden = false; petaEl.classList.add('lk-ada-arah');
+      if (zumTerakhir) zumKe(zumTerakhir.titik, zumTerakhir.asas, zumTerakhir.maxZoom);
+    }
     function lukisGaris(titik, warna, putus) {
       laluan = [
         E.garis(titik, { warna: '#fff', tebal: 9, legap: .95, z: 20 }),
@@ -957,9 +1046,19 @@
     function sambung(dariTitik, keTitik, warna) {
       laluan.push(E.garis([dariTitik, keTitik], { warna, tebal: 3, putus: 'titik', z: 21 }));
     }
-    function zumLaluan(titik, A, B) {
-      E.muat([...titik, A, B], { kiri: arahEl.offsetWidth + 30, atas: 40, kanan: 40, bawah: 40, maxZoom: 16, animasi: true });
+    // Ruang untuk panel arah semasa zum ke laluan: di kiri pada desktop, di bawah pada telefon (panel di bawah, selebar peta)
+    function ruangPanel(asas) {
+      return SEMPIT()
+        ? { kiri: asas, kanan: asas, atas: asas, bawah: Math.round(petaEl.clientHeight * 0.5) + 20 }
+        : { kiri: arahEl.offsetWidth + 30, kanan: asas, atas: asas, bawah: asas };
     }
+    // Zum terakhir disimpan supaya "Buka" pada cip boleh zum semula ke laluan
+    let zumTerakhir = null;
+    function zumKe(titik, asas, maxZoom) {
+      zumTerakhir = { titik, asas, maxZoom };
+      E.muat(titik, { ...ruangPanel(asas), maxZoom, animasi: true });
+    }
+    function zumLaluan(titik, A, B) { zumKe([...titik, A, B], 40, 16); }
     const IKON_KERETA = '<svg viewBox="0 0 24 24"><path d="M5 17h14M6 17v2M18 17v2M4 13l2-6h12l2 6v4H4z"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/></svg>';
     const IKON_BOT = '<svg viewBox="0 0 24 24"><path d="M3 15l2 4h14l2-4H3zM6 15V9h8l3 6M10 9V5"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/></svg>';
 
@@ -974,6 +1073,8 @@
         <div class="lk-arah-dari"><label for="lk-arah-asal">Dari</label><select id="lk-arah-asal">${LOKASI.filter(l => l.id !== B.id).map(l => `<option value="${l.id}"${l.id === A.id ? ' selected' : ''}>${esc(pendek(l))}</option>`).join('')}</select>
           <button type="button" class="lk-arah-tukar" data-arah-tukar title="Tukar arah: dari ${esc(pendek(B))}" aria-label="Tukar asal dan destinasi">⇅</button></div>`;
       arahEl.innerHTML = kepala + '<div class="lk-arah-b"><div class="lk-arah-muat"><span class="lk-pusing"></span>Mengira laluan…</div></div>';
+      // Zum terus ke kedua-dua tempat semasa laluan dikira; zum diperhalusi kepada laluan sebaik ia siap
+      zumKe([A, B], SEMPIT() ? 40 : 60, 14);
       let jalan = null;
       try { jalan = await laluanJalan(A, B); } catch {}
       if (laluanId !== B.id || asalId !== A.id) return; // pengguna sudah menukar pilihan
@@ -1014,7 +1115,7 @@
           ? `<div class="lk-arah-amaran"><b>Tiada laluan memandu</b><p>Google Maps tidak menemui jalan raya ke sini. ${sungai ? 'Laluan sungai tersedia untuk perjalanan ini.' : 'Mungkin diakses melalui sungai atau jalan yang belum dipetakan.'}</p>${sungai ? '<button type="button" class="lk-arah-paksa sungai" data-arah-mod="sungai">Lihat laluan sungai</button>' : ''}</div>`
           : '<div class="lk-arah-amaran"><b>Laluan jalan raya tidak dapat dikira</b>Semak sambungan internet dan cuba lagi.</div>';
       } else if (!jalanOk && !pilihan.paksa) {
-        E.muat([A, B], { kiri: arahEl.offsetWidth + 40, atas: 70, kanan: 70, bawah: 70, maxZoom: 14, animasi: true });
+        zumKe([A, B], SEMPIT() ? 40 : 70, 14);
         const snapJauh = Math.max(jalan.snapA, jalan.snapB);
         const tiadaJalan = snapJauh > SNAP_MAKS_M;
         badan = `<div class="lk-arah-amaran"><b>${tiadaJalan ? 'Tiada jalan raya hingga ke sini' : 'Laluan darat sangat jauh'}</b>

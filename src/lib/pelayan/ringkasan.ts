@@ -114,16 +114,19 @@ export function prestasiSpm(d: Data) {
 export function rekodSkas(d: Data) {
   const nama = new Map(d.pengguna.map((u) => [u.id, u]));
   const semua = Object.entries(d.rekod).flatMap(([uid, senarai]) => (senarai || []).map((r) => ({ uid, r })));
-  const kira = (st: string) => semua.filter((x) => x.r.status === st).length;
+  // Rekod guru disimpan terus tanpa kelulusan; evidens disimpan guru dalam Google Drive untuk MoEIS
+  const sekolahGuru = (uid: string) => nama.get(uid)?.org || nama.get(uid)?.kodSekolah || "";
+  const ikutSekolah: Record<string, number> = {};
+  for (const x of semua) { const s = sekolahGuru(x.uid) || "Tidak diketahui"; ikutSekolah[s] = (ikutSekolah[s] || 0) + 1; }
   return {
     jumlah: semua.length,
-    disahkan: kira("approved"),
-    menungguPengesahan: kira("pending"),
-    ditolak: kira("rejected"),
-    senaraiMenunggu: semua.filter((x) => x.r.status === "pending").slice(0, 40).map((x) => ({
+    bilanganGuru: Object.values(d.rekod).filter((s) => (s || []).length).length,
+    ikutSekolah,
+    senaraiTerkini: [...semua].sort((a, b) => (b.r.tarikh || "").localeCompare(a.r.tarikh || "")).slice(0, 40).map((x) => ({
       guru: nama.get(x.uid)?.nama || x.uid,
-      sekolah: nama.get(x.uid)?.org || nama.get(x.uid)?.kodSekolah || "",
+      sekolah: sekolahGuru(x.uid),
       program: x.r.program || "",
+      peringkat: x.r.level || "",
       tarikh: x.r.tarikh || "",
     })),
   };

@@ -242,8 +242,6 @@
         butiran: `${k.subjek} · ${k.tingkatan} ${k.kelas} — ${belum}/${k.pelajar.length} murid belum diisi${ing ? ` · Peringatan daripada ${ing.dariNama} (${bilaIng})` : ''}`,
         tarikh: pe.tarikhAkhir, baki, url: `/spm?kelas=${encodeURIComponent(k.id)}&ujian=${pe.key}` });
     });
-    const pending = skas.rekod(u.id).filter(r => r.status === 'pending').length;
-    if (pending) out.push({ app: 'skas', tahap: 'biru', tajuk: `${pending} rekod pencapaian menunggu pengesahan`, butiran: 'Pentadbir sekolah akan menyemak rekod SKPM 5.4.1 anda', url: '/skas-preview.html' });
     efasiliti.tiket().filter(t => t.pelaporId === u.id && efasiliti.aktif(t)).forEach(t => {
       out.push({ app: 'efasiliti', tahap: 'abu', tajuk: `Aduan anda: ${t.tajuk}`, butiran: `${t.id} · status ${t.status} · ${efasiliti.bukaHari(t)} hari lalu`, url: `/e-fasiliti?tiket=${encodeURIComponent(t.id)}` });
     });
@@ -256,7 +254,6 @@
     const spmT = c('spm'), belum = spmT.reduce((a, x) => a + x.belum, 0);
     return {
       spm: spmT.length ? { teks: `${belum} markah belum diisi`, tahap: spmT[0].tahap } : null,
-      skas: c('skas').length ? { teks: `${skas.rekod(u.id).filter(r => r.status === 'pending').length} menunggu pengesahan`, tahap: 'biru' } : null,
       efasiliti: c('efasiliti').length ? { teks: `${c('efasiliti').length} aduan aktif`, tahap: 'abu' } : null,
     };
   }
