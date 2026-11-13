@@ -10,8 +10,7 @@
 <script>
   (function () {
     if (!PPDAuth.session()) return;
-    const next = PPDAuth.safeNext(new URLSearchParams(location.search).get('next'));
-    location.replace(next || 'ppd-dalat.html');
+    location.replace(PPDAuth.tujuanLogMasuk());
   })();
 </script>
 <style>
@@ -492,7 +491,7 @@ form { display: flex; flex-direction: column; gap: 5px; }
 const A = PPDAuth;
 const SG = window.PPDSegerak;
 const $ = id => document.getElementById(id);
-const nextUrl = A.safeNext(new URLSearchParams(location.search).get('next')) || 'ppd-dalat.html';
+const nextUrl = A.tujuanLogMasuk();
 
 /* ── Jam & salam ─────────────────────────────── */
 function salam() {

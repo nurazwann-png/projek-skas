@@ -227,6 +227,12 @@
   function safeNext(v) {
     return /^[a-z0-9-]+\.html(\?[\w=&-]*)?$/i.test(v || '') ? v : null;
   }
+  // Selepas log masuk: sentiasa ke papan pemuka portal, kecuali pautan terus yang membawa butiran (?…),
+  // contohnya pautan "Tugasan Saya" ke kelas tertentu
+  function tujuanLogMasuk() {
+    const n = safeNext(new URLSearchParams(location.search).get('next'));
+    return n && n.includes('?') ? n : 'ppd-dalat.html';
+  }
   // Panggil di <head>: tiada sesi → ke halaman log masuk
   function guard() {
     if (session()) return true;
@@ -251,7 +257,7 @@
     organisasi, orgByKod, saveOrganisasi, LOKASI, JENIS_ORG, DOMAIN_RASMI, domainRasmi, daftar,
     levelsFor, defaultLevel, rolesAtLevel, appRoleFor,
     assignableRoles, canAssign, layakPeranan, DOMAIN_ADMIN, toggleRole, auditLog, logAudit, auditHTML,
-    session, currentUser, login, setLevel, logout, guard, safeNext,
+    session, currentUser, login, setLevel, logout, guard, safeNext, tujuanLogMasuk,
     initials, esc,
   };
 })();
