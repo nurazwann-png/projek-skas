@@ -84,6 +84,7 @@ export interface PPDAuthApi {
   currentUser(): Pengguna | null;
   findById(id: string): Pengguna | null;
   appRoleFor(u: Pengguna, level: Tahap, app: string): PerananApp;
+  aksesApp(u: Pengguna, app: string): boolean;
   LEVELS: Record<Tahap, { label: string; color: string }>;
   initials(nama: string): string;
 }

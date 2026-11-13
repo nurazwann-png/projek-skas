@@ -67,6 +67,15 @@
       .map(o => ({ kod: kodBesar(o.kod), nama: besar(o.nama), lokasi: LOKASI.includes(o.lokasi) ? o.lokasi : 'Bandar', jenis: JENIS_ORG.includes(o.jenis) ? o.jenis : 'Sekolah' }));
   }
   function orgByKod(kod) { const k = kodBesar(kod); return organisasi().find(o => o.kod === k) || null; }
+  // Analitik SPM hanya untuk sekolah menengah (SMK dan setaraf) serta pegawai PPD; SK dan SJK tidak menduduki SPM.
+  const sekolahMenengah = nama => /^(SMK|SMKA|SMA|SM|SMT|SMS|SBP|KOLEJ|MRSM)\b/.test(besar(nama));
+  function aksesApp(u, app) {
+    if (!u || app !== 'spm') return true;
+    if ((u.roles || []).some(r => r === 'superadmin' || r.startsWith('admin_'))) return true;
+    const o = orgByKod(u.kodSekolah);
+    if (o) return o.jenis === 'Pejabat' || sekolahMenengah(o.nama);
+    return !u.org || /^PPD\b/.test(besar(u.org)) || sekolahMenengah(u.org);
+  }
   function saveOrganisasi(list) { write(ORG_KEY, list.map(o => ({ ...o, kod: kodBesar(o.kod), nama: besar(o.nama) }))); }
 
   // org (nama sekolah) sentiasa diambil daripada senarai induk melalui kod
@@ -145,6 +154,8 @@
   function canAssign(u, level, role, target) {
     if (!assignableRoles(u, level).includes(role)) return false;
     if (!layakPeranan(target, role)) return false;
+    // Pentadbir Sekolah SPM hanya untuk SMK (menarik peranan sedia ada tetap dibenarkan)
+    if (role === 'sekolah_spm' && target && !target.roles.includes(role) && !aksesApp({ ...target, roles: [] }, 'spm')) return false;
     if (target && target.id === u.id && level !== 'superadmin') return false;
     return true;
   }
@@ -254,7 +265,7 @@
   window.PPDAuth = {
     APPS, ROLES, LEVELS, LEVEL_ORDER,
     users, saveUsers, findByEmail, findById, normEmail, besar,
-    organisasi, orgByKod, saveOrganisasi, LOKASI, JENIS_ORG, DOMAIN_RASMI, domainRasmi, daftar,
+    organisasi, orgByKod, saveOrganisasi, sekolahMenengah, aksesApp, LOKASI, JENIS_ORG, DOMAIN_RASMI, domainRasmi, daftar,
     levelsFor, defaultLevel, rolesAtLevel, appRoleFor,
     assignableRoles, canAssign, layakPeranan, DOMAIN_ADMIN, toggleRole, auditLog, logAudit, auditHTML,
     session, currentUser, login, setLevel, logout, guard, safeNext, tujuanLogMasuk,

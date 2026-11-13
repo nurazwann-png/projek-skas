@@ -1,8 +1,8 @@
 "use client";
 
 // Carta gaya Tremor atas Recharts 3: grid mendatar halus, paksi tanpa garis, tooltip & legenda ringkas.
-import { Maximize2 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { Maximize2, Sparkles } from "lucide-react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Bar,
   BarChart as RBarChart,
@@ -24,6 +24,20 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { Card, Modal, WARNA, type Warna } from "./ui";
+
+/* Carta melaporkan datanya kepada KadCarta supaya AI boleh menerangkan maklumat yang dipaparkan. */
+type DataCarta = { index: string; categories: string[]; data: Record<string, unknown>[] };
+const LaporCarta = createContext<((d: DataCarta) => void) | null>(null);
+
+/* Peranan pemapar carta: menentukan sama ada AI boleh membandingkan dengan sekolah lain (Admin/Superadmin sahaja). */
+export type SkopCarta = { peranan: "ppd_admin" | "school_admin" | "teacher"; label: string };
+export const SkopCartaKonteks = createContext<SkopCarta | null>(null);
+function useLaporCarta(d: DataCarta) {
+  const lapor = useContext(LaporCarta);
+  useEffect(() => {
+    lapor?.(d);
+  });
+}
 
 type Baris = Record<string, string | number | null | undefined>;
 type Fmt = (v: number) => string;
@@ -96,6 +110,7 @@ export function LineChart({
   domain?: [number | "auto", number | "auto"];
   className?: string;
 }) {
+  useLaporCarta({ index, categories, data });
   return (
     <div className={cn("h-72 w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
@@ -161,6 +176,7 @@ export function BarChart({
   nota?: (baris: Baris) => string | null;
   className?: string;
 }) {
+  useLaporCarta({ index, categories, data });
   const mendatar = layout === "horizontal";
   const paksiNilai = { type: "number" as const, tick: TIK, axisLine: false, tickLine: false, domain: domain ?? [0, "auto"], tickFormatter: fmt };
   const paksiKategori = { type: "category" as const, dataKey: index, tick: TIK, axisLine: false, tickLine: false };
@@ -192,6 +208,7 @@ export function BarChart({
 
 /* ── Carta radar ── */
 export function RadarChart({ data, index, categories, colors = PALET, putus = [], fmt = String, domain, className }: { data: Baris[]; index: string; categories: string[]; colors?: Warna[]; putus?: string[]; fmt?: Fmt; domain?: [number, number]; className?: string }) {
+  useLaporCarta({ index, categories, data });
   return (
     <div className={cn("h-80 w-full", className)}>
       <ResponsiveContainer width="100%" height="100%">
@@ -247,6 +264,43 @@ export function KadCarta({
   className?: string;
 }) {
   const [besar, setBesar] = useState(false);
+  const dataRef = useRef<DataCarta | null>(null);
+  const [adaData, setAdaData] = useState(false);
+  const [ai, setAi] = useState<{ kunci: string; teks?: string; ralat?: string } | null>(null);
+  const subTeks = typeof sub === "string" ? sub : undefined;
+  const skop = useContext(SkopCartaKonteks);
+
+  // Selepas carta dalam modal melaporkan datanya, minta AI merumus maklumat carta.
+  useEffect(() => {
+    if (!besar || !adaData || !dataRef.current) return;
+    const d = dataRef.current;
+    const ringkas = {
+      index: d.index,
+      siri: d.categories,
+      baris: d.data.slice(0, 60).map((b) =>
+        Object.fromEntries(Object.entries(b).filter(([, v]) => v == null || typeof v === "string" || typeof v === "number")),
+      ),
+    };
+    const kunci = JSON.stringify([tajuk, ringkas]);
+    if (ai?.kunci === kunci && (ai.teks || !ai.ralat)) return;
+    setAi({ kunci });
+    let batal = false;
+    fetch("/api/ai/terang-carta", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tajuk, sub: subTeks, apa, data: ringkas, peranan: skop?.peranan ?? "teacher", skop: skop?.label }),
+    })
+      .then(async (r) => {
+        const j = await r.json().catch(() => ({}));
+        if (!batal) setAi(r.ok ? { kunci, teks: j.jawapan } : { kunci, ralat: j.ralat || "Penerangan AI tidak dapat dimuatkan." });
+      })
+      .catch(() => !batal && setAi({ kunci, ralat: "Penerangan AI tidak dapat dimuatkan." }));
+    return () => {
+      batal = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [besar, adaData]);
+
   return (
     <Card className={className}>
       <div className="flex items-start justify-between gap-3">
@@ -265,9 +319,22 @@ export function KadCarta({
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(240px,1fr)]">
           <div className="min-w-0">
             {legenda && <Legenda item={legenda} className="mb-3" />}
-            {besar && carta("h-[min(56vh,480px)]")}
+            {besar && <LaporCarta.Provider value={(d) => { dataRef.current = d; setAdaData(true); }}>{carta("h-[min(56vh,480px)]")}</LaporCarta.Provider>}
           </div>
           <div className="space-y-4 text-sm leading-relaxed">
+            <div className="rounded-lg border border-[#e9d9b4] bg-[#fdf8ec] p-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[#b7791f] uppercase">
+                <Sparkles className="size-3.5" aria-hidden /> Maklumat carta ini (AI)
+              </div>
+              {!ai || (!ai.teks && !ai.ralat) ? (
+                <p className="mt-1 animate-pulse text-gray-500" aria-live="polite">AI sedang meneliti data carta…</p>
+              ) : ai.ralat ? (
+                <p className="mt-1 text-gray-500">{ai.ralat}</p>
+              ) : (
+                <div className="mt-1 space-y-1 whitespace-pre-line text-gray-800" aria-live="polite">{ai.teks}</div>
+              )}
+              <p className="mt-2 text-[11px] text-gray-400">Dijana AI daripada data carta. Semak angka pada carta sebelum membuat keputusan.</p>
+            </div>
             <div>
               <div className="text-xs font-semibold tracking-wide text-[#b7791f] uppercase">Apa yang ditunjukkan</div>
               <p className="mt-1 text-gray-700">{apa}</p>

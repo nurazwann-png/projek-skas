@@ -4,6 +4,7 @@
 // Menggantikan public/spm-analytics.html: paparan Admin PPD, Pentadbir Sekolah dan Guru.
 import { CheckCircle2, LineChart as IkonCarta } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SkopCartaKonteks } from "@/components/tremor/charts";
 import { TabNavigation } from "@/components/tremor/ui";
 import { muatSkrip, muatStorPortal, type PPDAuthApi, type PPDDataApi, type Pengguna, type PerananApp, type Sesi } from "@/lib/portal/stor";
 import { analisisDaerah } from "@/lib/spm/analitik";
@@ -48,6 +49,8 @@ export function SpmApp() {
         const sesi = auth.session();
         const pengguna = sesi && auth.findById(sesi.uid);
         if (!sesi || !pengguna) return location.replace("/welcome.html");
+        // Analitik SPM hanya untuk SMK dan pegawai PPD
+        if (!auth.aksesApp(pengguna, "spm")) return location.replace("/ppd-dalat.html");
         const peranan = auth.appRoleFor(pengguna, sesi.level, "spm");
         const dariHash = TAB.find((t) => t.id === location.hash.slice(1));
         if (dariHash) setTab(dariHash.id);
@@ -145,6 +148,7 @@ export function SpmApp() {
         )}
       </header>
 
+      <SkopCartaKonteks.Provider value={sedia ? { peranan: admin ? "ppd_admin" : k.peranan === "school_admin" ? "school_admin" : "teacher", label: admin ? "Daerah Dalat" : k.pengguna.org } : null}>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {k.status === "memuat" && <Rangka />}
         {k.status === "ralat" && <div role="alert" className="rounded-md bg-red-50 p-4 text-sm text-red-900 ring-1 ring-red-600/20 ring-inset">Data portal tidak dapat dimuatkan ({k.mesej}). Muat semula halaman, atau kembali ke Portal PPD Dalat.</div>}
@@ -152,6 +156,7 @@ export function SpmApp() {
         {sedia && k.peranan === "school_admin" && <PaparanPentadbir data={k.data} pengguna={k.pengguna} segar={segar} makluman={setToast} versi={versi} />}
         {sedia && admin && d && (d.sekolah.length === 0 ? <div className="rounded-md bg-white p-8 text-center text-sm text-gray-500 ring-1 ring-gray-200 ring-inset">Belum ada kelas atau markah direkodkan oleh mana-mana sekolah.</div> : <Kandungan tab={tab} prop={{ d, data: k.data, pengguna: k.pengguna, amaran, segar, makluman: setToast }} />)}
       </main>
+      </SkopCartaKonteks.Provider>
 
       <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-[80] flex justify-center px-4">
         {toast && (

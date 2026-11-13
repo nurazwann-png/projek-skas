@@ -282,8 +282,19 @@ export async function tulis(aktor: PenggunaStor, ops: Op[]): Promise<Ditolak[]> 
         // Bandingkan dengan nama yang telah dibersihkan, sama seperti yang dihantar kepada pelayar
         const lama = new Map(sedia.rows.map((r) => [r.id, { ...r.nilai, nama: bersihNama(r.nilai.nama) }]));
         let gagal = false;
+        // Pentadbir Sekolah SPM hanya untuk sekolah menengah (SMK dan setaraf); SK dan SJK tidak menduduki SPM
+        const org = await q.query<{ id: string; nilai: { nama?: string; jenis?: string } }>(`SELECT id, nilai FROM stor_item WHERE koleksi = 'ppd_organisasi'`);
+        const orgKod = new Map(org.rows.map((r) => [r.id, r.nilai]));
+        const bolehSpm = (kod?: string) => {
+          const o = kod ? orgKod.get(kod) : undefined;
+          return !o || o.jenis === "Pejabat" || /^(SMK|SMKA|SMA|SM|SMT|SMS|SBP|KOLEJ|MRSM)\b/i.test(String(o.nama || "").trim());
+        };
         for (const [id, v] of set) {
-          const sebab = semakPengguna(aktor, lama.get(id), v as PenggunaStor);
+          const baru = v as PenggunaStor;
+          if ((baru.roles || []).includes("sekolah_spm") && !(lama.get(id)?.roles || []).includes("sekolah_spm") && !bolehSpm(baru.kodSekolah)) {
+            ditolak.push({ k: op.k, id, sebab: "Analitik SPM hanya untuk sekolah menengah (SMK)." }); gagal = true; continue;
+          }
+          const sebab = semakPengguna(aktor, lama.get(id), baru);
           if (sebab) { ditolak.push({ k: op.k, id, sebab }); gagal = true; }
         }
         for (const id of del) {

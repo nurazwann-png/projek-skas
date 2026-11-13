@@ -87,7 +87,7 @@
       list.innerHTML = rows.length ? rows.map(u => {
         const isMe = u.id === me.id;
         const top = A.levelsFor(u).slice(-1)[0];
-        const tgs = roles.map(r => {
+        const tgs = roles.filter(r => r !== 'sekolah_spm' || u.roles.includes(r) || A.aksesApp({ ...u, roles: [] }, 'spm')).map(r => {
           const on = u.roles.includes(r);
           const ok = A.canAssign(me, s.level, r, u);
           const lv = A.ROLES[r].level;

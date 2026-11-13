@@ -248,6 +248,7 @@ img { max-width: 100%; }
 .sec-meta { font-size: 12.5px; color: var(--t3); text-align: right; }
 
 .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+.app-card[hidden], .qlink[hidden] { display: none !important; }
 .app-card {
   --c: var(--accent);
   position: relative; overflow: hidden; isolation: isolate;
@@ -705,7 +706,7 @@ img { max-width: 100%; }
         <div class="panel-h"><span><span class="panel-ic"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span>Pautan Pantas</span></div>
         <div class="qgrid">
           <a class="qlink" style="--c:#0b7f77" href="skas-preview.html"><span class="qlink-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/></svg></span><span><b>SK@S</b><small>Kualiti@Sekolah</small></span></a>
-          <a class="qlink" style="--c:#9a6f12" href="/spm"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span><span><b>Analitik SPM</b><small>GPS &amp; trend</small></span></a>
+          <a class="qlink" data-app="spm" style="--c:#9a6f12" href="/spm"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></span><span><b>Analitik SPM</b><small>GPS &amp; trend</small></span></a>
           <a class="qlink" style="--c:#1d6fa5" href="/e-fasiliti"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>e-Fasiliti</b><small>Aduan kerosakan</small></span></a>
           <a class="qlink" style="--c:#13406e" href="https://www.moe.gov.my" target="_blank" rel="noopener"><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span><span><b>Laman Web KPM</b><small>moe.gov.my</small></span></a>
           <a class="qlink" id="q-laporan" style="--c:#6941c6;grid-column:1 / -1;flex-direction:row;align-items:center" href="/laporan" hidden><span class="qlink-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span><span><b>Laporan</b><small>SKPM 5.4, SPM dan ketepatan AI · cetak atau Excel</small></span></a>
@@ -747,7 +748,7 @@ img { max-width: 100%; }
       <h4>Aplikasi</h4>
       <ul>
         <li><a href="skas-preview.html">SK@S</a></li>
-        <li><a href="/spm">Analitik SPM</a></li>
+        <li data-app="spm"><a href="/spm">Analitik SPM</a></li>
         <li><a href="/e-fasiliti">e-Fasiliti</a></li>
       </ul>
     </div>
@@ -773,8 +774,8 @@ img { max-width: 100%; }
   <div class="modal-box" style="max-width:860px;max-height:88vh;overflow-y:auto">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
       <div>
-        <div style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengguna &amp; Peranan</div>
-        <div style="font-size:12px;color:var(--t3)">Superadmin menetapkan Admin dan Pentadbir Sekolah bagi semua aplikasi. Admin setiap aplikasi boleh menetapkan Pentadbir Sekolah aplikasinya sendiri melalui butang Urus Peranan dalam aplikasi. Semua pengguna mempunyai akses Pengguna Biasa.</div>
+        <div id="upg-tajuk" style="font-size:16px;font-weight:800;color:var(--t1)">Urus Pengguna &amp; Peranan</div>
+        <div id="upg-terang" style="font-size:12px;color:var(--t3)"></div>
       </div>
       <button onclick="closeUrusPengguna()" aria-label="Tutup" style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px">
         <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1034,6 +1035,8 @@ const APP_CARDS = [
 const ICON_USERS = '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
 
 function getUser() { return A.currentUser(); }
+// Analitik SPM hanya untuk SMK dan pegawai PPD; SK dan SJK tidak menduduki SPM
+const bolehSpm = (u = getUser()) => A.aksesApp(u, 'spm');
 function activeLevel() { const s = A.session(); return s ? s.level : 'pengguna'; }
 
 function roleView(u, lv, app) {
@@ -1071,7 +1074,7 @@ function renderLevelPills() {
   const el = document.getElementById('user-banner');
   el.innerHTML = `<span class="ub-lbl">${lvs.length > 1 ? 'Guna peranan:' : 'Peranan:'}</span>
     <div class="lv-pills" role="radiogroup" aria-label="Pilih peranan aktif">${pills}</div>
-    ${lv === 'superadmin' ? `<button type="button" class="ub-admin" onclick="openUrusPengguna()">${ICON_USERS}Urus Pengguna</button>` : ''}`;
+    ${bolehUrusPengguna(lv) ? `<button type="button" class="ub-admin" onclick="openUrusPengguna()">${ICON_USERS}${lv === 'superadmin' ? 'Urus Pengguna' : 'Urus Peranan'}</button>` : ''}`;
   el.querySelectorAll('.lv-pill').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.lv === activeLevel()) return;
     A.setLevel(b.dataset.lv);
@@ -1153,7 +1156,7 @@ function renderFokus(u, lv) {
   const go = '<svg class="go" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
   el.innerHTML = `
     <div class="fokus-h"><span>Fokus semasa</span><span>${A.esc(s.label)}</span></div>
-    <a class="fokus-utama" href="${A.APPS.spm.url}">
+    ${!bolehSpm(u) ? '' : `<a class="fokus-utama" href="${A.APPS.spm.url}">
       <span class="cincin" role="img" aria-label="${pct === null ? 'Tiada kelas' : `Pengisian markah ${pct} peratus`}">
         <svg viewBox="0 0 84 84"><circle class="trek" cx="42" cy="42" r="34"/><circle class="isi" cx="42" cy="42" r="34" stroke-dasharray="${L.toFixed(1)}" stroke-dashoffset="${L.toFixed(1)}" data-akhir="${(L * (1 - (pct || 0) / 100)).toFixed(1)}"/></svg>
         <b>${pct === null ? '–' : pct + '%'}</b>
@@ -1163,14 +1166,14 @@ function renderFokus(u, lv) {
         <span class="fokus-d" style="display:block">${pct === null ? 'Tiada kelas direkodkan dalam skop ini' : belum ? `${belum} daripada ${jumlah} markah belum diisi` : 'Semua markah telah diisi'}</span>
         <span class="fokus-due${baki <= 3 ? ' merah' : ''}">Tarikh akhir ${akhir} · ${bakiTeks(baki)}</span>
       </span>
-    </a>
+    </a>`}
     <div class="fokus-rows">
       <a class="fokus-row" href="${A.APPS.skas.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.award}</svg></span><span class="l">${s.lblRekod}</span><b>${bilRekod}</b>${go}</a>
       <a class="fokus-row" href="${A.APPS.efasiliti.url}"><span class="ic"><svg viewBox="0 0 24 24">${KPI_IC.wrench}</svg></span><span class="l">${s.lblTiket}</span><b>${aduan}</b>${go}</a>
     </div>`;
   // Cincin terisi selepas lukisan pertama supaya peralihan kelihatan
   const isi = el.querySelector('.isi');
-  requestAnimationFrame(() => requestAnimationFrame(() => { isi.style.strokeDashoffset = isi.dataset.akhir; }));
+  if (isi) requestAnimationFrame(() => requestAnimationFrame(() => { isi.style.strokeDashoffset = isi.dataset.akhir; }));
 }
 
 function renderKPI(u, lv) {
@@ -1181,8 +1184,9 @@ function renderKPI(u, lv) {
     const belum = kelas.reduce((a, k) => a + PPDData.spm.belumIsi(k, PPDData.PEPERIKSAAN_SEMASA.key, marks), 0);
     const rekod = PPDData.skas.rekod(u.id);
     const aduan = PPDData.efasiliti.tiket().filter(t => t.pelaporId === u.id && PPDData.efasiliti.aktif(t)).length;
-    el.innerHTML = kpiHTML('book', '#2f6fb3', kelas.length, 'Kelas Saya')
-      + kpiHTML('pen', belum ? '#b54708' : '#17935a', belum, 'Markah Percubaan Belum Diisi')
+    el.innerHTML = (bolehSpm(u)
+      ? kpiHTML('book', '#2f6fb3', kelas.length, 'Kelas Saya') + kpiHTML('pen', belum ? '#b54708' : '#17935a', belum, 'Markah Percubaan Belum Diisi')
+      : kpiHTML('grid', '#2f6fb3', 2, 'Aplikasi Untuk Anda') + kpiHTML('cal', '#c4321f', 2026, 'Sesi Persekolahan'))
       + kpiHTML('award', '#0f9e94', rekod.length, 'Rekod Pencapaian SK@S')
       + kpiHTML('wrench', '#1d6fa5', aduan, 'Aduan Aktif Saya');
   } else {
@@ -1242,8 +1246,11 @@ function updateUI() {
   renderFokus(u, lv);
   document.getElementById('q-laporan').hidden = lv === 'pengguna';
   APP_CARDS.forEach(([, app, strip]) => buildRoleStrip(app, strip));
+  const adaSpm = bolehSpm(u);
+  document.getElementById('spm-card').hidden = !adaSpm;
+  document.querySelectorAll('[data-app="spm"]').forEach(e => { e.hidden = !adaSpm; });
   renderLevelPills();
-  if (lv !== 'superadmin') closeUrusPengguna();
+  if (!bolehUrusPengguna(lv)) closeUrusPengguna();
   const btnAdmin = document.getElementById('btn-pengumuman-admin');
   if (btnAdmin) {
     const isAdmin = isPpdAdmin();
@@ -1281,6 +1288,7 @@ function langkahPortal(lv) {
       { sel: '#skpm-card', tajuk: 'SK@S: Admin', teks: 'Analisis pencapaian seluruh daerah. Di menu <b>Panduan & Tahun</b>, tetapkan tahun penilaian dan muat naik Panduan SKPM baharu supaya AI mengikut peraturan terkini.' },
       { sel: '#pautan', tajuk: 'Laporan sedia cetak', teks: 'Pautan pantas, termasuk <b>Laporan</b>: SKPM 5.4.1, prestasi SPM dan ketepatan AI, sedia dicetak atau dimuat turun ke Excel.' },
       { sel: '#pengumuman', tajuk: 'Pengumuman', teks: 'Terbitkan pengumuman kepada semua pengguna portal.' },
+      { sel: '#user-banner .ub-admin', alt: '#profile-chip', tajuk: 'Urus Peranan Pentadbir Sekolah', teks: 'Pilih sekolah, kemudian beri atau tarik peranan <b>Pentadbir Sekolah</b> bagi aplikasi yang anda admin sahaja. Contohnya, Admin SK@S hanya boleh melantik Pentadbir Sekolah SK@S.' },
     ],
     superadmin: [
       { sel: '#user-banner .ub-admin', alt: '#profile-chip', tajuk: 'Urus Pengguna', teks: 'Tab <b>Pengguna PPD</b> untuk pegawai PPD, tab <b>Pengguna Sekolah</b> untuk memilih sekolah dan mengurus penggunanya, serta senarai sekolah dan Log Audit. Admin dan Superadmin hanya untuk emel @moe.gov.my.' },
@@ -1292,7 +1300,7 @@ function langkahPortal(lv) {
     { sel: '.pb-btn', tajuk: 'Tanya Pembantu', teks: 'Pembantu AI menjawab daripada data portal mengikut peranan anda, contohnya "Kelas mana belum isi markah?", "Arah ke SK Sg Rasau" atau "Macam mana nak muat naik markah?".' },
     { sel: '#profile-chip', tajuk: 'Buka semula panduan ini', teks: 'Panduan ini boleh dibuka semula dari menu profil: <b>Tunjukkan panduan</b>.' },
   ];
-  return [...awal, ...(peranan[lv] || []), ...akhir];
+  return [...awal, ...(peranan[lv] || []), ...akhir].filter(l => l.sel !== '#spm-card' || bolehSpm());
 }
 function mulaLawatanPortal(paksa) {
   if (!window.PPDLawatan || !document.getElementById('modal-pengguna').hidden) return;
@@ -1302,7 +1310,7 @@ function mulaLawatanPortal(paksa) {
 
 function handleAppCardClick(app) {
   const u = getUser();
-  if (!u) return;
+  if (!u || !A.aksesApp(u, app)) return;
   window.location.href = A.APPS[app].url;
 }
 
@@ -1328,7 +1336,7 @@ function toggleProfileMenu() {
       </div>
     </div>
     <div class="pmenu-roles"><span class="lbl">Peranan diberi</span>${chips}</div>
-    ${lv === 'superadmin' ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}Urus Pengguna &amp; Peranan</button>` : ''}
+    ${bolehUrusPengguna(lv) ? `<button class="mi" role="menuitem" onclick="closeProfileMenu();openUrusPengguna()">${ICON_USERS}${lv === 'superadmin' ? 'Urus Pengguna &amp; Peranan' : 'Urus Peranan Pentadbir Sekolah'}</button>` : ''}
     <button class="mi" role="menuitem" onclick="closeProfileMenu();mulaLawatanPortal(true)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Tunjukkan panduan</button>
     <button class="mi out" role="menuitem" onclick="A.logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log keluar</button>`;
   document.querySelector('.masthead-top').appendChild(m);
@@ -1339,7 +1347,9 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeProfileMenu(); closeUrusPengguna(); } });
 
-/* ── Urus pengguna (Superadmin) ──────────────── */
+/* ── Urus pengguna (Superadmin penuh; Admin PPD: Pentadbir Sekolah bagi aplikasinya sahaja) ── */
+const bolehUrusPengguna = lv => lv === 'superadmin' || lv === 'admin';
+let upgSuper = false;
 const ROLE_GROUPS = [
   ['Admin',             ['admin_skas', 'admin_spm', 'admin_efasiliti']],
   ['Pentadbir Sekolah', ['sekolah_skas', 'sekolah_spm', 'sekolah_efasiliti']],
@@ -1373,14 +1383,26 @@ function tunjukPaneUpg() {
   document.getElementById('upg-pane-sekolah').hidden = !senaraiSekolah;
   document.getElementById('upg-pane-audit').hidden = upgTab !== 'audit';
   document.getElementById('upg-cari').value = '';
+  // Admin PPD: tiada pendaftaran/pemadaman pengguna, tab Pengguna PPD atau suntingan senarai sekolah
+  document.getElementById('upg-form').hidden = !upgSuper;
+  document.querySelector('[data-upgtab="ppd"]').hidden = !upgSuper;
+  document.getElementById('sk-form').hidden = !upgSuper;
   if (senaraiSekolah) renderSenaraiSekolah(); else renderUrusPengguna();
   pilihOrgBorang(upgTab === 'ppd' ? kodPejabat() : upgKod || '');
 }
 function openUrusPengguna() {
-  if (activeLevel() !== 'superadmin') return;
+  const lv = activeLevel();
+  if (!bolehUrusPengguna(lv)) return;
+  upgSuper = lv === 'superadmin';
   isiPilihanOrg();
   document.getElementById('upg-err').hidden = true;
-  upgTab = 'ppd'; upgKod = null;
+  // Tajuk dan penerangan ikut tahap kuasa
+  const appAdmin = A.assignableRoles(getUser(), lv).map(r => A.APPS[A.ROLES[r].app]?.label).filter(Boolean);
+  document.getElementById('upg-tajuk').textContent = upgSuper ? 'Urus Pengguna & Peranan' : 'Urus Peranan Pentadbir Sekolah';
+  document.getElementById('upg-terang').textContent = upgSuper
+    ? 'Superadmin menetapkan Admin dan Pentadbir Sekolah bagi semua aplikasi. Admin setiap aplikasi boleh menetapkan Pentadbir Sekolah aplikasinya sendiri. Semua pengguna mempunyai akses Pengguna Biasa.'
+    : `Sebagai Admin ${appAdmin.join(', ')}, anda boleh memberi atau menarik peranan Pentadbir Sekolah bagi ${appAdmin.length > 1 ? 'aplikasi tersebut' : 'aplikasi ini'} sahaja. Pendaftaran dan pemadaman pengguna diurus oleh Superadmin.`;
+  upgTab = upgSuper ? 'ppd' : 'sekolah'; upgKod = null;
   tunjukPaneUpg();
   document.getElementById('modal-pengguna').hidden = false;
 }
@@ -1398,21 +1420,24 @@ function renderUrusPengguna() {
   kepala.hidden = !(upgTab === 'sekolah' && sk);
   if (sk) kepala.innerHTML = `<button type="button" class="btn-ghost-sm" id="upg-balik">← Senarai sekolah</button><div style="min-width:0"><b>${A.esc(sk.nama)}</b><span>${A.esc(sk.kod)} · ${skop.length} pengguna</span></div>`;
   const superCount = A.users().filter(u => u.roles.includes('superadmin')).length;
+  // Superadmin melihat semua peranan; Admin hanya peranan yang boleh diberinya (Pentadbir Sekolah aplikasinya)
+  const bolehBeri = new Set(A.assignableRoles(me, activeLevel()));
+  const kumpulan = upgSuper ? ROLE_GROUPS : ROLE_GROUPS.map(([n, ks]) => [n, ks.filter(k => bolehBeri.has(k))]).filter(([, ks]) => ks.length);
   document.getElementById('upg-list').innerHTML = list.length ? list.map(u => {
     const lvs = A.levelsFor(u), top = lvs[lvs.length - 1];
     const isMe = u.id === me.id;
-    const groups = ROLE_GROUPS.map(([nama, keys]) => `<div class="upg-grp"><span>${nama}</span>${keys.map(k => {
+    const groups = kumpulan.map(([nama, keys]) => [nama, keys.filter(k => k !== 'sekolah_spm' || u.roles.includes(k) || A.aksesApp({ ...u, roles: [] }, 'spm'))]).filter(([, ks]) => ks.length).map(([nama, keys]) => `<div class="upg-grp"><span>${nama}</span>${keys.map(k => {
       const on = u.roles.includes(k);
       const lock = k === 'superadmin' && on && (isMe || superCount <= 1);
       const takLayak = !on && !A.layakPeranan(u, k);
       const lbl = A.ROLES[k].app ? A.APPS[A.ROLES[k].app].label : 'Superadmin';
-      return `<button type="button" class="tg" aria-pressed="${on}" data-uid="${A.esc(u.id)}" data-role="${k}" style="--lv:${A.LEVELS[A.ROLES[k].level].color}"${lock ? ' disabled title="Sekurang-kurangnya satu Superadmin diperlukan dan anda tidak boleh membuang peranan sendiri"' : ''}${takLayak ? ' disabled title="Peranan Admin dan Superadmin hanya untuk emel @moe.gov.my"' : ''}>${lbl}</button>`;
+      return `<button type="button" class="tg" aria-pressed="${on}" data-uid="${A.esc(u.id)}" data-role="${k}" style="--lv:${A.LEVELS[A.ROLES[k].level].color}"${lock ? ' disabled title="Sekurang-kurangnya satu Superadmin diperlukan dan anda tidak boleh membuang peranan sendiri"' : ''}${takLayak ? ' disabled title="Peranan Admin dan Superadmin hanya untuk emel @moe.gov.my"' : ''}${!upgSuper && isMe ? ' disabled title="Anda tidak boleh mengubah peranan sendiri"' : ''}>${lbl}</button>`;
     }).join('')}</div>`).join('');
     return `<div class="upg-row">
       <div class="upg-top">
         <span class="upg-av" style="background:${A.LEVELS[top].color}">${A.esc(A.initials(u.nama))}</span>
         <div style="min-width:0"><div class="upg-n">${A.esc(u.nama)}${isMe ? ' <span class="rchip" style="--lv:var(--gold)">Anda</span>' : ''}</div><div class="upg-e">${A.esc(u.emel)} · ${u.kodSekolah ? `<b>${A.esc(u.kodSekolah)}</b> ` : ''}${A.esc(u.org || '—')}</div></div>
-        ${isMe ? '' : `<button type="button" class="upg-del" data-del="${A.esc(u.id)}">Padam</button>`}
+        ${isMe || !upgSuper ? '' : `<button type="button" class="upg-del" data-del="${A.esc(u.id)}">Padam</button>`}
       </div>
       ${groups}
     </div>`;
@@ -1459,7 +1484,7 @@ function renderSenaraiSekolah() {
     <td>${A.esc(o.lokasi)}</td>
     <td><span class="sk-jenis">${A.esc(o.jenis)}</span></td>
     <td style="text-align:right"><button type="button" class="sk-urus" data-sk-urus="${A.esc(o.kod)}">${kiraPengguna(o.kod)} pengguna ›</button></td>
-    <td><div class="sk-act"><button type="button" data-sk-ubah="${A.esc(o.kod)}">Edit</button><button type="button" class="del" data-sk-padam="${A.esc(o.kod)}">Padam</button></div></td>
+    <td>${upgSuper ? `<div class="sk-act"><button type="button" data-sk-ubah="${A.esc(o.kod)}">Edit</button><button type="button" class="del" data-sk-padam="${A.esc(o.kod)}">Padam</button></div>` : ''}</td>
   </tr>`).join('') : '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--t3)">Tiada sekolah sepadan</td></tr>';
   resetBorangSekolah();
 }
@@ -1600,7 +1625,7 @@ document.getElementById('hero-tarikh').textContent =
   function semuaItem() {
     const out = [
       { k: 'Aplikasi', t: 'SK@S', d: 'SKPM Kualiti@Sekolah', c: '#0b7f77', ic: svg(KPI_IC.award), f: () => handleAppCardClick('skas') },
-      { k: 'Aplikasi', t: 'Analitik SPM', d: 'GPS, trend dan murid berisiko', c: '#9a6f12', ic: svg(KPI_IC.chart), f: () => handleAppCardClick('spm') },
+      ...(bolehSpm() ? [{ k: 'Aplikasi', t: 'Analitik SPM', d: 'GPS, trend dan murid berisiko', c: '#9a6f12', ic: svg(KPI_IC.chart), f: () => handleAppCardClick('spm') }] : []),
       { k: 'Aplikasi', t: 'e-Fasiliti', d: 'Aduan dan pemantauan kerosakan', c: '#1d6fa5', ic: svg(KPI_IC.wrench), f: () => handleAppCardClick('efasiliti') },
       { k: 'Bahagian', t: 'Pengumuman', d: 'Makluman terkini PPD', ic: svg(IC.bahagian), f: keBahagian('pengumuman') },
       { k: 'Bahagian', t: 'Pautan Pantas', d: '', ic: svg(IC.bahagian), f: keBahagian('pautan') },
@@ -1610,7 +1635,7 @@ document.getElementById('hero-tarikh').textContent =
     if (activeLevel() !== 'pengguna') out.splice(3, 0,
       { k: 'Aplikasi', t: 'Laporan', d: 'SKPM 5.4 dan SPM, sedia cetak dan Excel', ic: svg(KPI_IC.book), f: () => { location.href = '/laporan'; } },
       { k: 'Aplikasi', t: 'Ketepatan Semakan AI', d: 'Sepadan atau tidak dengan keputusan pentadbir', ic: svg(KPI_IC.pen), f: () => { location.href = '/laporan#ai'; } });
-    if (activeLevel() === 'superadmin') out.push({ k: 'Tindakan', t: 'Urus Pengguna & Peranan', d: 'Superadmin', ic: ICON_USERS, f: openUrusPengguna });
+    if (bolehUrusPengguna(activeLevel())) out.push({ k: 'Tindakan', t: activeLevel() === 'superadmin' ? 'Urus Pengguna & Peranan' : 'Urus Peranan Pentadbir Sekolah', d: activeLevel() === 'superadmin' ? 'Superadmin' : 'Admin', ic: ICON_USERS, f: openUrusPengguna });
     out.push({ k: 'Tindakan', t: 'Log keluar', d: '', c: '#b42318', ic: svg(IC.keluar), f: () => A.logout() });
     PPDLokasi.senarai.forEach(l => out.push({ k: 'Sekolah', t: l.nama, d: `${l.kod} · lihat pada peta`, ic: `<img src="${A.esc(l.logo)}" alt="" loading="lazy">`, f: () => bukaSekolah(l) }));
     return out;
